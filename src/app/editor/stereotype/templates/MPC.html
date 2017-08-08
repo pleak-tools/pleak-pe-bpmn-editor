@@ -1,0 +1,41 @@
+<div class="panel panel-default stereotype-options-panel" id="MPC-stereotype-options" style="display:none;">
+  <div class="panel-heading">
+    <h4>MPC options</h4>
+  </div>
+  <div class="panel-body">
+    <h3 class="stereotype-option" id="MPC-taskName"></h3>
+    <div class="form-group" id="MPC-groupSelect-form-group">
+      <label class="text-16" for="MPC-groupSelect">Group ID</label>
+      <select class="form-control stereotype-option" id="MPC-groupSelect">
+      </select>
+      <span id="MPC-groupSelect-help" class="help-block">Select group.</span>
+    </div>
+    <div class="form-group" id="MPC-newGroup-form-group">
+      <label class="text-16" for="MPC-newGroup">Add new group</label>
+      <input class="form-control stereotype-option" type="text" id="MPC-newGroup"/>
+      <span class="help-block" id="MPC-newGroup-help">Insert group name.</span>
+      <br>
+      <button class="btn btn-success pull-right" type="button" id="MPC-add-button">Add</button>
+    </div>
+    <div class="form-group">
+      <label class="text-16" for="MPC-inputScript">Input script</label>
+      <textarea class="form-control stereotype-option" id="MPC-inputScript"></textarea>
+    </div>
+    <div class="form-group">
+      <label class="text-16" for="MPC-inputObjects">Input data objects</label>
+      <ul class="stereotype-option" id="MPC-inputObjects"></ul>
+    </div>
+    <div class="form-group">
+      <label class="text-16" for="MPC-outputObjects">Output data</label>
+      <ul class="stereotype-option" id="MPC-outputObjects"></ul>
+    </div>
+    <hr>
+    <h3>Other tasks in the same MPC group</h3>
+    <div class="form-group" id="MPC-otherGroupTasks">
+    </div>
+  </div>
+  <div class="panel-footer">
+    <button class="btn btn-success" type="button" id="MPC-save-button">Save</button>
+    <button class="btn btn-default" type="button" id="MPC-remove-button">Remove</button>
+  </div>
+</div>
