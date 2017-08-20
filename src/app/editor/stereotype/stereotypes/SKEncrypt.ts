@@ -63,13 +63,31 @@ export class SKEncrypt extends TaskStereotype {
   }
 
   saveStereotypeSettings() {
-    let key = this.settingsPanelContainer.find('#SKEncrypt-keySelect').val();
-    let inputData = this.settingsPanelContainer.find('#SKEncrypt-inputDataSelect').val();
-    if (this.task.SKEncrypt == null) {
-      this.addStereotypeToElement();
+    let numberOfOutputs = this.getTaskOutputObjects().length;
+    let numberOfInputs = this.getTaskInputObjects().length;
+      if (numberOfInputs == 2 && numberOfOutputs == 1) {
+      let key = this.settingsPanelContainer.find('#SKEncrypt-keySelect').val();
+      let inputData = this.settingsPanelContainer.find('#SKEncrypt-inputDataSelect').val();
+      if (key == inputData) {
+        this.settingsPanelContainer.find('#SKEncrypt-conditions-form-group').addClass('has-error');
+        this.settingsPanelContainer.find('#SKEncrypt-key-form-group').addClass('has-error');
+        this.settingsPanelContainer.find('#SKEncrypt-inputData-form-group').addClass('has-error');
+        this.settingsPanelContainer.find('#SKEncrypt-conditions-help2').show();
+        this.initSaveAndRemoveButtons();
+        return;
+      }
+      if (this.task.SKEncrypt == null) {
+        this.addStereotypeToElement();
+      }
+      this.task.SKEncrypt = JSON.stringify({key: key, inputData: inputData});
+      this.settingsPanelContainer.find('.form-group').removeClass('has-error');
+      this.settingsPanelContainer.find('.help-block').hide();
+      super.saveStereotypeSettings();
+    } else {
+      this.settingsPanelContainer.find('#SKEncrypt-conditions-form-group').addClass('has-error');
+      this.settingsPanelContainer.find('#SKEncrypt-conditions-help').show();
+      this.initSaveAndRemoveButtons();
     }
-    this.task.SKEncrypt = JSON.stringify({key: key, inputData: inputData});
-    super.saveStereotypeSettings();
   }
   
   removeStereotype() {

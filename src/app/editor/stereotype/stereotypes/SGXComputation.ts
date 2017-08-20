@@ -4,10 +4,10 @@ import { TaskHandler } from "../../handler/task-handler";
 declare var $: any;
 let is = (element, type) => element.$instanceOf(type);
 
-export class FunSSReconstruction extends TaskStereotype {
+export class SGXComputation extends TaskStereotype {
 
   constructor(taskHandler: TaskHandler) {
-    super("FunSSReconstruction", taskHandler);
+    super("SGXComputation", taskHandler);
   }
 
   /** Functions inherited from TaskStereotype and Stereotype classes */
@@ -21,8 +21,13 @@ export class FunSSReconstruction extends TaskStereotype {
 
     this.highlightTaskInputAndOutputObjects();
 
+    var inputScript;
     var inputObjects = "";
     var outputObjects = "";
+
+    if (this.task.SGXComputation != null) {
+      inputScript = JSON.parse(this.task.SGXComputation).inputScript;
+    }
 
     for (let inputObject of this.getTaskInputObjects()) {
       inputObjects += '<li>' + inputObject.businessObject.name + '</li>';
@@ -32,8 +37,9 @@ export class FunSSReconstruction extends TaskStereotype {
       outputObjects += '<li>' + outputObject.businessObject.name + '</li>';
     }
 
-    this.settingsPanelContainer.find('#FunSSReconstruction-inputObjects').html(inputObjects);
-    this.settingsPanelContainer.find('#FunSSReconstruction-outputObjects').html(outputObjects);
+    this.settingsPanelContainer.find('#SGXComputation-inputScript').val(inputScript);
+    this.settingsPanelContainer.find('#SGXComputation-inputObjects').html(inputObjects);
+    this.settingsPanelContainer.find('#SGXComputation-outputObjects').html(outputObjects);
     this.settingsPanelContainer.show();
   }
 
@@ -43,21 +49,12 @@ export class FunSSReconstruction extends TaskStereotype {
   }
 
   saveStereotypeSettings() {
-    let numberOfOutputs = this.getTaskOutputObjects().length;
-    let numberOfInputs = this.getTaskInputObjects().length;
-    if (numberOfInputs == 2 && numberOfOutputs == 1) {
-      if (this.task.FunSSReconstruction == null) {
-        this.addStereotypeToElement();
-      }
-      this.task.FunSSReconstruction = JSON.stringify({});
-      this.settingsPanelContainer.find('.form-group').removeClass('has-error');
-      this.settingsPanelContainer.find('.help-block').hide();
-      super.saveStereotypeSettings();
-    } else {
-      this.settingsPanelContainer.find('#FunSSReconstruction-conditions-form-group').addClass('has-error');
-      this.settingsPanelContainer.find('#FunSSReconstruction-conditions-help').show();
-      this.initSaveAndRemoveButtons();
+    let inputScript = this.settingsPanelContainer.find('#SGXComputation-inputScript').val();
+    if (this.task.SGXComputation == null) {
+      this.addStereotypeToElement();
     }
+    this.task.SGXComputation = JSON.stringify({inputScript: inputScript});
+    super.saveStereotypeSettings();
   }
   
   removeStereotype() {

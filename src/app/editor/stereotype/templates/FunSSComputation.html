@@ -3,21 +3,36 @@
     <h4>FunSSComputation options</h4>
   </div>
   <div class="panel-body">
+    <h3 class="stereotype-option" id="FunSSComputation-taskName"></h3>
+    <div class="form-group" id="FunSSComputation-groupSelect-form-group">
+      <label class="text-16" for="FunSSComputation-groupSelect">Group ID</label>
+      <select class="form-control stereotype-option" id="FunSSComputation-groupSelect">
+      </select>
+      <span id="FunSSComputation-groupSelect-help" class="help-block">Select group.</span>
+      <span id="FunSSComputation-groupSelect-help2" class="help-block">There are already two members in this group. Please choose another one.</span>
+    </div>
+    <div class="form-group" id="FunSSComputation-newGroup-form-group">
+      <label class="text-16" for="FunSSComputation-newGroup">Add new group</label>
+      <input class="form-control stereotype-option" type="text" id="FunSSComputation-newGroup"/>
+      <span class="help-block" id="FunSSComputation-newGroup-help">Insert group name.</span>
+      <br>
+      <button class="btn btn-success pull-right" type="button" id="FunSSComputation-add-button">Add</button>
+    </div>
     <div class="form-group">
       <label class="text-16" for="FunSSComputation-inputScript">Input script</label>
       <textarea class="form-control stereotype-option" id="FunSSComputation-inputScript"></textarea>
-    </div>
-    <div class="form-group">
-      <label class="text-16" for="FunSSComputation-inputDataSelect">Input data</label>
-      <select class="form-control stereotype-option" id="FunSSComputation-inputDataSelect"></select>
     </div>
     <div class="form-group">
       <label class="text-16" for="FunSSComputation-inputObjects">Input data objects</label>
       <ul class="stereotype-option" id="FunSSComputation-inputObjects"></ul>
     </div>
     <div class="form-group">
-      <label class="text-16" for="FunSSComputation-outputObjects">Output data objects</label>
+      <label class="text-16" for="FunSSComputation-outputObjects">Output data</label>
       <ul class="stereotype-option" id="FunSSComputation-outputObjects"></ul>
+    </div>
+    <hr>
+    <h3>Other tasks in the same FunSSComputation group</h3>
+    <div class="form-group" id="FunSSComputation-otherGroupTasks">
     </div>
   </div>
   <div class="panel-footer">

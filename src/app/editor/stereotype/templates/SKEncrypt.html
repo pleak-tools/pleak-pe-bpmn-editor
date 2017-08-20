@@ -3,17 +3,21 @@
     <h4>SKEncrypt options</h4>
   </div>
   <div class="panel-body">
-    <div class="form-group">
+    <div class="form-group" id="SKEncrypt-inputData-form-group">
       <label class="text-16" for="SKEncrypt-inputDataSelect">Input data</label>
       <select class="form-control stereotype-option" id="SKEncrypt-inputDataSelect"></select>
     </div>
-    <div class="form-group">
+    <div class="form-group" id="SKEncrypt-key-form-group">
       <label class="text-16" for="SKEncrypt-keySelect">Key</label>
       <select class="form-control stereotype-option" id="SKEncrypt-keySelect"></select>
     </div>
     <div class="form-group">
       <label class="text-16" for="SKEncrypt-outputObject">Output data</label>
       <ul class="stereotype-option" id="SKEncrypt-outputObject"></ul>
+    </div>
+    <div class="form-group" id="SKEncrypt-conditions-form-group">
+      <span class="help-block" id="SKEncrypt-conditions-help">This task does not meet all the requirements of this stereotype (exactly 2 inputs and 1 output are required).</span>
+      <span class="help-block" id="SKEncrypt-conditions-help2">Input data and key must be different objects.</span>
     </div>
   </div>
   <div class="panel-footer">

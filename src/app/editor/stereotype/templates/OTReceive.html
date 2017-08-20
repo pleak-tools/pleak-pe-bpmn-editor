@@ -1,0 +1,41 @@
+<div class="panel panel-default stereotype-options-panel" id="OTReceive-stereotype-options" style="display:none;">
+  <div class="panel-heading">
+    <h4>OTReceive options</h4>
+  </div>
+  <div class="panel-body">
+    <h3 class="stereotype-option" id="OTReceive-taskName"></h3>
+    <div class="form-group" id="OTReceive-groupSelect-form-group">
+      <label class="text-16" for="OTReceive-groupSelect">Group ID</label>
+      <select class="form-control stereotype-option" id="OTReceive-groupSelect">
+      </select>
+      <span id="OTReceive-groupSelect-help" class="help-block">Select group.</span>
+      <span id="OTReceive-groupSelect-help2" class="help-block">This group already has one task with OTReceive stereotype in it, please choose another group.</span>
+    </div>
+    <div class="form-group" id="OTReceive-newGroup-form-group">
+      <label class="text-16" for="OTReceive-newGroup">Add new group</label>
+      <input class="form-control stereotype-option" type="text" id="OTReceive-newGroup"/>
+      <span class="help-block" id="OTReceive-newGroup-help">Insert group name.</span>
+      <br>
+      <button class="btn btn-success pull-right" type="button" id="OTReceive-add-button">Add</button>
+    </div>
+    <div class="form-group">
+      <label class="text-16" for="OTReceive-inputObject">Input data</label>
+      <ul class="stereotype-option" id="OTReceive-inputObject"></ul>
+    </div>
+    <div class="form-group">
+      <label class="text-16" for="OTReceive-outputObject">Output data</label>
+      <ul class="stereotype-option" id="OTReceive-outputObject"></ul>
+    </div>
+    <div class="form-group" id="OTReceive-conditions-form-group">
+      <span class="help-block" id="OTReceive-conditions-help">This task does not meet all the requirements of this stereotype (exactly 1 input and 1 output are required).</span>
+    </div>
+    <hr>
+    <h3>OTSend task in the same group</h3>
+    <div class="form-group" id="OTReceive-otherGroupTasks">
+    </div>
+  </div>
+  <div class="panel-footer">
+    <button class="btn btn-success" type="button" id="OTReceive-save-button">Save</button>
+    <button class="btn btn-default" type="button" id="OTReceive-remove-button">Remove</button>
+  </div>
+</div>

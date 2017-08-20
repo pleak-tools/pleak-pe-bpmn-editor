@@ -1,0 +1,46 @@
+<div class="panel panel-default stereotype-options-panel" id="GCEvaluate-stereotype-options" style="display:none;">
+  <div class="panel-heading">
+    <h4>GCEvaluate options</h4>
+  </div>
+  <div class="panel-body">
+    <h3 class="stereotype-option" id="GCEvaluate-taskName"></h3>
+    <div class="form-group" id="GCEvaluate-groupSelect-form-group">
+      <label class="text-16" for="GCEvaluate-groupSelect">Group ID</label>
+      <select class="form-control stereotype-option" id="GCEvaluate-groupSelect">
+      </select>
+      <span id="GCEvaluate-groupSelect-help" class="help-block">Select group.</span>
+      <span id="GCEvaluate-groupSelect-help2" class="help-block">This group already has one task with GCEvaluate stereotype in it, please choose another group.</span>
+    </div>
+    <div class="form-group" id="GCEvaluate-newGroup-form-group">
+      <label class="text-16" for="GCEvaluate-newGroup">Add new group</label>
+      <input class="form-control stereotype-option" type="text" id="GCEvaluate-newGroup"/>
+      <span class="help-block" id="GCEvaluate-newGroup-help">Insert group name.</span>
+      <br>
+      <button class="btn btn-success pull-right" type="button" id="GCEvaluate-add-button">Add</button>
+    </div>
+    <div class="form-group" id="GCEvaluate-garbledCircuit-form-group">
+      <label class="text-16" for="GCEvaluate-garbledCircuitSelect">Garbled circuit</label>
+      <select class="form-control stereotype-option" id="GCEvaluate-garbledCircuitSelect"></select>
+    </div>
+    <div class="form-group" id="GCEvaluate-inputEncoding-form-group">
+      <label class="text-16" for="GCEvaluate-inputEncodingSelect">Input encoding</label>
+      <select class="form-control stereotype-option" id="GCEvaluate-inputEncodingSelect"></select>
+    </div>
+    <div class="form-group">
+      <label class="text-16" for="GCEvaluate-outputObject">Output data</label>
+      <ul class="stereotype-option" id="GCEvaluate-outputObject"></ul>
+    </div>
+    <div class="form-group" id="GCEvaluate-conditions-form-group">
+      <span class="help-block" id="GCEvaluate-conditions-help">This task does not meet all the requirements of this stereotype (exactly 2 inputs and 1 output are required).</span>
+      <span class="help-block" id="GCEvaluate-conditions-help2">Garbled circuit and input encoding must be different objects.</span>
+    </div>
+    <hr>
+    <h3>GCGarble task in the same group</h3>
+    <div class="form-group" id="GCEvaluate-otherGroupTasks">
+    </div>
+  </div>
+  <div class="panel-footer">
+    <button class="btn btn-success" type="button" id="GCEvaluate-save-button">Save</button>
+    <button class="btn btn-default" type="button" id="GCEvaluate-remove-button">Remove</button>
+  </div>
+</div>

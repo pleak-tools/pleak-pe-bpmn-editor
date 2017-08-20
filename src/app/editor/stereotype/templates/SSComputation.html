@@ -3,6 +3,20 @@
     <h4>SSComputation options</h4>
   </div>
   <div class="panel-body">
+    <h3 class="stereotype-option" id="SSComputation-taskName"></h3>
+    <div class="form-group" id="SSComputation-groupSelect-form-group">
+      <label class="text-16" for="SSComputation-groupSelect">Group ID</label>
+      <select class="form-control stereotype-option" id="SSComputation-groupSelect">
+      </select>
+      <span id="SSComputation-groupSelect-help" class="help-block">Select group.</span>
+    </div>
+    <div class="form-group" id="SSComputation-newGroup-form-group">
+      <label class="text-16" for="SSComputation-newGroup">Add new group</label>
+      <input class="form-control stereotype-option" type="text" id="SSComputation-newGroup"/>
+      <span class="help-block" id="SSComputation-newGroup-help">Insert group name.</span>
+      <br>
+      <button class="btn btn-success pull-right" type="button" id="SSComputation-add-button">Add</button>
+    </div>
     <div class="form-group">
       <label class="text-16" for="SSComputation-inputScript">Input script</label>
       <textarea class="form-control stereotype-option" id="SSComputation-inputScript"></textarea>
@@ -12,8 +26,12 @@
       <ul class="stereotype-option" id="SSComputation-inputObjects"></ul>
     </div>
     <div class="form-group">
-      <label class="text-16" for="SSComputation-outputObjects">Output data objects</label>
+      <label class="text-16" for="SSComputation-outputObjects">Output data</label>
       <ul class="stereotype-option" id="SSComputation-outputObjects"></ul>
+    </div>
+    <hr>
+    <h3>Other tasks in the same SSComputation group</h3>
+    <div class="form-group" id="SSComputation-otherGroupTasks">
     </div>
   </div>
   <div class="panel-footer">

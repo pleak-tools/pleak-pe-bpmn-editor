@@ -18,6 +18,16 @@ import { AddSSReconstruction } from "../stereotype/stereotypes/AddSSReconstructi
 import { FunSSSharing } from "../stereotype/stereotypes/FunSSSharing";
 import { FunSSComputation } from "../stereotype/stereotypes/FunSSComputation";
 import { FunSSReconstruction } from "../stereotype/stereotypes/FunSSReconstruction";
+import { SGXComputation } from "../stereotype/stereotypes/SGXComputation";
+import { SGXQuoting } from "../stereotype/stereotypes/SGXQuoting";
+import { SGXQuoteVerification } from "../stereotype/stereotypes/SGXQuoteVerification";
+import { SGXAttestationEnclave } from "../stereotype/stereotypes/SGXAttestationEnclave";
+import { SGXAttestationChallenge } from "../stereotype/stereotypes/SGXAttestationChallenge";
+import { DimensionalityReduction } from "../stereotype/stereotypes/DimensionalityReduction";
+import { GCGarble } from "../stereotype/stereotypes/GCGarble";
+import { GCEvaluate } from "../stereotype/stereotypes/GCEvaluate";
+import { OTSend } from "../stereotype/stereotypes/OTSend";
+import { OTReceive } from "../stereotype/stereotypes/OTReceive";
 
 declare var $: any;
 let is = (element, type) => element.$instanceOf(type);
@@ -66,7 +76,17 @@ export class TaskHandler {
     "AddSSReconstruction",
     "FunSSSharing",
     "FunSSComputation",
-    "FunSSReconstruction"
+    "FunSSReconstruction",
+    "SGXComputation",
+    "SGXAttestationEnclave",
+    "SGXAttestationChallenge",
+    "SGXQuoting",
+    "SGXQuoteVerification",
+    "DimensionalityReduction",
+    "GCGarble",
+    "GCEvaluate",
+    "OTSend",
+    "OTReceive"
   ];
 
   init() {
@@ -127,7 +147,7 @@ export class TaskHandler {
   initTaskStereotypeSelector() {
     var overlayHtml = 
       `<div class="stereotype-editor" id="` + this.task.id + `-stereotype-selector" style="background:white; padding:10px; border-radius:2px">
-        <span><b>Select type:</b></span>`;
+        <span><b>Select type:</b></span><br>`;
     for (let stereotype of this.supportedStereotypes) {
       let disabled = "";
       if (this.task[(<any>stereotype)] != null) {
@@ -197,6 +217,26 @@ export class TaskHandler {
         st = new FunSSComputation(this);
       } else if (name == "FunSSReconstruction") {
         st = new FunSSReconstruction(this);
+      } else if (name == "SGXComputation") {
+        st = new SGXComputation(this);
+      } else if (name == "SGXAttestationEnclave") {
+        st = new SGXAttestationEnclave(this);
+      } else if (name == "SGXAttestationChallenge") {
+        st = new SGXAttestationChallenge(this);
+      } else if (name == "SGXQuoting") {
+        st = new SGXQuoting(this);
+      } else if (name == "SGXQuoteVerification") {
+        st = new SGXQuoteVerification(this);
+      } else if (name == "DimensionalityReduction") {
+        st = new DimensionalityReduction(this);
+      } else if (name == "GCGarble") {
+        st = new GCGarble(this);
+      } else if (name == "GCEvaluate") {
+        st = new GCEvaluate(this);
+      } else if (name == "OTSend") {
+        st = new OTSend(this);
+      } else if (name == "OTReceive") {
+        st = new OTReceive(this);
       }
     }
     return st;

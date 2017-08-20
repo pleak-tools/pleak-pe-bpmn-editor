@@ -1,0 +1,46 @@
+<div class="panel panel-default stereotype-options-panel" id="GCGarble-stereotype-options" style="display:none;">
+  <div class="panel-heading">
+    <h4>GCGarble options</h4>
+  </div>
+  <div class="panel-body">
+    <h3 class="stereotype-option" id="GCGarble-taskName"></h3>
+    <div class="form-group" id="GCGarble-groupSelect-form-group">
+      <label class="text-16" for="GCGarble-groupSelect">Group ID</label>
+      <select class="form-control stereotype-option" id="GCGarble-groupSelect">
+      </select>
+      <span id="GCGarble-groupSelect-help" class="help-block">Select group.</span>
+      <span id="GCGarble-groupSelect-help2" class="help-block">This group already has one task with GCGarble stereotype in it, please choose another group.</span>
+    </div>
+    <div class="form-group" id="GCGarble-newGroup-form-group">
+      <label class="text-16" for="GCGarble-newGroup">Add new group</label>
+      <input class="form-control stereotype-option" type="text" id="GCGarble-newGroup"/>
+      <span class="help-block" id="GCGarble-newGroup-help">Insert group name.</span>
+      <br>
+      <button class="btn btn-success pull-right" type="button" id="GCGarble-add-button">Add</button>
+    </div>
+    <div class="form-group">
+      <label class="text-16" for="GCGarble-inputScript">Input script</label>
+      <textarea class="form-control stereotype-option" id="GCGarble-inputScript"></textarea>
+    </div>
+    <div class="form-group" id="GCGarble-garbledCircuit-form-group">
+      <label class="text-16" for="GCGarble-garbledCircuitSelect">Garbled circuit</label>
+      <select class="form-control stereotype-option" id="GCGarble-garbledCircuitSelect"></select>
+    </div>
+    <div class="form-group" id="GCGarble-inputEncoding-form-group">
+      <label class="text-16" for="GCGarble-inputEncodingSelect">Input encoding</label>
+      <select class="form-control stereotype-option" id="GCGarble-inputEncodingSelect"></select>
+    </div>
+    <div class="form-group" id="GCGarble-conditions-form-group">
+      <span class="help-block" id="GCGarble-conditions-help">This task does not meet all the requirements of this stereotype (exactly 2 outputs and no inputs are required).</span>
+      <span class="help-block" id="GCGarble-conditions-help2">Garbled circuit and input encoding must be different objects.</span>
+    </div>
+    <hr>
+    <h3>GCEvaluate task in the same group</h3>
+    <div class="form-group" id="GCGarble-otherGroupTasks">
+    </div>
+  </div>
+  <div class="panel-footer">
+    <button class="btn btn-success" type="button" id="GCGarble-save-button">Save</button>
+    <button class="btn btn-default" type="button" id="GCGarble-remove-button">Remove</button>
+  </div>
+</div>

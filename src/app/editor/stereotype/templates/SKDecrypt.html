@@ -3,17 +3,21 @@
     <h4>SKDecrypt options</h4>
   </div>
   <div class="panel-body">
-    <div class="form-group">
+    <div class="form-group" id="SKDecrypt-inputData-form-group">
       <label class="text-16" for="SKDecrypt-inputDataSelect">Input data</label>
       <select class="form-control stereotype-option" id="SKDecrypt-inputDataSelect"></select>
     </div>
-    <div class="form-group">
+    <div class="form-group" id="SKDecrypt-key-form-group">
       <label class="text-16" for="SKDecrypt-keySelect">Key</label>
       <select class="form-control stereotype-option" id="SKDecrypt-keySelect"></select>
     </div>
     <div class="form-group">
       <label class="text-16" for="SKDecrypt-outputObject">Output data</label>
       <ul class="stereotype-option" id="SKDecrypt-outputObject"></ul>
+    </div>
+    <div class="form-group" id="SKDecrypt-conditions-form-group">
+      <span class="help-block" id="SKDecrypt-conditions-help">This task does not meet all the requirements of this stereotype (exactly 2 inputs and 1 output are required).</span>
+      <span class="help-block" id="SKDecrypt-conditions-help2">Input data and key must be different objects.</span>
     </div>
   </div>
   <div class="panel-footer">

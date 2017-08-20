@@ -23,13 +23,6 @@ export class FunSSSharing extends TaskStereotype {
 
     var inputObjects = "";
     var outputObjects = "";
-    var outputConditions;
-
-    if (this.task.FunSSSharing != null) {
-      outputConditions = JSON.parse(this.task.FunSSSharing).outputConditions;
-    } else {
-      outputConditions = this.getTaskOutputObjects().length;
-    }
 
     for (let inputObject of this.getTaskInputObjects()) {
       inputObjects += '<li>' + inputObject.businessObject.name + '</li>';
@@ -41,7 +34,6 @@ export class FunSSSharing extends TaskStereotype {
 
     this.settingsPanelContainer.find('#FunSSSharing-inputObjects').html(inputObjects);
     this.settingsPanelContainer.find('#FunSSSharing-outputObjects').html(outputObjects);
-    this.settingsPanelContainer.find('#FunSSSharing-outputConditions').val(outputConditions);
     this.settingsPanelContainer.show();
   }
 
@@ -51,19 +43,19 @@ export class FunSSSharing extends TaskStereotype {
   }
 
   saveStereotypeSettings() {
-    let outputConditions = this.settingsPanelContainer.find('#FunSSSharing-outputConditions').val();
     let numberOfOutputs = this.getTaskOutputObjects().length;
-    if (outputConditions == numberOfOutputs) {
+    let numberOfInputs = this.getTaskInputObjects().length;
+    if (numberOfInputs == 1 && numberOfOutputs == 2) {
       if (this.task.FunSSSharing == null) {
         this.addStereotypeToElement();
       }
-      this.task.FunSSSharing = JSON.stringify({outputConditions: outputConditions});
+      this.task.FunSSSharing = JSON.stringify({});
       this.settingsPanelContainer.find('.form-group').removeClass('has-error');
       this.settingsPanelContainer.find('.help-block').hide();
       super.saveStereotypeSettings();
     } else {
-      this.settingsPanelContainer.find('#FunSSSharing-outputConditions-form-group').addClass('has-error');
-      this.settingsPanelContainer.find('#FunSSSharing-outputConditions-help').show();
+      this.settingsPanelContainer.find('#FunSSSharing-conditions-form-group').addClass('has-error');
+      this.settingsPanelContainer.find('#FunSSSharing-conditions-help').show();
       this.initSaveAndRemoveButtons();
     }
   }

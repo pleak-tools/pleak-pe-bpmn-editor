@@ -61,13 +61,31 @@ export class PKDecrypt extends TaskStereotype {
   }
 
   saveStereotypeSettings() {
-    let key = this.settingsPanelContainer.find('#PKDecrypt-keySelect').val();
-    let inputData = this.settingsPanelContainer.find('#PKDecrypt-inputDataSelect').val();
-    if (this.task.PKDecrypt == null) {
-      this.addStereotypeToElement();
+    let numberOfOutputs = this.getTaskOutputObjects().length;
+    let numberOfInputs = this.getTaskInputObjects().length;
+    if (numberOfInputs == 2 && numberOfOutputs == 1) {
+      let key = this.settingsPanelContainer.find('#PKDecrypt-keySelect').val();
+      let inputData = this.settingsPanelContainer.find('#PKDecrypt-inputDataSelect').val();
+      if (key == inputData) {
+        this.settingsPanelContainer.find('#PKDecrypt-conditions-form-group').addClass('has-error');
+        this.settingsPanelContainer.find('#PKDecrypt-key-form-group').addClass('has-error');
+        this.settingsPanelContainer.find('#PKDecrypt-inputData-form-group').addClass('has-error');
+        this.settingsPanelContainer.find('#PKDecrypt-conditions-help2').show();
+        this.initSaveAndRemoveButtons();
+        return;
+      }
+      if (this.task.PKDecrypt == null) {
+        this.addStereotypeToElement();
+      }
+      this.task.PKDecrypt = JSON.stringify({key: key, inputData: inputData});
+      this.settingsPanelContainer.find('.form-group').removeClass('has-error');
+      this.settingsPanelContainer.find('.help-block').hide();
+      super.saveStereotypeSettings();
+    } else {
+      this.settingsPanelContainer.find('#PKDecrypt-conditions-form-group').addClass('has-error');
+      this.settingsPanelContainer.find('#PKDecrypt-conditions-help').show();
+      this.initSaveAndRemoveButtons();
     }
-    this.task.PKDecrypt = JSON.stringify({key: key, inputData: inputData});
-    super.saveStereotypeSettings();
   }
   
   removeStereotype() {
