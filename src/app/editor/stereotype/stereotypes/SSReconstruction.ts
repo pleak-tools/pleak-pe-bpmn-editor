@@ -43,11 +43,21 @@ export class SSReconstruction extends TaskStereotype {
   }
 
   saveStereotypeSettings() {
-    if (this.task.SSReconstruction == null) {
-      this.addStereotypeToElement();
+    let numberOfInputs = this.getTaskInputObjects().length;
+    let numberOfOutputs = this.getTaskOutputObjects().length;
+    if (numberOfOutputs == 1 && numberOfInputs >= 2) {
+      if (this.task.SSReconstruction == null) {
+        this.addStereotypeToElement();
+      }
+      this.task.SSReconstruction = JSON.stringify({});
+      this.settingsPanelContainer.find('.form-group').removeClass('has-error');
+      this.settingsPanelContainer.find('.help-block').hide();
+      super.saveStereotypeSettings();
+    } else {
+      this.settingsPanelContainer.find('#SSReconstruction-conditions-form-group').addClass('has-error');
+      this.settingsPanelContainer.find('#SSReconstruction-conditions-help').show();
+      this.initSaveAndRemoveButtons();
     }
-    this.task.SSReconstruction = JSON.stringify({});
-    super.saveStereotypeSettings();
   }
   
   removeStereotype() {

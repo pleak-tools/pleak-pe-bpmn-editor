@@ -113,3 +113,33 @@ html, body, #canvas, #canvas > div {
   -moz-box-shadow: 0px 0px 25px 5px rgba(255,165,0,1);
   box-shadow: 0px 0px 25px 5px rgba(255,165,0,1);
 }
+
+
+/** Stereotype selector menu*/
+.stereotype-editor {
+  width: 200px;
+  background: white;
+  padding: 10px;
+  padding-top: 15px;
+  border-radius: 2px;
+  position: absolute;
+  z-index: 1
+}
+
+.stereotypes-table {
+  margin-bottom: 0px;
+}
+
+.stereotype-menu, .stereotype-submenu {
+  display: none;
+}
+
+.link-row:hover {
+  cursor: pointer;
+}
+
+.disabled-link {
+  pointer-events: none;
+  cursor: default;
+  color: lightgray;
+}

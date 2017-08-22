@@ -65,7 +65,7 @@ export class SKEncrypt extends TaskStereotype {
   saveStereotypeSettings() {
     let numberOfOutputs = this.getTaskOutputObjects().length;
     let numberOfInputs = this.getTaskInputObjects().length;
-      if (numberOfInputs == 2 && numberOfOutputs == 1) {
+    if (numberOfInputs == 2 && numberOfOutputs == 1) {
       let key = this.settingsPanelContainer.find('#SKEncrypt-keySelect').val();
       let inputData = this.settingsPanelContainer.find('#SKEncrypt-inputDataSelect').val();
       if (key == inputData) {

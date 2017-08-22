@@ -53,7 +53,16 @@ export class AddSSSharing extends TaskStereotype {
   saveStereotypeSettings() {
     let outputConditions = this.settingsPanelContainer.find('#AddSSSharing-outputConditions').val();
     let numberOfOutputs = this.getTaskOutputObjects().length;
-    if (outputConditions == numberOfOutputs) {
+    let numberOfInputs = this.getTaskInputObjects().length;
+    if (numberOfInputs != 1 || numberOfOutputs < 2) {
+      this.settingsPanelContainer.find('#AddSSSharing-conditions-form-group').addClass('has-error');
+      this.settingsPanelContainer.find('#AddSSSharing-conditions-help').show();
+      this.initSaveAndRemoveButtons();
+    } else if (outputConditions != numberOfOutputs) {
+      this.settingsPanelContainer.find('#AddSSSharing-outputConditions-form-group').addClass('has-error');
+      this.settingsPanelContainer.find('#AddSSSharing-outputConditions-help').show();
+      this.initSaveAndRemoveButtons();
+    } else {
       if (this.task.AddSSSharing == null) {
         this.addStereotypeToElement();
       }
@@ -61,10 +70,6 @@ export class AddSSSharing extends TaskStereotype {
       this.settingsPanelContainer.find('.form-group').removeClass('has-error');
       this.settingsPanelContainer.find('.help-block').hide();
       super.saveStereotypeSettings();
-    } else {
-      this.settingsPanelContainer.find('#AddSSSharing-outputConditions-form-group').addClass('has-error');
-      this.settingsPanelContainer.find('#AddSSSharing-outputConditions-help').show();
-      this.initSaveAndRemoveButtons();
     }
   }
   

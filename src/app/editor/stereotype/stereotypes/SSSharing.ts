@@ -49,12 +49,22 @@ export class SSSharing extends TaskStereotype {
   }
 
   saveStereotypeSettings() {
-    let outputConditions = this.settingsPanelContainer.find('#SSSharing-outputConditions').val();
-    if (this.task.SSSharing == null) {
-      this.addStereotypeToElement();
+    let numberOfOutputs = this.getTaskOutputObjects().length;
+    let numberOfInputs = this.getTaskInputObjects().length;
+    if (numberOfInputs == 1 && numberOfOutputs >= 2) {
+      let outputConditions = this.settingsPanelContainer.find('#SSSharing-outputConditions').val();
+      if (this.task.SSSharing == null) {
+        this.addStereotypeToElement();
+      }
+      this.task.SSSharing = JSON.stringify({outputConditions: outputConditions});
+      this.settingsPanelContainer.find('.form-group').removeClass('has-error');
+      this.settingsPanelContainer.find('.help-block').hide();
+      super.saveStereotypeSettings();
+    } else {
+      this.settingsPanelContainer.find('#SSSharing-conditions-form-group').addClass('has-error');
+      this.settingsPanelContainer.find('#SSSharing-conditions-help').show();
+      this.initSaveAndRemoveButtons();
     }
-    this.task.SSSharing = JSON.stringify({outputConditions: outputConditions});
-    super.saveStereotypeSettings();
   }
   
   removeStereotype() {

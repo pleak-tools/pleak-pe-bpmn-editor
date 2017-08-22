@@ -58,6 +58,7 @@ export class TaskHandler {
 
   stereotypes: TaskStereotype[] = [];
   stereotypeSelector: String = null;
+  stereotypeSelectorHidden: Boolean = false;
   tempStereotype: TaskStereotype = null;
 
   supportedStereotypes: String[] = [
@@ -123,6 +124,7 @@ export class TaskHandler {
     this.terminateTaskStereotypeSelector();
     this.terminateTaskStereotypeSettings();
     this.beingEdited = false;
+    this.stereotypeSelectorHidden = false;
   }
 
   // Init settings panels for all already added stereotypes
@@ -145,24 +147,313 @@ export class TaskHandler {
 
   // Show stereotype selector next to task element on the model
   initTaskStereotypeSelector() {
-    var overlayHtml = 
-      `<div class="stereotype-editor" id="` + this.task.id + `-stereotype-selector" style="background:white; padding:10px; border-radius:2px">
-        <span><b>Select type:</b></span><br>`;
-    for (let stereotype of this.supportedStereotypes) {
-      let disabled = "";
-      if (this.task[(<any>stereotype)] != null) {
-        disabled = `disabled style="opacity:0.5"`;
-      }
-      overlayHtml += `<button id="` + this.task.id + `-` + stereotype + `-button" ` + disabled + `>` + stereotype + `</button><br>`;
-    }
-    overlayHtml += `</div>`;
+
+    let overlayHtml = `
+      <div class="panel panel-default stereotype-editor" id="` + this.task.id + `-stereotype-selector">
+        <div class="stereotype-editor-close-link" style="float: right; color: darkgray; cursor: pointer">X</div>
+        <div id="stereotype-selector-main-menu">
+          <span><b>Stereotypes main menu</b></span>
+          <table class="table table-hover">
+            <tbody>
+              <tr id="data-protection-menu-link">
+                <td class="link-row"><span>Data Protection</span></td>
+              </tr>
+              <tr id="data-processing-menu-link">
+                <td class="link-row"><span>Data Processing</span></td>
+              </tr>
+              <tr id="entity-authentication-menu-link">
+                <td class="link-row"><span>Entity Authentication</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="stereotype-menu" id="data-protection-menu">
+          <span class="back-main-menu-link link-row">Stereotypes main menu</span> > <b>Data protection</b>
+          <table class="table table-hover">
+            <tbody>
+              <tr id="data-protection-integrity-menu-link">
+                <td class="link-row"><span>Integrity protection</span></td>
+              </tr>
+              <tr id="data-protection-confidentiality-menu-link">
+                <td class="link-row"><span>Confidentiality protection</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="stereotype-submenu" id="data-protection-integrity-menu">
+          <span class="back-main-menu-link link-row">Stereotypes main menu</span> > <span class="back-data-protection-menu-link link-row">Data protection</span> > <b>Integrity protection</b>
+          <table class="table table-hover stereotypes-table">
+            <thead>
+              <tr>
+                <th>Protect</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="link-row" id="SGXQuoting-button">SGXQuoting</td>
+              </tr>
+            </tbody>
+          <table>
+          <table class="table table-hover stereotypes-table">
+            <thead>
+              <tr>
+                <th>Open</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="link-row" id="SGXQuoteVerification-button">SGXQuoteVerification</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="stereotype-submenu" id="data-protection-confidentiality-menu">
+          <span class="back-main-menu-link link-row">Stereotypes main menu</span> > <span class="back-data-protection-menu-link link-row">Data protection</span> > <b>Confidentiality protection</b>
+          <table class="table table-hover stereotypes-table">
+            <thead>
+              <tr>
+                <th>Protect</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="link-row" id="PKEncrypt-button">PKencrypt</td>
+              </tr>
+              <tr>
+                <td class="link-row" id="SKEncrypt-button">SKEncrypt</td>
+              </tr>
+              <tr>
+                <td class="link-row" id="SSSharing-button">SSSharing</td>
+              </tr>
+              <tr>
+                <td class="link-row" id="AddSSSharing-button">AddSSSharing</td>
+              </tr>
+              <tr>
+                <td class="link-row" id="FunSSSharing-button">FunSSSharing</td>
+              </tr>
+            </tbody>
+          </table>
+          <table class="table table-hover stereotypes-table">
+            <thead>
+              <tr>
+                <th>Open</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="link-row" id="PKDecrypt-button">PKDecrypt</td>
+              </tr>
+              <tr>
+                <td class="link-row" id="SKDecrypt-button">SKDecrypt</td>
+              </tr>
+              <tr>
+                <td class="link-row" id="SSReconstruction-button">SSReconstruction</td>
+              </tr>
+              <tr>
+                <td class="link-row" id="AddSSReconstruction-button">AddSSReconstruction</td>
+              </tr>
+              <tr>
+                <td class="link-row" id="FunSSReconstruction-button">FunSSReconstruction</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="stereotype-menu" id="data-processing-menu">
+          <span class="back-main-menu-link link-row">Stereotypes main menu</span> > <b>Data processing</b>
+          <table class="table table-hover">
+            <tbody>
+              <tr id="data-processing-privacy-preserving-menu-link">
+                <td class="link-row"><span>Privacy preserving</span></td>
+              </tr>
+              <tr id="data-processing-privacy-adding-menu-link">
+                <td class="link-row"><span>Privacy adding</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="stereotype-submenu" id="data-processing-privacy-preserving-menu">
+          <span class="back-main-menu-link link-row">Stereotypes main menu</span> > <span class="back-data-processing-menu-link link-row">Data processing</span> > <b>Privacy preserving</b>
+          <table class="table table-hover stereotypes-table">
+            <thead>
+              <tr>
+                <th>MPC</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="link-row" id="MPC-button">MPC</td>
+              </tr>
+              <tr>
+                <td class="link-row" id="SSComputation-button">SSComputation</td>
+              </tr>
+              <tr>
+                <td class="link-row" id="AddSSComputation-button">AddSSComputation</td>
+              </tr>
+              <tr>
+                <td class="link-row" id="FunSSComputation-button">FunSSComputation</td>
+              </tr>
+              <tr>
+                <td class="link-row" id="GCEvaluate-button">GCEvaluate</td>
+              </tr>
+              <tr>
+                <td class="link-row" id="GCGarble-button">GCGarble</td>
+              </tr>
+            </tbody>
+          </table>
+          <table class="table table-hover stereotypes-table">
+            <thead>
+              <tr>
+                <th>SecureHardware</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="link-row" id="SGXComputation-button">SGXComputation</td>
+              </tr>
+            </tbody>
+          </table>
+          <table class="table table-hover stereotypes-table">
+            <thead>
+              <tr>
+                <th>Encrypted</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="link-row" id="PKComputation-button">PKComputation</td>
+              </tr>
+              <tr>
+                <td class="link-row" id="SKComputation-button">SKComputation</td>
+              </tr>
+            </tbody>
+          </table>
+          <table class="table table-hover stereotypes-table">
+            <thead>
+              <tr>
+                <th>OT</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="link-row" id="OTSend-button">OTSend</td>
+              </tr>
+              <tr>
+                <td class="link-row" id="OTReceive-button">OTReceive</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="stereotype-submenu" id="data-processing-privacy-adding-menu">
+          <span class="back-main-menu-link link-row">Stereotypes main menu</span> > <span class="back-data-processing-menu-link link-row">Data processing</span> > <b>Privacy adding</b>
+          <table class="table table-hover stereotypes-table">
+            <tbody>
+              <tr>
+                <td class="link-row" id="DimensionalityReduction-button">DimensionalityReduction</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="stereotype-menu" id="entity-authentication-menu">
+          <span class="back-main-menu-link link-row">Stereotypes main menu</span> > <b>Entity authentication</b>
+          <table class="table table-hover stereotypes-table">
+            <thead>
+              <tr>
+                <th>Authenticate</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="link-row" id="SGXAttestationEnclave-button">SGXAttestationEnclave</td>
+              </tr>
+            </tbody>
+          </table>
+          <table class="table table-hover stereotypes-table">
+            <thead>
+              <tr>
+                <th>Verify</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="link-row" id="SGXAttestationChallenge-button">SGXAttestationChallenge</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
 
     overlayHtml = $(overlayHtml);
 
+    // Breadcrumb links
+    $(overlayHtml).on('click', '.back-main-menu-link', (e) => {
+      $(overlayHtml).find('.stereotype-menu, .stereotype-submenu').hide();
+      $(overlayHtml).find('#stereotype-selector-main-menu').show();
+    });
+
+    $(overlayHtml).on('click', '.back-data-protection-menu-link', (e) => {
+      $(overlayHtml).find('.stereotype-submenu').hide();
+      $(overlayHtml).find('#data-protection-menu').show();
+    });
+
+    $(overlayHtml).on('click', '.back-data-processing-menu-link', (e) => {
+      $(overlayHtml).find('.stereotype-submenu').hide();
+      $(overlayHtml).find('#data-processing-menu').show();
+    });
+
+    // Menu links
+    $(overlayHtml).on('click', '#data-protection-menu-link', (e) => {
+      $(overlayHtml).find('#stereotype-selector-main-menu').hide();
+      $(overlayHtml).find('#data-protection-menu').show();
+    });
+
+    $(overlayHtml).on('click', '#data-protection-integrity-menu-link', (e) => {
+      $(overlayHtml).find('#data-protection-menu').hide();
+      $(overlayHtml).find('#data-protection-integrity-menu').show();
+    });
+
+    $(overlayHtml).on('click', '#data-protection-confidentiality-menu-link', (e) => {
+      $(overlayHtml).find('#data-protection-menu').hide();
+      $(overlayHtml).find('#data-protection-confidentiality-menu').show();
+    });
+
+    $(overlayHtml).on('click', '#data-processing-menu-link', (e) => {
+      $(overlayHtml).find('#stereotype-selector-main-menu').hide();
+      $(overlayHtml).find('#data-processing-menu').show();
+    });
+
+    $(overlayHtml).on('click', '#data-processing-privacy-preserving-menu-link', (e) => {
+      $(overlayHtml).find('#data-processing-menu').hide();
+      $(overlayHtml).find('#data-processing-privacy-preserving-menu').show();
+    });
+
+    $(overlayHtml).on('click', '#data-processing-privacy-adding-menu-link', (e) => {
+      $(overlayHtml).find('#data-processing-menu').hide();
+      $(overlayHtml).find('#data-processing-privacy-adding-menu').show();
+    });
+
+    $(overlayHtml).on('click', '#entity-authentication-menu-link', (e) => {
+      $(overlayHtml).find('#stereotype-selector-main-menu').hide();
+      $(overlayHtml).find('#entity-authentication-menu').show();
+    });
+
+    // Hide stereotype selector
+    $(overlayHtml).on('click', '.stereotype-editor-close-link', (e) => {
+      //TODO!!! - hide stereotype selector, but show higlights etc
+      this.terminateTaskStereotypeSelector();
+      this.beingEdited = false;
+      this.stereotypeSelectorHidden = true;
+    });
+
+    // Stereotype links
     for (let stereotype of this.supportedStereotypes) {
-      $(overlayHtml).on('click', '#' + this.task.id+'-' + stereotype + '-button', (e) => {
+      $(overlayHtml).on('click', '#' + stereotype + '-button', (e) => {
         this.addStereotypeByName(stereotype);
       });
+
+      if (this.task[(<any>stereotype)] != null) {
+        $(overlayHtml).find('#' + stereotype + '-button').addClass('disabled-link');
+      }
     }
 
     var stOverlay = this.overlays.add(this.registry.get(this.task.id), {
