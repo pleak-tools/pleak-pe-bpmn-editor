@@ -34,6 +34,13 @@ export class GCGarble extends TaskStereotype {
     this.group = name;
   }
 
+  initStereotypePublicView() {
+    this.init();
+    this.loadAllGCGarbleAndGCEvaluateGroupsTasks();
+    super.initStereotypePublicView();
+    this.highlightGCGarbleAndGCEvaluateGroupMembersAndTheirInputsOutputs(this.getGroup());
+  }
+
   initStereotypeSettings() {
 
     super.initStereotypeSettings();
@@ -121,7 +128,7 @@ export class GCGarble extends TaskStereotype {
       }
     }
   
-    this.settingsPanelContainer.find('#GCGarble-taskName').html(this.task.name);
+    this.settingsPanelContainer.find('#GCGarble-taskName').text(this.task.name);
     this.settingsPanelContainer.find('#GCGarble-groupSelect').html(groups);
     this.settingsPanelContainer.find('#GCGarble-inputScript').val(inputScript);
     this.settingsPanelContainer.find('#GCGarble-garbledCircuitSelect').html(garbledCircuit);

@@ -82,7 +82,7 @@ export class EditorComponent implements OnInit {
         }
       });
 
-      new ElementsHandler(this.viewer, diagram, this);
+      new ElementsHandler(this.viewer, diagram, this, "private");
 
       $('.buttons-container').on('click', '#save-diagram', (e) => {
         e.preventDefault();

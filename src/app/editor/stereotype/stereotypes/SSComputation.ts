@@ -33,6 +33,13 @@ export class SSComputation extends TaskStereotype {
     this.group = name;
   }
 
+  initStereotypePublicView() {
+    this.init();
+    this.loadAllSSComputationGroupsTasks();
+    super.initStereotypePublicView();
+    this.highlightSSComputationGroupMembersAndTheirInputsOutputs(this.getGroup());
+  }
+
   initStereotypeSettings() {
 
     super.initStereotypeSettings();
@@ -112,7 +119,7 @@ export class SSComputation extends TaskStereotype {
       }
     }
   
-    this.settingsPanelContainer.find('#SSComputation-taskName').html(this.task.name);
+    this.settingsPanelContainer.find('#SSComputation-taskName').text(this.task.name);
     this.settingsPanelContainer.find('#SSComputation-groupSelect').html(groups);
     this.settingsPanelContainer.find('#SSComputation-inputScript').val(inputScript);
     this.settingsPanelContainer.find('#SSComputation-inputObjects').html(inputObjects);

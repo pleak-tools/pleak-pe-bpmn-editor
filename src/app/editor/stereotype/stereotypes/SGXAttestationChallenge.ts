@@ -34,6 +34,13 @@ export class SGXAttestationChallenge extends TaskStereotype {
     this.group = name;
   }
 
+  initStereotypePublicView() {
+    this.init();
+    this.loadAllSGXAttestationGroupsTasks();
+    super.initStereotypePublicView();
+    this.highlightSGXAttestationGroupMembersAndTheirInputsOutputs(this.getGroup());
+  }
+
   initStereotypeSettings() {
 
     super.initStereotypeSettings();
@@ -106,7 +113,7 @@ export class SGXAttestationChallenge extends TaskStereotype {
       }
     }
   
-    this.settingsPanelContainer.find('#SGXAttestationChallenge-taskName').html(this.task.name);
+    this.settingsPanelContainer.find('#SGXAttestationChallenge-taskName').text(this.task.name);
     this.settingsPanelContainer.find('#SGXAttestationChallenge-groupSelect').html(groups);
     this.settingsPanelContainer.find('#SGXAttestationChallenge-newGroup').html('');
     this.settingsPanelContainer.find('#SGXAttestationChallenge-inputObject').html(inputObject);

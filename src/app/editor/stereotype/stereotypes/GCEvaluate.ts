@@ -34,6 +34,13 @@ export class GCEvaluate extends TaskStereotype {
     this.group = name;
   }
 
+  initStereotypePublicView() {
+    this.init();
+    this.loadAllGCGarbleAndGCEvaluateGroupsTasks();
+    super.initStereotypePublicView();
+    this.highlightGCGarbleAndGCEvaluateGroupMembersAndTheirInputsOutputs(this.getGroup());
+  }
+
   initStereotypeSettings() {
 
     super.initStereotypeSettings();
@@ -122,7 +129,7 @@ export class GCEvaluate extends TaskStereotype {
       }
     }
   
-    this.settingsPanelContainer.find('#GCEvaluate-taskName').html(this.task.name);
+    this.settingsPanelContainer.find('#GCEvaluate-taskName').text(this.task.name);
     this.settingsPanelContainer.find('#GCEvaluate-groupSelect').html(groups);
     this.settingsPanelContainer.find('#GCEvaluate-garbledCircuitSelect').html(garbledCircuit);
     this.settingsPanelContainer.find('#GCEvaluate-inputEncodingSelect').html(inputEncoding);

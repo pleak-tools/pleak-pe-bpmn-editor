@@ -11,11 +11,12 @@ let is = (element, type) => element.$instanceOf(type);
 
 export class ElementsHandler {
 
-  constructor(viewer: Viewer, diagram: String, parent: any) {
+  constructor(viewer: Viewer, diagram: String, parent: any, parentType: String) {
     this.viewer = viewer;
     this.eventBus = this.viewer.get('eventBus');
     this.diagram = diagram;
     this.parent = parent;
+    this.parentType = parentType;
     this.init();
   }
 
@@ -23,6 +24,7 @@ export class ElementsHandler {
   eventBus: any;
   diagram: String;
   parent: any;
+  parentType: String;
 
   taskHandlers: TaskHandler[] = [];
   messageFlowHandlers: MessageFlowHandler[] = [];
@@ -79,7 +81,11 @@ export class ElementsHandler {
         //   });
         // }
         if (toBeEditedelementHandler.length > 0) {
-          toBeEditedelementHandler[0].initStereotypeEditProcess();
+          if (this.parentType === "public" && is(e.element.businessObject, 'bpmn:Task')) {
+            toBeEditedelementHandler[0].initPublicStereotypeView();
+          } else {
+            toBeEditedelementHandler[0].initStereotypeEditProcess();
+          }
         }
 
       });

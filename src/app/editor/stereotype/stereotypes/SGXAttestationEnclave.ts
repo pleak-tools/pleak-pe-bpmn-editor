@@ -34,6 +34,13 @@ export class SGXAttestationEnclave extends TaskStereotype {
     this.group = name;
   }
 
+  initStereotypePublicView() {
+    this.init();
+    this.loadAllSGXAttestationGroupsTasks();
+    super.initStereotypePublicView();
+    this.highlightSGXAttestationGroupMembersAndTheirInputsOutputs(this.getGroup());
+  }
+
   initStereotypeSettings() {
 
     super.initStereotypeSettings();
@@ -107,7 +114,7 @@ export class SGXAttestationEnclave extends TaskStereotype {
       }
     }
   
-    this.settingsPanelContainer.find('#SGXAttestationEnclave-taskName').html(this.task.name);
+    this.settingsPanelContainer.find('#SGXAttestationEnclave-taskName').text(this.task.name);
     this.settingsPanelContainer.find('#SGXAttestationEnclave-groupSelect').html(groups);
     this.settingsPanelContainer.find('#SGXAttestationEnclave-newGroup').html('');
     this.settingsPanelContainer.find('#SGXAttestationEnclave-inputObject').html(inputObject);

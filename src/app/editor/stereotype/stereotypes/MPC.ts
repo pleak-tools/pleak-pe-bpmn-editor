@@ -33,6 +33,13 @@ export class MPC extends TaskStereotype {
     this.group = name;
   }
 
+  initStereotypePublicView() {
+    this.init();
+    this.loadAllMPCGroupsTasks();
+    super.initStereotypePublicView();
+    this.highlightMPCGroupMembersAndTheirInputsOutputs(this.getGroup());
+  }
+
   initStereotypeSettings() {
 
     super.initStereotypeSettings();
@@ -112,7 +119,7 @@ export class MPC extends TaskStereotype {
       }
     }
   
-    this.settingsPanelContainer.find('#MPC-taskName').html(this.task.name);
+    this.settingsPanelContainer.find('#MPC-taskName').text(this.task.name);
     this.settingsPanelContainer.find('#MPC-groupSelect').html(groups);
     this.settingsPanelContainer.find('#MPC-inputScript').val(inputScript);
     this.settingsPanelContainer.find('#MPC-inputObjects').html(inputObjects);

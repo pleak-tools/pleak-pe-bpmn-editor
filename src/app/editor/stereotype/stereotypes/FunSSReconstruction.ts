@@ -15,6 +15,11 @@ export class FunSSReconstruction extends TaskStereotype {
     return super.getTitle();
   }
 
+  initStereotypePublicView() {
+    super.initStereotypePublicView();
+    this.highlightTaskInputAndOutputObjects();
+  }
+
   initStereotypeSettings() {
 
     super.initStereotypeSettings();

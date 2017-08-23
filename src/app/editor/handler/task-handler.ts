@@ -119,6 +119,15 @@ export class TaskHandler {
     this.beingEdited = true;
   }
 
+  initPublicStereotypeView() {
+    for (let sType of this.stereotypes) {
+      sType.initStereotypePublicView();
+    }
+    this.beingEdited = false;
+    this.stereotypeSelectorHidden = true;
+    this.stereotypeSelector = null;
+  }
+
   // End task editing (stereotype adding) process
   terminateStereotypeEditProcess() {
     this.terminateTaskStereotypeSelector();
@@ -439,7 +448,6 @@ export class TaskHandler {
 
     // Hide stereotype selector
     $(overlayHtml).on('click', '.stereotype-editor-close-link', (e) => {
-      //TODO!!! - hide stereotype selector, but show higlights etc
       this.terminateTaskStereotypeSelector();
       this.beingEdited = false;
       this.stereotypeSelectorHidden = true;

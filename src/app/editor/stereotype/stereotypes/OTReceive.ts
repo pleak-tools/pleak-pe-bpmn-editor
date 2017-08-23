@@ -34,6 +34,13 @@ export class OTReceive extends TaskStereotype {
     this.group = name;
   }
 
+  initStereotypePublicView() {
+    this.init();
+    this.loadAllOTSendAndOTReceiveGroupsTasks();
+    super.initStereotypePublicView();
+    this.highlightOTSendAndOTReceiveGroupMembersAndTheirInputsOutputs(this.getGroup());
+  }
+
   initStereotypeSettings() {
 
     super.initStereotypeSettings();
@@ -106,7 +113,7 @@ export class OTReceive extends TaskStereotype {
       }
     }
   
-    this.settingsPanelContainer.find('#OTReceive-taskName').html(this.task.name);
+    this.settingsPanelContainer.find('#OTReceive-taskName').text(this.task.name);
     this.settingsPanelContainer.find('#OTReceive-groupSelect').html(groups);
     this.settingsPanelContainer.find('#OTReceive-newGroup').html('');
     this.settingsPanelContainer.find('#OTReceive-inputObject').html(inputObject);

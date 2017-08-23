@@ -34,6 +34,13 @@ export class OTSend extends TaskStereotype {
     this.group = name;
   }
 
+  initStereotypePublicView() {
+    this.init();
+    this.loadAllOTSendAndOTReceiveGroupsTasks();
+    super.initStereotypePublicView();
+    this.highlightOTSendAndOTReceiveGroupMembersAndTheirInputsOutputs(this.getGroup());
+  }
+
   initStereotypeSettings() {
 
     super.initStereotypeSettings();
@@ -107,7 +114,7 @@ export class OTSend extends TaskStereotype {
       }
     }
   
-    this.settingsPanelContainer.find('#OTSend-taskName').html(this.task.name);
+    this.settingsPanelContainer.find('#OTSend-taskName').text(this.task.name);
     this.settingsPanelContainer.find('#OTSend-groupSelect').html(groups);
     this.settingsPanelContainer.find('#OTSend-newGroup').html('');
     this.settingsPanelContainer.find('#OTSend-inputObject').html(inputObject);

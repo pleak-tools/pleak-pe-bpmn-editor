@@ -75,6 +75,9 @@ export class Stereotype {
   }
 
   // Activated by elementHandler on click events (or manually)
+  initStereotypePublicView() {}
+
+  // Activated by elementHandler on click events (or manually)
   initStereotypeSettings() {
     this.settingsPanelContainer = $('#' + this.getTitle() + '-stereotype-options');
     this.initSaveAndRemoveButtons();
