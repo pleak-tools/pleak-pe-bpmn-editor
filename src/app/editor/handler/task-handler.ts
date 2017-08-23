@@ -161,7 +161,9 @@ export class TaskHandler {
       <div class="panel panel-default stereotype-editor" id="` + this.task.id + `-stereotype-selector">
         <div class="stereotype-editor-close-link" style="float: right; color: darkgray; cursor: pointer">X</div>
         <div id="stereotype-selector-main-menu">
-          <span><b>Stereotypes main menu</b></span>
+          <div style="margin-bottom:10px;">
+            <span><b>Stereotypes main menu</b></span>
+          </div>
           <table class="table table-hover">
             <tbody>
               <tr id="data-protection-menu-link">
@@ -177,7 +179,9 @@ export class TaskHandler {
           </table>
         </div>
         <div class="stereotype-menu" id="data-protection-menu">
-          <span class="back-main-menu-link link-row">Stereotypes main menu</span> > <b>Data protection</b>
+          <div style="margin-bottom:10px;">
+            <span class="back-main-menu-link link-row">Stereotypes main menu</span> > <b>Data protection</b>
+          </div>
           <table class="table table-hover">
             <tbody>
               <tr id="data-protection-integrity-menu-link">
@@ -268,7 +272,9 @@ export class TaskHandler {
           </table>
         </div>
         <div class="stereotype-menu" id="data-processing-menu">
-          <span class="back-main-menu-link link-row">Stereotypes main menu</span> > <b>Data processing</b>
+          <div style="margin-bottom:10px;">
+            <span class="back-main-menu-link link-row">Stereotypes main menu</span> > <b>Data processing</b>
+          </div>
           <table class="table table-hover">
             <tbody>
               <tr id="data-processing-privacy-preserving-menu-link">
@@ -353,7 +359,9 @@ export class TaskHandler {
           </table>
         </div>
         <div class="stereotype-submenu" id="data-processing-privacy-adding-menu">
-          <span class="back-main-menu-link link-row">Stereotypes main menu</span> > <span class="back-data-processing-menu-link link-row">Data processing</span> > <b>Privacy adding</b>
+          <div style="margin-bottom:10px;">
+            <span class="back-main-menu-link link-row">Stereotypes main menu</span> > <span class="back-data-processing-menu-link link-row">Data processing</span> > <b>Privacy adding</b>
+          </div>
           <table class="table table-hover stereotypes-table">
             <tbody>
               <tr>
