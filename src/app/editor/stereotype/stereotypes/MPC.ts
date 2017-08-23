@@ -98,7 +98,8 @@ export class MPC extends TaskStereotype {
     if (selectedGroupId !== null) {
       for (let groupTask of this.getMPCGroupTasks(selectedGroupId)) {
         if (groupTask.id != this.task.id) {
-          taskObjs += '<label class="text-16">' + groupTask.businessObject.name + '</label>'
+          let taskName = groupTask.businessObject.name.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+          taskObjs += '<label class="text-16">' + taskName + '</label>'
           taskObjs += '<ul class="stereotype-option">';
 
           let taskInputs = '<label class="text-16">Input data objects</label>';
