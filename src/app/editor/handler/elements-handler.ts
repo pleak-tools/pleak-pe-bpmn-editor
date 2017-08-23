@@ -83,6 +83,8 @@ export class ElementsHandler {
         if (toBeEditedelementHandler.length > 0) {
           if (this.parentType === "public" && is(e.element.businessObject, 'bpmn:Task')) {
             toBeEditedelementHandler[0].initPublicStereotypeView();
+          } else if (this.parentType === "public" && is(e.element.businessObject, 'bpmn:MessageFlow')) {
+            // Currently do nothing
           } else {
             toBeEditedelementHandler[0].initStereotypeEditProcess();
           }
