@@ -42,7 +42,7 @@ export class SKDecrypt extends TaskStereotype {
         if (inputObject.id == selected.key) {
           selectedKey = "selected";
         }
-        if (inputObject.id == selected.inputData) {
+        if (inputObject.id == selected.ciphertext) {
           selectedData = "selected";
         }
       }
@@ -55,7 +55,7 @@ export class SKDecrypt extends TaskStereotype {
     }
 
     this.settingsPanelContainer.find('#SKDecrypt-keySelect').html(keyValues);
-    this.settingsPanelContainer.find('#SKDecrypt-inputDataSelect').html(inputValues);
+    this.settingsPanelContainer.find('#SKDecrypt-ciphertextSelect').html(inputValues);
     this.settingsPanelContainer.find('#SKDecrypt-outputObject').html(outputObject);
     this.settingsPanelContainer.show();
   }
@@ -70,11 +70,11 @@ export class SKDecrypt extends TaskStereotype {
     let numberOfInputs = this.getTaskInputObjects().length;
     if (numberOfInputs == 2 && numberOfOutputs == 1) {
       let key = this.settingsPanelContainer.find('#SKDecrypt-keySelect').val();
-      let inputData = this.settingsPanelContainer.find('#SKDecrypt-inputDataSelect').val();
-      if (key == inputData) {
+      let ciphertext = this.settingsPanelContainer.find('#SKDecrypt-ciphertextSelect').val();
+      if (key == ciphertext) {
         this.settingsPanelContainer.find('#SKDecrypt-conditions-form-group').addClass('has-error');
         this.settingsPanelContainer.find('#SKDecrypt-key-form-group').addClass('has-error');
-        this.settingsPanelContainer.find('#SKDecrypt-inputData-form-group').addClass('has-error');
+        this.settingsPanelContainer.find('#SKDecrypt-ciphertext-form-group').addClass('has-error');
         this.settingsPanelContainer.find('#SKDecrypt-conditions-help2').show();
         this.initSaveAndRemoveButtons();
         return;
@@ -82,7 +82,7 @@ export class SKDecrypt extends TaskStereotype {
       if (this.task.SKDecrypt == null) {
         this.addStereotypeToElement();
       }
-      this.task.SKDecrypt = JSON.stringify({key: key, inputData: inputData});
+      this.task.SKDecrypt = JSON.stringify({key: key, ciphertext: ciphertext});
       this.settingsPanelContainer.find('.form-group').removeClass('has-error');
       this.settingsPanelContainer.find('.help-block').hide();
       super.saveStereotypeSettings();

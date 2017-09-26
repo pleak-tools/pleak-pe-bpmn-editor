@@ -1,0 +1,35 @@
+<div class="panel panel-default stereotype-options-panel" id="DifferentialPrivacy-stereotype-options" style="display:none;">
+  <div class="panel-heading">
+    <h4>DifferentialPrivacy options</h4>
+  </div>
+  <div class="panel-body">
+    <div class="form-group">
+      <label class="text-16" for="DifferentialPrivacy-inputScript">Input script</label>
+      <textarea class="form-control stereotype-option" id="DifferentialPrivacy-inputScript"></textarea>
+    </div>
+    <div class="form-group">
+      <label class="text-16" for="DifferentialPrivacy-inputObjects">Input data objects</label>
+      <ul class="stereotype-option" id="DifferentialPrivacy-inputObjects"></ul>
+    </div>
+    <div class="form-group">
+      <label class="text-16" for="DifferentialPrivacy-outputObjects">Output data objects</label>
+      <ul class="stereotype-option" id="DifferentialPrivacy-outputObjects"></ul>
+    </div>
+    <div class="form-group" id="DifferentialPrivacy-epsilon-form-group">
+      <label class="text-16" for="DifferentialPrivacy-epsilon">Epsilon pairs</label>
+      <div id="DifferentialPrivacy-epsilon-pairs" class="form-group"></div>
+      <span class="help-block" id="DifferentialPrivacy-epsilon-conditions-help">Epsilon values cannot be empty.</span>
+    </div>
+    <div class="form-group">
+      <label class="text-16" for="DifferentialPrivacy-delta">Delta</label>
+      <input class="form-control stereotype-option" type="number" id="DifferentialPrivacy-delta" value="0"/>
+    </div>
+    <div class="form-group" id="DifferentialPrivacy-conditions-form-group">
+      <span class="help-block" id="DifferentialPrivacy-conditions-help">This task does not meet all the requirements of this stereotype (at least 1 input and 1 output are required).</span>
+    </div>
+  </div>
+  <div class="panel-footer">
+    <button class="btn btn-success" type="button" id="DifferentialPrivacy-save-button">Save</button>
+    <button class="btn btn-default" type="button" id="DifferentialPrivacy-remove-button">Remove</button>
+  </div>
+</div>

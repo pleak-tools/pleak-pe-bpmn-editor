@@ -120,6 +120,10 @@ export class MessageFlowHandler {
         bottom: 0,
         right: 0
       },
+      show: {
+        minZoom: 0,
+        maxZoom: 5.0
+      },
       html: overlayHtml
     });
     this.stereotypeSelector = stOverlay;
@@ -193,13 +197,17 @@ export class MessageFlowHandler {
     if (title != null) {
       let messageFlowTypeLabel = $(
         `<div class="stereotype-label" id="` + this.messageFlow.id + `-` + title + `-label" style="padding:5px; border-radius:2px">
-           <span style="font-size:12px; color:darkblue"><b>` + title + `</b></span>
+           <span class="stereotype-label-color" style="font-size:12px;"><b>` + title + `</b></span>
          </div>`
       );
       let stLabel = this.overlays.add(this.registry.get(this.messageFlow.id), {
         position: {
           top: 15,
           right: 0
+        },
+        show: {
+          minZoom: 0,
+          maxZoom: 5.0
         },
         html: messageFlowTypeLabel
       });

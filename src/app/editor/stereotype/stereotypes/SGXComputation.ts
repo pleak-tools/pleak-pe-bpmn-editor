@@ -54,12 +54,22 @@ export class SGXComputation extends TaskStereotype {
   }
 
   saveStereotypeSettings() {
-    let inputScript = this.settingsPanelContainer.find('#SGXComputation-inputScript').val();
-    if (this.task.SGXComputation == null) {
-      this.addStereotypeToElement();
+    let numberOfOutputs = this.getTaskOutputObjects().length;
+    let numberOfInputs = this.getTaskInputObjects().length;
+    if (numberOfInputs >= 1 && numberOfOutputs >= 1) {
+      let inputScript = this.settingsPanelContainer.find('#SGXComputation-inputScript').val();
+      if (this.task.SGXComputation == null) {
+        this.addStereotypeToElement();
+      }
+      this.task.SGXComputation = JSON.stringify({inputScript: inputScript});
+      this.settingsPanelContainer.find('.form-group').removeClass('has-error');
+      this.settingsPanelContainer.find('.help-block').hide();
+      super.saveStereotypeSettings();
+    } else {
+      this.settingsPanelContainer.find('#SGXComputation-conditions-form-group').addClass('has-error');
+      this.settingsPanelContainer.find('#SGXComputation-conditions-help').show();
+      this.initSaveAndRemoveButtons();
     }
-    this.task.SGXComputation = JSON.stringify({inputScript: inputScript});
-    super.saveStereotypeSettings();
   }
   
   removeStereotype() {

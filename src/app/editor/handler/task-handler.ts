@@ -28,6 +28,7 @@ import { GCGarble } from "../stereotype/stereotypes/GCGarble";
 import { GCEvaluate } from "../stereotype/stereotypes/GCEvaluate";
 import { OTSend } from "../stereotype/stereotypes/OTSend";
 import { OTReceive } from "../stereotype/stereotypes/OTReceive";
+import { DifferentialPrivacy } from "../stereotype/stereotypes/DifferentialPrivacy";
 
 declare var $: any;
 let is = (element, type) => element.$instanceOf(type);
@@ -87,7 +88,8 @@ export class TaskHandler {
     "GCGarble",
     "GCEvaluate",
     "OTSend",
-    "OTReceive"
+    "OTReceive",
+    "DifferentialPrivacy"
   ];
 
   init() {
@@ -230,7 +232,7 @@ export class TaskHandler {
             </thead>
             <tbody>
               <tr>
-                <td class="link-row" id="PKEncrypt-button">PKencrypt</td>
+                <td class="link-row" id="PKEncrypt-button">PKEncrypt</td>
               </tr>
               <tr>
                 <td class="link-row" id="SKEncrypt-button">SKEncrypt</td>
@@ -367,6 +369,9 @@ export class TaskHandler {
               <tr>
                 <td class="link-row" id="DimensionalityReduction-button">DimensionalityReduction</td>
               </tr>
+              <tr>
+              <td class="link-row" id="DifferentialPrivacy-button">DifferentialPrivacy</td>
+            </tr>
             </tbody>
           </table>
         </div>
@@ -477,6 +482,10 @@ export class TaskHandler {
         bottom: 0,
         right: 0
       },
+      show: {
+        minZoom: 0,
+        maxZoom: 5.0
+      },
       html: overlayHtml
     });
     this.stereotypeSelector = stOverlay;
@@ -544,6 +553,8 @@ export class TaskHandler {
         st = new OTSend(this);
       } else if (name == "OTReceive") {
         st = new OTReceive(this);
+      } else if (name == "DifferentialPrivacy") {
+        st = new DifferentialPrivacy(this);
       }
     }
     return st;
@@ -600,13 +611,17 @@ export class TaskHandler {
     if (title != null) {
       let taskTypeLabel = $(
         `<div class="stereotype-label" id="` + this.task.id + `-` + title + `-label" style="padding:5px; border-radius:2px">
-           <span style="font-size:12px; color:darkblue"><b>` + title + `</b></span>
+           <span class="stereotype-label-color" style="font-size:12px;"><b>` + title + `</b></span>
          </div>`
       );
       let stLabel = this.overlays.add(this.registry.get(this.task.id), {
         position: {
           bottom: 0,
           left: -5
+        },
+        show: {
+          minZoom: 0,
+          maxZoom: 5.0
         },
         html: taskTypeLabel
       });
@@ -621,7 +636,9 @@ export class TaskHandler {
       let task = this.registry.get(this.task.id).businessObject;
       if (task.dataInputAssociations) {
         for (var i = 0; i < task.dataInputAssociations.length; i++) {
-          objects.push(this.registry.get(task.dataInputAssociations[i].sourceRef[0].id));
+          if (task.dataInputAssociations[i].sourceRef) {
+            objects.push(this.registry.get(task.dataInputAssociations[i].sourceRef[0].id));
+          }
         }
       }
     }
@@ -635,7 +652,9 @@ export class TaskHandler {
       let task = this.registry.get(this.task.id).businessObject;
       if (task.dataOutputAssociations) {
         for (var i = 0; i < task.dataOutputAssociations.length; i++) {
-          objects.push(this.registry.get(task.dataOutputAssociations[i].targetRef.id));
+          if (task.dataOutputAssociations[i].targetRef) {
+            objects.push(this.registry.get(task.dataOutputAssociations[i].targetRef.id));
+          }
         }
       }
     }

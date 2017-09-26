@@ -54,12 +54,22 @@ export class PKComputation extends TaskStereotype {
   }
 
   saveStereotypeSettings() {
-    let inputScript = this.settingsPanelContainer.find('#PKComputation-inputScript').val();
-    if (this.task.PKComputation == null) {
-      this.addStereotypeToElement();
+    let numberOfOutputs = this.getTaskOutputObjects().length;
+    let numberOfInputs = this.getTaskInputObjects().length;
+    if (numberOfInputs >= 1 && numberOfOutputs >= 1) {
+      let inputScript = this.settingsPanelContainer.find('#PKComputation-inputScript').val();
+      if (this.task.PKComputation == null) {
+        this.addStereotypeToElement();
+      }
+      this.task.PKComputation = JSON.stringify({inputScript: inputScript});
+      this.settingsPanelContainer.find('.form-group').removeClass('has-error');
+      this.settingsPanelContainer.find('.help-block').hide();
+      super.saveStereotypeSettings();
+    } else {
+      this.settingsPanelContainer.find('#PKComputation-conditions-form-group').addClass('has-error');
+      this.settingsPanelContainer.find('#PKComputation-conditions-help').show();
+      this.initSaveAndRemoveButtons();
     }
-    this.task.PKComputation = JSON.stringify({inputScript: inputScript});
-    super.saveStereotypeSettings();
   }
   
   removeStereotype() {

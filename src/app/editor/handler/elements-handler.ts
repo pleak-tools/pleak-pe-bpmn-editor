@@ -41,7 +41,6 @@ export class ElementsHandler {
       });
       // Add click event listener to init and terminate stereotype processes
       this.eventBus.on('element.click', (e) => {
-
         // If there is some other element being edited than clicked one, terminate edit process
         let beingEditedElementHandler = this.taskHandlers.filter(function( obj ) {
           return obj.task != e.element.businessObject && (obj.beingEdited && obj.stereotypeSelector != null || obj.stereotypeSelectorHidden);
@@ -99,30 +98,36 @@ export class ElementsHandler {
     for (let diagram of definitions.diagrams) {
       var element = diagram.plane.bpmnElement;
       if (element.$type === "bpmn:Process") {
-        for (let node of element.flowElements.filter((e:any) => is(e, "bpmn:Task"))) {
-          this.taskHandlers.push(new TaskHandler(this, node));
-        }
-        for (let node of element.flowElements.filter((e:any) => is(e, "bpmn:DataObjectReference"))) {
-          this.dataObjectHandlers.push(new DataObjectHandler(this, node));
+        if (element.flowElements) {
+          for (let node of element.flowElements.filter((e:any) => is(e, "bpmn:Task"))) {
+            this.taskHandlers.push(new TaskHandler(this, node));
+          }
+          for (let node of element.flowElements.filter((e:any) => is(e, "bpmn:DataObjectReference"))) {
+            this.dataObjectHandlers.push(new DataObjectHandler(this, node));
+          }
         }
       } else {
         for (let participant of element.participants) {
-          for (let node of participant.processRef.flowElements.filter((e:any) => is(e, "bpmn:Task"))) {
-            this.taskHandlers.push(new TaskHandler(this, node));
-          }
-          for (let sprocess of participant.processRef.flowElements.filter((e:any) => is(e, "bpmn:SubProcess"))) {
-            for (let node of sprocess.flowElements.filter((e:any) => is(e, "bpmn:Task"))) {
+          if (participant.processRef.flowElements) {
+            for (let node of participant.processRef.flowElements.filter((e:any) => is(e, "bpmn:Task"))) {
               this.taskHandlers.push(new TaskHandler(this, node));
             }
-          }
-          for (let node of participant.processRef.flowElements.filter((e:any) => is(e, "bpmn:DataObjectReference"))) {
-            this.dataObjectHandlers.push(new DataObjectHandler(this, node));
+            for (let sprocess of participant.processRef.flowElements.filter((e:any) => is(e, "bpmn:SubProcess"))) {
+              for (let node of sprocess.flowElements.filter((e:any) => is(e, "bpmn:Task"))) {
+                this.taskHandlers.push(new TaskHandler(this, node));
+              }
+            }
+            for (let node of participant.processRef.flowElements.filter((e:any) => is(e, "bpmn:DataObjectReference"))) {
+              this.dataObjectHandlers.push(new DataObjectHandler(this, node));
+            }
           }
         }
       }
       if (element.$type === "bpmn:Collaboration") {
-        for (let node of element.messageFlows.filter((e:any) => is(e, "bpmn:MessageFlow"))) {
-          this.messageFlowHandlers.push(new MessageFlowHandler(this, node));
+        if (element.messageFlows) {
+          for (let node of element.messageFlows.filter((e:any) => is(e, "bpmn:MessageFlow"))) {
+            this.messageFlowHandlers.push(new MessageFlowHandler(this, node));
+          }
         }
       }
     }

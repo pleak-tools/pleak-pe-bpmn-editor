@@ -119,6 +119,10 @@ export class DataObjectHandler {
         bottom: 0,
         right: 0
       },
+      show: {
+        minZoom: 0,
+        maxZoom: 5.0
+      },
       html: overlayHtml
     });
     this.stereotypeSelector = stOverlay;
@@ -192,13 +196,17 @@ export class DataObjectHandler {
     if (title != null) {
       let dataObjectTypeLabel = $(
         `<div class="stereotype-label" id="` + this.dataObject.id + `-` + title + `-label" style="padding:5px; border-radius:2px">
-           <span style="font-size:12px; color:darkblue"><b>` + title + `</b></span>
+           <span class="stereotype-label-color" style="font-size:12px;"><b>` + title + `</b></span>
          </div>`
       );
       let stLabel = this.overlays.add(this.registry.get(this.dataObject.id), {
         position: {
           bottom: 0,
           left: -5
+        },
+        show: {
+          minZoom: 0,
+          maxZoom: 5.0
         },
         html: dataObjectTypeLabel
       });
