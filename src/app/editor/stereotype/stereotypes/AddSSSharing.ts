@@ -28,13 +28,6 @@ export class AddSSSharing extends TaskStereotype {
 
     var inputObjects = "";
     var outputObjects = "";
-    var outputConditions;
-
-    if (this.task.AddSSSharing != null) {
-      outputConditions = JSON.parse(this.task.AddSSSharing).outputConditions;
-    } else {
-      outputConditions = this.getTaskOutputObjects().length;
-    }
 
     for (let inputObject of this.getTaskInputObjects()) {
       inputObjects += '<li>' + inputObject.businessObject.name + '</li>';
@@ -46,7 +39,6 @@ export class AddSSSharing extends TaskStereotype {
 
     this.settingsPanelContainer.find('#AddSSSharing-inputObjects').html(inputObjects);
     this.settingsPanelContainer.find('#AddSSSharing-outputObjects').html(outputObjects);
-    this.settingsPanelContainer.find('#AddSSSharing-outputConditions').val(outputConditions);
     this.settingsPanelContainer.show();
   }
 
@@ -56,22 +48,17 @@ export class AddSSSharing extends TaskStereotype {
   }
 
   saveStereotypeSettings() {
-    let outputConditions = this.settingsPanelContainer.find('#AddSSSharing-outputConditions').val();
     let numberOfOutputs = this.getTaskOutputObjects().length;
     let numberOfInputs = this.getTaskInputObjects().length;
     if (numberOfInputs != 1 || numberOfOutputs < 2) {
       this.settingsPanelContainer.find('#AddSSSharing-conditions-form-group').addClass('has-error');
       this.settingsPanelContainer.find('#AddSSSharing-conditions-help').show();
       this.initSaveAndRemoveButtons();
-    } else if (outputConditions != numberOfOutputs) {
-      this.settingsPanelContainer.find('#AddSSSharing-outputConditions-form-group').addClass('has-error');
-      this.settingsPanelContainer.find('#AddSSSharing-outputConditions-help').show();
-      this.initSaveAndRemoveButtons();
     } else {
       if (this.task.AddSSSharing == null) {
         this.addStereotypeToElement();
       }
-      this.task.AddSSSharing = JSON.stringify({outputConditions: outputConditions});
+      this.task.AddSSSharing = JSON.stringify({});
       this.settingsPanelContainer.find('.form-group').removeClass('has-error');
       this.settingsPanelContainer.find('.help-block').hide();
       super.saveStereotypeSettings();
