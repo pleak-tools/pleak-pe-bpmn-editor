@@ -117,6 +117,11 @@ export const SqlBPMNModdle = {
           "type": "String"
         },
         {
+          "name": "SGXProtect",
+          "isAttr": false,
+          "type": "String"
+        },
+        {
           "name": "SGXAttestationEnclave",
           "isAttr": false,
           "type": "String"
