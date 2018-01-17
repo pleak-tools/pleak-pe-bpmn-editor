@@ -1,7 +1,8 @@
+import { ValidationErrorObject } from "../../handler/validation-handler";
 import { TaskStereotype } from "../task-stereotype";
 import { TaskHandler } from "../../handler/task-handler";
 
-declare var $: any;
+declare let $: any;
 let is = (element, type) => element.$instanceOf(type);
 
 export class DifferentialPrivacy extends TaskStereotype {
@@ -26,11 +27,11 @@ export class DifferentialPrivacy extends TaskStereotype {
 
     this.highlightTaskInputAndOutputObjects();
 
-    var inputScript;
-    var delta = 0;
-    var epsilons;
-    var inputObjects = "";
-    var outputObjects = "";
+    let inputScript;
+    let delta = 0;
+    let epsilons;
+    let inputObjects = "";
+    let outputObjects = "";
 
     if (this.task.DifferentialPrivacy != null) {
       inputScript = JSON.parse(this.task.DifferentialPrivacy).inputScript;
@@ -78,9 +79,7 @@ export class DifferentialPrivacy extends TaskStereotype {
   }
 
   saveStereotypeSettings() {
-    let numberOfOutputs = this.getTaskOutputObjects().length;
-    let numberOfInputs = this.getTaskInputObjects().length;
-    if (numberOfInputs >= 1 && numberOfOutputs >= 1) {
+    if (this.areInputsAndOutputsNumbersCorrect()) {
       let inputScript = this.settingsPanelContainer.find('#DifferentialPrivacy-inputScript').val();
       let delta = this.settingsPanelContainer.find('#DifferentialPrivacy-delta').val();
       let epsilons = $("input[name='epsilons\\[\\]']").map(function() {
@@ -118,6 +117,70 @@ export class DifferentialPrivacy extends TaskStereotype {
   
   removeStereotype() {
     super.removeStereotype();
+  }
+
+  /** Simple disclosure analysis functions */
+  getDataObjectVisibilityStatus(dataObjectId: String) {
+    // Inputs: public
+    // Outputs: public
+    let statuses = [];
+    let inputIds = this.getTaskInputObjects().map(a => a.id);
+    let outputIds = this.getTaskOutputObjects().map(a => a.id);
+    if (inputIds.indexOf(dataObjectId) !== -1 || outputIds.indexOf(dataObjectId) !== -1) {
+      statuses.push("public");
+    }
+    if (statuses.length > 0) {
+      return statuses;
+    }
+    return null;
+  }
+
+  /** Validation functions */
+  areInputsAndOutputsNumbersCorrect() {
+    // Must have:
+    // Inputs: at least 1
+    // Outputs: exactly 1
+    let numberOfInputs = this.getTaskInputObjects().length;
+    let numberOfOutputs = this.getTaskOutputObjects().length;
+    if (numberOfInputs < 1 || numberOfOutputs != 1) {
+      return false;
+    }
+    return true;
+  }
+
+  areEpsilonValuesCorrect() {
+    let savedData = JSON.parse(this.task.DifferentialPrivacy);
+    for (let i = 0; i < savedData.epsilons.length; i++) {
+      if (savedData.epsilons[i].epsilon.length == 0) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  checkForErrors(existingErrors: ValidationErrorObject[]) {
+    let numberOfOutputs = this.getTaskOutputObjects().length;
+    let numberOfInputs = this.getTaskInputObjects().length;
+    let savedData = JSON.parse(this.task.DifferentialPrivacy);
+    if (!this.areInputsAndOutputsNumbersCorrect()) {
+      this.addUniqueErrorToErrorsList(existingErrors, "DifferentialPrivacy error: at least 1 input and exactly 1 output are required", [this.task.id], []);
+    } else {
+      if (numberOfInputs * numberOfOutputs != savedData.epsilons.length) {
+        this.addUniqueErrorToErrorsList(existingErrors, "DifferentialPrivacy error: number of input and output pairs does not match with the number of epsilons saved (some inputs or outputs might have been removed after adding stereotype)", [this.task.id], []);
+      }
+      if (!this.areEpsilonValuesCorrect()) {
+        this.addUniqueErrorToErrorsList(existingErrors, "DifferentialPrivacy error: epsilon values cannot be empty", [this.task.id], []);
+      }
+    }
+    if (typeof savedData.inputScript == 'undefined') {
+      this.addUniqueErrorToErrorsList(existingErrors, "DifferentialPrivacy error: inputScript is undefined (it can be empty, but cannot be undefined)", [this.task.id], []);
+    }
+    if (typeof savedData.delta == 'undefined') {
+      this.addUniqueErrorToErrorsList(existingErrors, "DifferentialPrivacy error: delta is undefined (it can be empty, but cannot be undefined)", [this.task.id], []);
+    }
+    if (typeof savedData.epsilons == 'undefined') {
+      this.addUniqueErrorToErrorsList(existingErrors, "DifferentialPrivacy error: epsilons are undefined", [this.task.id], []);
+    }
   }
 
 }

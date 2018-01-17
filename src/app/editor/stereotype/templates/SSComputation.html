@@ -21,13 +21,18 @@
       <label class="text-16" for="SSComputation-inputScript">Input script</label>
       <textarea class="form-control stereotype-option" id="SSComputation-inputScript"></textarea>
     </div>
-    <div class="form-group">
-      <label class="text-16" for="SSComputation-inputObjects">Input data objects</label>
-      <ul class="stereotype-option" id="SSComputation-inputObjects"></ul>
+    <div class="form-group" id="SSComputation-inputs-form-group">
+      <label class="text-16" for="SSComputation-inputObjects" id="SSComputation-inputObjects-title">Input data objects</label>
+      <br>
+      <span class="stereotype-option" id="SSComputation-inputObjects"></span>
+      <span class="help-block" id="SSComputation-inputs-help">All selected inputs must be different data objects.</span>
     </div>
     <div class="form-group">
       <label class="text-16" for="SSComputation-outputObjects">Output data</label>
       <ul class="stereotype-option" id="SSComputation-outputObjects"></ul>
+    </div>
+    <div class="form-group" id="SSComputation-conditions-form-group">
+      <span class="help-block" id="SSComputation-conditions-help">This task does not meet all the requirements of this stereotype (at least 1 input and exactly 1 output are required).</span>
     </div>
     <hr>
     <h3>Other tasks in the same SSComputation group</h3>

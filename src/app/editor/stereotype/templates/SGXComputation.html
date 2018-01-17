@@ -3,20 +3,48 @@
     <h4>SGXComputation options</h4>
   </div>
   <div class="panel-body">
-    <div class="form-group">
-      <label class="text-16" for="SGXComputation-inputScript">Input script</label>
-      <textarea class="form-control stereotype-option" id="SGXComputation-inputScript"></textarea>
+    <h3 class="stereotype-option" id="SGXComputation-taskName"></h3>
+    <div class="form-group" id="SGXComputation-groupSelect-form-group">
+      <label class="text-16" for="SGXComputation-groupSelect">Group ID</label>
+      <select class="form-control stereotype-option" id="SGXComputation-groupSelect">
+      </select>
+      <span id="SGXComputation-groupSelect-help" class="help-block">Select group.</span>
+    </div>
+    <div class="form-group" id="SGXComputation-newGroup-form-group">
+      <label class="text-16" for="SGXComputation-newGroup">Add new group</label>
+      <input class="form-control stereotype-option" type="text" id="SGXComputation-newGroup"/>
+      <span class="help-block" id="SGXComputation-newGroup-help">Insert group name.</span>
+      <br>
+      <button class="btn btn-success pull-right" type="button" id="SGXComputation-add-button">Add</button>
     </div>
     <div class="form-group">
+      <label class="text-16" for="SGXComputation-inputScript">Input script from</label>
+      <div id="SGXComputation-inputScriptType">
+        <span id="SGXComputation-inputScriptType-script" class="link-selected">Direct input</span> | <span id="SGXComputation-inputScriptType-stereotype" class="link-not-selected">Output of another stereotype</span>
+        <div id="SGXComputation-scriptInput">
+          <textarea class="form-control stereotype-option" id="SGXComputation-inputScript"></textarea>
+        </div>
+        <div id="SGXComputation-stereotypeInput" style="display: none">
+          <select class="form-control stereotype-option" id="SGXComputation-inputStereotypeSelect">
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="form-group" id="SGXComputation-inputObjects-form-group">
       <label class="text-16" for="SGXComputation-inputObjects">Input data objects</label>
       <ul class="stereotype-option" id="SGXComputation-inputObjects"></ul>
+      <span class="help-block" id="SGXComputation-inputObjects-help">At least 1 input must be selected as SGXPrivate</span>
     </div>
     <div class="form-group">
       <label class="text-16" for="SGXComputation-outputObjects">Output data</label>
       <ul class="stereotype-option" id="SGXComputation-outputObjects"></ul>
     </div>
     <div class="form-group" id="SGXComputation-conditions-form-group">
-      <span class="help-block" id="SGXComputation-conditions-help">This task does not meet all the requirements of this stereotype (at least 1 input and 1 output are required).</span>
+      <span class="help-block" id="SGXComputation-conditions-help">This task does not meet all the requirements of this stereotype (at least 1 input and exactly 1 output are required).</span>
+    </div>
+    <hr>
+    <h3>Other tasks in the same SGXComputation group</h3>
+    <div class="form-group" id="SGXComputation-otherGroupTasks">
     </div>
   </div>
   <div class="panel-footer">

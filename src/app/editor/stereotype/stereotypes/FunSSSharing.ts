@@ -1,7 +1,8 @@
+import { ValidationErrorObject } from "../../handler/validation-handler";
 import { TaskStereotype } from "../task-stereotype";
 import { TaskHandler } from "../../handler/task-handler";
 
-declare var $: any;
+declare let $: any;
 let is = (element, type) => element.$instanceOf(type);
 
 export class FunSSSharing extends TaskStereotype {
@@ -26,8 +27,8 @@ export class FunSSSharing extends TaskStereotype {
 
     this.highlightTaskInputAndOutputObjects();
 
-    var inputObjects = "";
-    var outputObjects = "";
+    let inputObjects = "";
+    let outputObjects = "";
 
     for (let inputObject of this.getTaskInputObjects()) {
       inputObjects += '<li>' + inputObject.businessObject.name + '</li>';
@@ -48,9 +49,7 @@ export class FunSSSharing extends TaskStereotype {
   }
 
   saveStereotypeSettings() {
-    let numberOfOutputs = this.getTaskOutputObjects().length;
-    let numberOfInputs = this.getTaskInputObjects().length;
-    if (numberOfInputs == 1 && numberOfOutputs == 2) {
+    if (this.areInputsAndOutputsNumbersCorrect()) {
       if (this.task.FunSSSharing == null) {
         this.addStereotypeToElement();
       }
@@ -67,6 +66,55 @@ export class FunSSSharing extends TaskStereotype {
   
   removeStereotype() {
     super.removeStereotype();
+  }
+
+  /** Simple disclosure analysis functions */
+  getDataObjectVisibilityStatus(dataObjectId: String) {
+    // Inputs: public
+    // Outputs: private
+    let statuses = [];
+    let inputIds = this.getTaskInputObjects().map(a => a.id);
+    let outputIds = this.getTaskOutputObjects().map(a => a.id);
+    if (inputIds.indexOf(dataObjectId) !== -1) {
+      statuses.push("public");
+    }
+    if (outputIds.indexOf(dataObjectId) !== -1) {
+      statuses.push("private");
+    }
+    if (statuses.length > 0) {
+      return statuses;
+    }
+    return null;
+  }
+
+  /** Validation functions */
+  areInputsAndOutputsNumbersCorrect() {
+    // Must have:
+    // Inputs: exactly 1
+    // Outputs: exactly 2
+    let numberOfInputs = this.getTaskInputObjects().length;
+    let numberOfOutputs = this.getTaskOutputObjects().length;
+    if (numberOfInputs != 1 || numberOfOutputs != 2) {
+      return false;
+    }
+    return true;
+  }
+
+  areOutputObjectsDifferent() {
+    if (this.getTaskOutputObjects()[0].businessObject.name.trim() === this.getTaskOutputObjects()[1].businessObject.name.trim()) {
+      return false;
+    }
+    return true;
+  }
+
+  checkForErrors(existingErrors: ValidationErrorObject[]) {
+    if (!this.areInputsAndOutputsNumbersCorrect()) {
+      this.addUniqueErrorToErrorsList(existingErrors, "FunSSSharing error: exactly 1 input and 2 outputs are required", [this.task.id], []);
+    } else {
+      if (!this.areOutputObjectsDifferent()) {
+        this.addUniqueErrorToErrorsList(existingErrors, "FunSSSharing error: output objects must have different names", [this.task.id], []);
+      }
+    }
   }
 
 }

@@ -1,8 +1,8 @@
+import { ValidationErrorObject } from "../../handler/validation-handler";
 import { TaskStereotype } from "../task-stereotype";
 import { TaskHandler } from "../../handler/task-handler";
 
-declare function require(name:string);
-declare var $: any;
+declare let $: any;
 let is = (element, type) => element.$instanceOf(type);
 
 export class DimensionalityReduction extends TaskStereotype {
@@ -27,18 +27,18 @@ export class DimensionalityReduction extends TaskStereotype {
 
     this.highlightTaskInputAndOutputObjects();
 
-    var dataValues;
-    var projectionMatrixValues;
-    var outputObject = "";
-    var selected = null;
+    let dataValues;
+    let projectionMatrixValues;
+    let outputObject = "";
+    let selected = null;
 
     if (this.task.DimensionalityReduction != null) {
       selected = JSON.parse(this.task.DimensionalityReduction);
     }
 
     for (let inputObject of this.getTaskInputObjects()) {
-      var selectedData = "";
-      var selectedProjectionMatrix = "";
+      let selectedData = "";
+      let selectedProjectionMatrix = "";
       if (selected !== null) {
         if (inputObject.id == selected.data) {
           selectedData = "selected";
@@ -68,9 +68,7 @@ export class DimensionalityReduction extends TaskStereotype {
   }
 
   saveStereotypeSettings() {
-    let numberOfOutputs = this.getTaskOutputObjects().length;
-    let numberOfInputs = this.getTaskInputObjects().length;
-    if (numberOfInputs == 2 && numberOfOutputs == 1) {
+    if (this.areInputsAndOutputsNumbersCorrect()) {
       let data = this.settingsPanelContainer.find('#DimensionalityReduction-dataSelect').val();
       let projectionMatrix = this.settingsPanelContainer.find('#DimensionalityReduction-projectionMatrixSelect').val();
       if (data == projectionMatrix) {
@@ -97,6 +95,58 @@ export class DimensionalityReduction extends TaskStereotype {
   
   removeStereotype() {
     super.removeStereotype();
+  }
+
+  /** Simple disclosure analysis functions */
+  getDataObjectVisibilityStatus(dataObjectId: String) {
+    // Inputs: public
+    // Outputs: public
+    let statuses = [];
+    let inputIds = this.getTaskInputObjects().map(a => a.id);
+    let outputIds = this.getTaskOutputObjects().map(a => a.id);
+    if (inputIds.indexOf(dataObjectId) !== -1 || outputIds.indexOf(dataObjectId) !== -1) {
+      statuses.push("public");
+    }
+    if (statuses.length > 0) {
+      return statuses;
+    }
+    return null;
+  }
+
+  /** Validation functions */
+  areInputsAndOutputsNumbersCorrect() {
+    // Must have:
+    // Inputs: exactly 2
+    // Outputs: exactly 1
+    let numberOfInputs = this.getTaskInputObjects().length;
+    let numberOfOutputs = this.getTaskOutputObjects().length;
+    if (numberOfInputs != 2 || numberOfOutputs != 1) {
+      return false;
+    }
+    return true;
+  }
+
+  checkForErrors(existingErrors: ValidationErrorObject[]) {
+    let savedData = JSON.parse(this.task.DimensionalityReduction);
+    if (!this.areInputsAndOutputsNumbersCorrect()) {
+      this.addUniqueErrorToErrorsList(existingErrors, "DimensionalityReduction error: exactly 2 inputs and 1 output are required", [this.task.id], []);
+    }
+    if (!this.taskHasInputElement(savedData.data)) {
+      this.addUniqueErrorToErrorsList(existingErrors, "DimensionalityReduction error: data object is missing", [this.task.id], []);
+    }
+    if (!this.taskHasInputElement(savedData.projectionMatrix)) {
+      this.addUniqueErrorToErrorsList(existingErrors, "DimensionalityReduction error: projectionMatrix object is missing", [this.task.id], []);
+    } else {
+      if (savedData.data == savedData.projectionMatrix) {
+        this.addUniqueErrorToErrorsList(existingErrors, "DimensionalityReduction error: data and projectionMatrix must be different objects", [this.task.id], []);
+      }
+    }
+    if (typeof savedData.data == 'undefined') {
+      this.addUniqueErrorToErrorsList(existingErrors, "DimensionalityReduction error: data is undefined", [this.task.id], []);
+    }
+    if (typeof savedData.projectionMatrix == 'undefined') {
+      this.addUniqueErrorToErrorsList(existingErrors, "DimensionalityReduction error: projectionMatrix is undefined", [this.task.id], []);
+    }
   }
 
 }

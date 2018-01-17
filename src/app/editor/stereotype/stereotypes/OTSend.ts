@@ -1,14 +1,10 @@
-import { TaskStereotype } from "../task-stereotype";
+import { ValidationErrorObject } from "../../handler/validation-handler";
+import { TaskStereotype, TaskStereotypeGroupObject } from "../task-stereotype";
 import { TaskHandler } from "../../handler/task-handler";
 import { OTReceive } from "./OTReceive";
 
-declare var $: any;
+declare let $: any;
 let is = (element, type) => element.$instanceOf(type);
-
-interface OTSendGroupTaskObject {
-    groupId: String;
-    taskId: String;
-}
 
 export class OTSend extends TaskStereotype {
 
@@ -19,7 +15,7 @@ export class OTSend extends TaskStereotype {
 
   group: String = null;
   selectedGroup: String = null;
-  OTSendAndEvaluateGroupsTasks: OTSendGroupTaskObject[] = [];
+  OTSendAndEvaluateGroupsTasks: TaskStereotypeGroupObject[] = [];
 
   /** Functions inherited from TaskStereotype and Stereotype classes */
   getTitle() {
@@ -47,10 +43,10 @@ export class OTSend extends TaskStereotype {
     this.initAddGroupButton();
     this.initGroupSelectDropdown();
 
-    var selectedGroupId = null;
-    var groups;
+    let selectedGroupId = null;
+    let groups;
     let inputObject = ""
-    var selected = null;
+    let selected = null;
 
     this.loadAllOTSendAndOTReceiveGroupsTasks();
 
@@ -72,9 +68,9 @@ export class OTSend extends TaskStereotype {
     this.highlightOTSendAndOTReceiveGroupMembersAndTheirInputsOutputs(selectedGroupId);
 
     for (let group of this.getModelOTSendAndOTReceiveGroups()) {
-      var sel = "";
+      let sel = "";
       if (selectedGroupId !== null) {
-        if (group == selectedGroupId) {
+        if (group.trim() == selectedGroupId.trim()) {
           sel = "selected";
         }
       }
@@ -94,7 +90,10 @@ export class OTSend extends TaskStereotype {
     if (selectedGroupId !== null) {
       for (let groupTask of this.getOTSendAndOTReceiveGroupTasks(selectedGroupId)) {
         if (groupTask.id != this.task.id && groupTask.businessObject.OTReceive != null) {
-          let taskName = groupTask.businessObject.name.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+          let taskName = undefined;
+          if (groupTask.businessObject.name) {
+            taskName = groupTask.businessObject.name.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+          }
           taskObjs += '<label class="text-16">' + taskName + '</label>'
           taskObjs += '<ul class="stereotype-option">';
 
@@ -135,19 +134,17 @@ export class OTSend extends TaskStereotype {
   saveStereotypeSettings() {
     let self = this;
     let group = this.settingsPanelContainer.find('#OTSend-groupSelect').val();
-    let numberOfOutputs = this.getTaskOutputObjects().length;
-    let numberOfInputs = this.getTaskInputObjects().length;
     if (group) {
-      if (numberOfOutputs == 0 && numberOfInputs == 1) {
+      if (this.areInputsAndOutputsNumbersCorrect()) {
         let tasks = this.getOTSendAndOTReceiveGroupTasks(group);
         let taskAlreadyInGroup = tasks.filter(( obj ) => {
           return obj.id == self.task.id;
         });
-        if (tasks.length == 2 && taskAlreadyInGroup.length !== 1) {
+        if (tasks.length === 2 && taskAlreadyInGroup.length !== 1) {
           this.settingsPanelContainer.find('#OTSend-groupSelect-form-group').addClass('has-error');
           this.settingsPanelContainer.find('#OTSend-groupSelect-help2').show();
           return;
-        } else if (tasks.length == 1) {
+        } else if (tasks.length === 1) {
           for (let task of tasks) {
             if (task.businessObject.OTSend != null && task.id != this.task.id) {
               this.settingsPanelContainer.find('#OTSend-groupSelect-form-group').addClass('has-error');
@@ -165,8 +162,6 @@ export class OTSend extends TaskStereotype {
         for (let task of this.getOTSendAndOTReceiveGroupTasks(group)) {
           if (task.id == this.task.id) {
             task.businessObject.OTSend = JSON.stringify({groupId: group});
-          } else {
-            task.businessObject.OTReceive = JSON.stringify({groupId: group});
           }
         }
         this.settingsPanelContainer.find('.form-group').removeClass('has-error');
@@ -192,6 +187,7 @@ export class OTSend extends TaskStereotype {
     if (this.task.OTSend != null) {
       this.setGroup(JSON.parse(this.task.OTSend).groupId);
     }
+    this.addStereotypeToTheListOfGroupStereotypesOnModel(this.getTitle());
   }
 
   loadAllOTSendAndOTReceiveGroupsTasks() {
@@ -268,11 +264,11 @@ export class OTSend extends TaskStereotype {
 
   highlightOTSendAndOTReceiveGroupMembersAndTheirInputsOutputs(group: String) {
 
-    for (var i = 0; i < this.OTSendAndEvaluateGroupsTasks.length; i++) {
-      var groupId = this.OTSendAndEvaluateGroupsTasks[i].groupId;
-      var taskId = this.OTSendAndEvaluateGroupsTasks[i].taskId;
+    for (let i = 0; i < this.OTSendAndEvaluateGroupsTasks.length; i++) {
+      let groupId = this.OTSendAndEvaluateGroupsTasks[i].groupId;
+      let taskId = this.OTSendAndEvaluateGroupsTasks[i].taskId;
 
-      if (groupId == group) {
+      if (groupId.trim() == group.trim()) {
         this.canvas.addMarker(taskId, 'highlight-group');
 
         let groupInputsOutputs = this.getOTSendAndOTReceiveGroupInputOutputObjects(groupId);
@@ -313,8 +309,8 @@ export class OTSend extends TaskStereotype {
 
   removeAllOTSendAndOTReceiveGroupsAndTheirInputsOutputsHighlights() {
     if (this.OTSendAndEvaluateGroupsTasks) {
-      for (var i = 0; i < this.OTSendAndEvaluateGroupsTasks.length; i++) {
-        var taskId = this.OTSendAndEvaluateGroupsTasks[i].taskId;
+      for (let i = 0; i < this.OTSendAndEvaluateGroupsTasks.length; i++) {
+        let taskId = this.OTSendAndEvaluateGroupsTasks[i].taskId;
         this.canvas.removeMarker(taskId, 'highlight-group');
         if (this.task.id != null) {
           for (let inputObj of this.getTaskInputObjectsByTaskId(taskId)) {
@@ -335,8 +331,8 @@ export class OTSend extends TaskStereotype {
   }
 
   getModelOTSendAndOTReceiveGroups() {
-    var difGroups = [];
-    for (var i = 0; i < this.OTSendAndEvaluateGroupsTasks.length; i++) {
+    let difGroups = [];
+    for (let i = 0; i < this.OTSendAndEvaluateGroupsTasks.length; i++) {
       if (difGroups.indexOf(this.OTSendAndEvaluateGroupsTasks[i].groupId) === -1) {
         difGroups.push(this.OTSendAndEvaluateGroupsTasks[i].groupId);
       }
@@ -347,8 +343,8 @@ export class OTSend extends TaskStereotype {
   getOTSendAndOTReceiveGroupTasks(group: String) {
     let groupTasks = [];
     if (group) {
-      let groups = $.grep(this.OTSendAndEvaluateGroupsTasks, function(el, idx) {return el.groupId == group}, false);
-      for (var i = 0; i < groups.length; i++) {
+      let groups = $.grep(this.OTSendAndEvaluateGroupsTasks, function(el, idx) {return el.groupId.trim() == group.trim()}, false);
+      for (let i = 0; i < groups.length; i++) {
         groupTasks.push(this.registry.get(groups[i].taskId));
       }
     }
@@ -378,6 +374,171 @@ export class OTSend extends TaskStereotype {
       }
     }
     return objects;
+  }
+
+  getGroupSecondElementId() {
+    let groupTasks = this.getOTSendAndOTReceiveGroupTasks(this.getGroup());
+    let groupTasksIds = groupTasks.map(a => a.id);
+    if (groupTasksIds.length === 2) {
+      groupTasksIds.splice(groupTasksIds.indexOf(this.task.id),1);
+      return groupTasksIds[0];
+    }
+    return null;
+  }
+
+  /** Simple disclosure analysis functions */
+  getDataObjectVisibilityStatus(dataObjectId: String) {
+    // Inputs: public
+    // Outputs: public
+    let statuses = [];
+    let inputIds = this.getTaskInputObjects().map(a => a.id);
+    let outputIds = this.getTaskOutputObjects().map(a => a.id);
+    if (inputIds.indexOf(dataObjectId) !== -1 || outputIds.indexOf(dataObjectId) !== -1) {
+      statuses.push("public");
+    }
+    if (statuses.length > 0) {
+      return statuses;
+    }
+    return null;
+  }
+
+  /** Validation functions */
+  areInputsAndOutputsNumbersCorrect() {
+    // Must have:
+    // Inputs: exactly 1
+    // Outputs: exactly 0
+    let numberOfInputs = this.getTaskInputObjects().length;
+    let numberOfOutputs = this.getTaskOutputObjects().length;
+    if (numberOfInputs != 1 || numberOfOutputs != 0) {
+      return false;
+    }
+    return true;
+  }
+
+  areGroupTasksOnDifferentLanes() {
+    let groupTasks = this.getOTSendAndOTReceiveGroupTasks(this.getGroup());
+    for (let task of groupTasks) {
+      for (let task2 of groupTasks) {
+        if (task.id !== task2.id) {
+          // If some or all of group tasks have same parent, return false
+          if (task.parent.id === task2.parent.id) {
+            if (task.businessObject.lanes && task2.businessObject.lanes && task.businessObject.lanes[0].id == task2.businessObject.lanes[0].id) {
+              return false;
+            }
+            if (!task.businessObject.lanes || !task2.businessObject.lanes) {
+              return false;
+            }
+          }
+        }
+      }
+    }
+    return true;
+  }
+
+  getMessageFlowsOfOutgoingPath() {
+    let outgMessageFlows = [];
+    let outgoingTasks = this.getTasksOfOutgoingPath();
+    for (let el of this.task.$parent.$parent.rootElements) {
+      if (el.$type === "bpmn:Collaboration") {
+        if (el.messageFlows) {
+          for (let mF of el.messageFlows) {
+            if (mF.sourceRef.$type === "bpmn:Task" && (outgoingTasks.indexOf(mF.sourceRef.id) !== -1 || this.task.id == mF.sourceRef.id)) {
+              outgMessageFlows.push(mF.id)
+            }
+          }
+        }
+      }
+    }
+    return $.unique(outgMessageFlows);
+  }
+
+  areStereotypesCorrectlyConnected() {
+    let messageFlowsConnenctingGroupTaskIds = $.grep(this.getMessageFlowsOfOutgoingPath(), (element) => {
+      return $.inArray(element, this.getTaskHandlerByTaskId(this.getGroupSecondElementId()).getTaskStereotypeInstanceByName("OTReceive").getMessageFlowsOfIncomingPath() ) !== -1;
+    });
+    if (messageFlowsConnenctingGroupTaskIds.length !== 1) {
+      return false;
+    }
+    for (let el of this.task.$parent.$parent.rootElements) {
+      if (el.$type === "bpmn:Collaboration") {
+        if (el.messageFlows) {
+          for (let mF of el.messageFlows) {
+            if (mF.sourceRef.$type === "bpmn:Task" && mF.targetRef.$type === "bpmn:Task") {
+              if ((mF.sourceRef.id == this.task.id && mF.targetRef.id == this.getGroupSecondElementId()) || (mF.targetRef.id == this.task.id && mF.sourceRef.id == this.getGroupSecondElementId())) {
+                return true;
+              }
+            }
+          }
+        }
+      }
+    }
+    return false;
+  }
+
+  areStereotypesInCorrectOrder() {
+    return this.taskIsInOutgoingPath(this.getGroupSecondElementId()) && !this.taskIsInIncomingPath(this.getGroupSecondElementId());
+  }
+
+  getOTSendAndOTReceiveGroupsTasksThatAreNotInSameOrderOnAllPoolsAndLanes() {
+    let groupTasks = this.getOTSendAndOTReceiveGroupTasks(this.getGroup());
+    let problematicTasks = this.getGroupsTasksThatAreNotInSameOrderOnAllPoolsAndLanes();
+    for (let task of groupTasks) {
+      if (problematicTasks.indexOf(task.id) !== -1) {
+        return groupTasks.map(a => a.id);
+      }
+    }
+    return [];
+  }
+
+  areOTTasksInSameOrderOnAllPoolsAndLanes() {
+    if (!this.areGroupsTasksInSameOrderOnAllPoolsAndLanes() && this.getOTSendAndOTReceiveGroupsTasksThatAreNotInSameOrderOnAllPoolsAndLanes().length > 0) {
+      return false;
+    }
+    return true;
+  }
+
+  checkForErrors(existingErrors: ValidationErrorObject[]) {
+    this.init();
+    this.loadAllOTSendAndOTReceiveGroupsTasks();
+
+    let groupTasks = this.getOTSendAndOTReceiveGroupTasks(this.getGroup());
+    let groupTasksIds = groupTasks.map(a => a.id);
+    let savedData = JSON.parse(this.task.OTSend);
+
+    if (!this.areInputsAndOutputsNumbersCorrect()) {
+      this.addUniqueErrorToErrorsList(existingErrors, "OTSend error: exactly 1 input and no outputs are required", [this.task.id], []);
+    }
+    if (groupTasks.length < 2) {
+      this.addUniqueErrorToErrorsList(existingErrors, "OTSend error: element with OTReceive stereotype is missing from the group", [this.task.id], []);
+    } else {
+      if (!this.areGroupTasksOnDifferentLanes()) {
+        this.addUniqueErrorToErrorsList(existingErrors, "OTSend & OTReceive error: both group tasks must be on separate lane", groupTasksIds, []);
+      } else {
+        if (!this.areTasksParallel(groupTasksIds)) {
+          if (!this.areStereotypesCorrectlyConnected()) {
+            this.addUniqueErrorToErrorsList(existingErrors, "OTSend & OTReceive error: element with OTReceive stereotype in this group must be directly connected (through message flow) to the element with OTSend stereotype and there must be no other connections between them", groupTasksIds, []);
+          } else {
+            if (!this.areStereotypesInCorrectOrder()) {
+              this.addUniqueErrorToErrorsList(existingErrors, "OTSend & OTReceive error: element with OTSend stereotype in this group must be before element with OTReceive stereotype", groupTasksIds, []);
+            }
+          }
+        } else {
+          if (!this.areOTTasksInSameOrderOnAllPoolsAndLanes()) {
+            this.addUniqueErrorToErrorsList(existingErrors, "OTSend & OTReceive warning: all group tasks are possibly not parallel", this.getOTSendAndOTReceiveGroupsTasksThatAreNotInSameOrderOnAllPoolsAndLanes(), []);
+          }
+          if (!this.isThereAtLeastOneStartEventInCurrentTaskProcess()) {
+            this.addUniqueErrorToErrorsList(existingErrors, "OTSend & OTReceive warning warning: StartEvent element is missing", [this.task.id], []);
+          } else {
+            if (!this.areAllGroupTasksAccesible()) {
+              this.addUniqueErrorToErrorsList(existingErrors, "OTSend & OTReceive warning: group task is possibly not accessible to the rest of the group", [this.task.id], []);
+            }
+          }
+        }
+      }
+    }
+    if (typeof savedData.groupId == 'undefined') {
+      this.addUniqueErrorToErrorsList(existingErrors, "OTSend error: groupId is undefined", [this.task.id], []);
+    }
   }
 
 }

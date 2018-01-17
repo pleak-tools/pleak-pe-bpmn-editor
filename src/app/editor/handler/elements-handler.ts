@@ -5,8 +5,9 @@ import * as Viewer from 'bpmn-js/lib/NavigatedViewer';
 import { TaskHandler } from "./task-handler";
 import { MessageFlowHandler } from "./message-flow-handler";
 import { DataObjectHandler } from "./data-object-handler";
+import { ValidationHandler } from './validation-handler';
 
-declare var $: any;
+declare let $: any;
 let is = (element, type) => element.$instanceOf(type);
 
 export class ElementsHandler {
@@ -14,6 +15,7 @@ export class ElementsHandler {
   constructor(viewer: Viewer, diagram: String, parent: any, parentType: String) {
     this.viewer = viewer;
     this.eventBus = this.viewer.get('eventBus');
+    this.canvas = this.viewer.get('canvas');
     this.diagram = diagram;
     this.parent = parent;
     this.parentType = parentType;
@@ -22,15 +24,19 @@ export class ElementsHandler {
 
   viewer: Viewer;
   eventBus: any;
+  canvas: any;
   diagram: String;
   parent: any;
   parentType: String;
+
+  validationHandler: ValidationHandler;
 
   taskHandlers: TaskHandler[] = [];
   messageFlowHandlers: MessageFlowHandler[] = [];
   dataObjectHandlers: DataObjectHandler[] = [];
 
   init() {
+    this.validationHandler = new ValidationHandler(this.viewer, this.diagram, this);
     // Import model from xml file
     this.viewer.importXML(this.diagram, () => {
       this.viewer.get("moddle").fromXML(this.diagram, (err:any, definitions:any) => {
@@ -54,13 +60,12 @@ export class ElementsHandler {
         if (beingEditedMessageFlowHandler.length > 0) {
           beingEditedMessageFlowHandler[0].terminateStereotypeEditProcess();
         }
-        // Not used yet:
-        // let beingEditedDataObjectHandler = this.dataObjectHandlers.filter(function( obj ) {
-        //   return obj.dataObject != e.element.businessObject && obj.beingEdited && obj.stereotypeSelector != null;
-        // });
-        // if (beingEditedDataObjectHandler.length > 0) {
-        //   beingEditedDataObjectHandler[0].terminateStereotypeEditProcess();
-        // }
+        let beingEditedDataObjectHandler = this.dataObjectHandlers.filter(function( obj ) {
+          return obj.dataObject != e.element.businessObject && (obj.beingEdited && obj.stereotypeSelector != null || obj.stereotypeSelectorHidden);
+        });
+        if (beingEditedDataObjectHandler.length > 0) {
+          beingEditedDataObjectHandler[0].terminateStereotypeEditProcess();
+        }
         
         // If clicked element is not yet being edited, start edit process
         let toBeEditedelementHandler = [];
@@ -72,15 +77,15 @@ export class ElementsHandler {
           toBeEditedelementHandler = this.messageFlowHandlers.filter(function( obj ) {
             return obj.messageFlow == e.element.businessObject && obj.beingEdited == false;
           });
+        } else if (is(e.element.businessObject, 'bpmn:DataObjectReference')) {
+          toBeEditedelementHandler = this.dataObjectHandlers.filter(function( obj ) {
+            return obj.dataObject == e.element.businessObject && obj.beingEdited == false;
+          });
         }
-        // Not used yet:
-        // else if (is(e.element.businessObject, 'bpmn:DataObjectReference')) {
-        //   toBeEditedelementHandler = this.dataObjectHandlers.filter(function( obj ) {
-        //     return obj.dataObject == e.element.businessObject && obj.beingEdited == false;
-        //   });
-        // }
         if (toBeEditedelementHandler.length > 0) {
           if (this.parentType === "public" && is(e.element.businessObject, 'bpmn:Task')) {
+            toBeEditedelementHandler[0].initPublicStereotypeView();
+          } else if (this.parentType === "public" && is(e.element.businessObject, 'bpmn:DataObjectReference')) {
             toBeEditedelementHandler[0].initPublicStereotypeView();
           } else if (this.parentType === "public" && is(e.element.businessObject, 'bpmn:MessageFlow')) {
             // Currently do nothing
@@ -96,7 +101,7 @@ export class ElementsHandler {
   // Create handler instance for each task / messageFlow of model
   createElementHandlerInstances(definitions: any) {
     for (let diagram of definitions.diagrams) {
-      var element = diagram.plane.bpmnElement;
+      let element = diagram.plane.bpmnElement;
       if (element.$type === "bpmn:Process") {
         if (element.flowElements) {
           for (let node of element.flowElements.filter((e:any) => is(e, "bpmn:Task"))) {
@@ -186,6 +191,13 @@ export class ElementsHandler {
   // Get all dataObjectHandler instances of the model
   getAllModelDataObjectHandlers() {
     return this.dataObjectHandlers;
+  }
+
+
+  /** Wrappers to access validationHandler functions*/
+
+  checkForStereotypeErrorsAndShowErrorsList() {
+    this.validationHandler.checkForStereotypeErrorsAndShowErrorsList();
   }
 
 }

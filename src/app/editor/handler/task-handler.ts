@@ -1,6 +1,7 @@
 import * as Viewer from 'bpmn-js/lib/NavigatedViewer';
 
 import { ElementsHandler } from "./elements-handler";
+import { ValidationHandler, ValidationErrorObject } from "./validation-handler";
 import { TaskStereotype } from "../stereotype/task-stereotype";
 import { PKEncrypt } from "../stereotype/stereotypes/PKEncrypt";
 import { PKDecrypt } from "../stereotype/stereotypes/PKDecrypt";
@@ -19,6 +20,7 @@ import { FunSSSharing } from "../stereotype/stereotypes/FunSSSharing";
 import { FunSSComputation } from "../stereotype/stereotypes/FunSSComputation";
 import { FunSSReconstruction } from "../stereotype/stereotypes/FunSSReconstruction";
 import { SGXComputation } from "../stereotype/stereotypes/SGXComputation";
+import { SGXProtect } from "../stereotype/stereotypes/SGXProtect";
 import { SGXQuoting } from "../stereotype/stereotypes/SGXQuoting";
 import { SGXQuoteVerification } from "../stereotype/stereotypes/SGXQuoteVerification";
 import { SGXAttestationEnclave } from "../stereotype/stereotypes/SGXAttestationEnclave";
@@ -26,11 +28,12 @@ import { SGXAttestationChallenge } from "../stereotype/stereotypes/SGXAttestatio
 import { DimensionalityReduction } from "../stereotype/stereotypes/DimensionalityReduction";
 import { GCGarble } from "../stereotype/stereotypes/GCGarble";
 import { GCEvaluate } from "../stereotype/stereotypes/GCEvaluate";
+import { GCComputation } from "../stereotype/stereotypes/GCComputation";
 import { OTSend } from "../stereotype/stereotypes/OTSend";
 import { OTReceive } from "../stereotype/stereotypes/OTReceive";
 import { DifferentialPrivacy } from "../stereotype/stereotypes/DifferentialPrivacy";
 
-declare var $: any;
+declare let $: any;
 let is = (element, type) => element.$instanceOf(type);
 
 export class TaskHandler {
@@ -42,6 +45,7 @@ export class TaskHandler {
     this.overlays = this.viewer.get('overlays');
 
     this.elementsHandler = elementsHandler;
+    this.validationHandler = elementsHandler.validationHandler;
     this.task = task;
 
     this.init();
@@ -55,6 +59,7 @@ export class TaskHandler {
   overlays: any;
 
   elementsHandler: ElementsHandler;
+  validationHandler: ValidationHandler;
   task: any;
 
   stereotypes: TaskStereotype[] = [];
@@ -80,6 +85,7 @@ export class TaskHandler {
     "FunSSComputation",
     "FunSSReconstruction",
     "SGXComputation",
+    "SGXProtect",
     "SGXAttestationEnclave",
     "SGXAttestationChallenge",
     "SGXQuoting",
@@ -87,10 +93,15 @@ export class TaskHandler {
     "DimensionalityReduction",
     "GCGarble",
     "GCEvaluate",
+    "GCComputation",
     "OTSend",
     "OTReceive",
     "DifferentialPrivacy"
   ];
+
+  getTaskId() {
+    return this.task.id;
+  }
 
   init() {
     // Add stereotype instances to the task (based on xml of the model)
@@ -101,6 +112,18 @@ export class TaskHandler {
       }
     }
     this.loadTaskStereotypes();
+    this.loadTaskLaneOrPool();
+  }
+
+  getDataObjectVisibilityStatus(dataObjectId: String) {
+    let allStatuses = [];
+    for (let sType of this.getAllTaskStereotypeInstances()) {
+      let statuses = sType.getDataObjectVisibilityStatus(dataObjectId);
+      if (statuses) {
+        allStatuses = allStatuses.concat(statuses);
+      }
+    }
+    return allStatuses;
   }
 
   // Add already existing stereotype labels to the model
@@ -109,6 +132,19 @@ export class TaskHandler {
       for (let stereotype of this.stereotypes) {
         this.addStereotypeLabelToElement(stereotype.getTitle());
       }
+    }
+  }
+
+  // Load information about tasks' parent lane/pool
+  loadTaskLaneOrPool() {
+    let task = this.registry.get(this.task.id);
+    if (task.businessObject.lanes) {
+      this.addLaneOrPoolToTheListOfModelLanesAndPools(task.businessObject.lanes[0].id);
+      this.loadTaskOntoParentLaneOrPool(task.businessObject.lanes[0].id, this.task.id);
+    }
+    if (!task.businessObject.lanes) {
+      this.addLaneOrPoolToTheListOfModelLanesAndPools(task.parent.id);
+      this.loadTaskOntoParentLaneOrPool(task.parent.id, this.task.id);
     }
   }
 
@@ -121,6 +157,7 @@ export class TaskHandler {
     this.beingEdited = true;
   }
 
+  // Start stereotype public view for the viewer
   initPublicStereotypeView() {
     for (let sType of this.stereotypes) {
       sType.initStereotypePublicView();
@@ -246,6 +283,9 @@ export class TaskHandler {
               <tr>
                 <td class="link-row" id="FunSSSharing-button">FunSSSharing</td>
               </tr>
+              <tr>
+                <td class="link-row" id="SGXProtect-button">SGXProtect</td>
+              </tr>
             </tbody>
           </table>
           <table class="table table-hover stereotypes-table">
@@ -314,6 +354,9 @@ export class TaskHandler {
               </tr>
               <tr>
                 <td class="link-row" id="GCGarble-button">GCGarble</td>
+              </tr>
+              <tr>
+                <td class="link-row" id="GCComputation-button">GCComputation</td>
               </tr>
             </tbody>
           </table>
@@ -477,7 +520,7 @@ export class TaskHandler {
       }
     }
 
-    var stOverlay = this.overlays.add(this.registry.get(this.task.id), {
+    let stOverlay = this.overlays.add(this.registry.get(this.task.id), {
       position: {
         bottom: 0,
         right: 0
@@ -535,6 +578,8 @@ export class TaskHandler {
         st = new FunSSReconstruction(this);
       } else if (name == "SGXComputation") {
         st = new SGXComputation(this);
+      } else if (name == "SGXProtect") {
+        st = new SGXProtect(this);
       } else if (name == "SGXAttestationEnclave") {
         st = new SGXAttestationEnclave(this);
       } else if (name == "SGXAttestationChallenge") {
@@ -549,6 +594,8 @@ export class TaskHandler {
         st = new GCGarble(this);
       } else if (name == "GCEvaluate") {
         st = new GCEvaluate(this);
+      } else if (name == "GCComputation") {
+        st = new GCComputation(this);
       } else if (name == "OTSend") {
         st = new OTSend(this);
       } else if (name == "OTReceive") {
@@ -568,14 +615,14 @@ export class TaskHandler {
   // Start adding new stereotype to the task (open settings panel etc)
   addStereotypeByName(name: String) {
     if (this.tempStereotype == null) {
-      var st = this.createStereotypeByName(name);
+      let st = this.createStereotypeByName(name);
       st.loadStereotypeTemplateAndInitStereotypeSettingsWithHighlight();
       this.tempStereotype = st;
     } else {
       if (this.tempStereotype.getTitle() != name) {
         this.tempStereotype.terminateStereotypeSettings();
         this.initElementStereotypeSettings();
-        var st = this.createStereotypeByName(name);
+        let st = this.createStereotypeByName(name);
         st.loadStereotypeTemplateAndInitStereotypeSettingsWithHighlight();
         this.tempStereotype = st;
       }
@@ -590,24 +637,30 @@ export class TaskHandler {
 
   // Remove stereotype from the task by stereotype name
   removeStereotypeByName(name: String) {
-    if (this.getAddedStereotypeInstanceByName(name)) {
-      this.overlays.remove({id: this.getAddedStereotypeInstanceByName(name).getLabel()});
+    if (this.getTaskStereotypeInstanceByName(name)) {
+      this.overlays.remove({id: this.getTaskStereotypeInstanceByName(name).getLabel()});
       this.stereotypes = this.stereotypes.filter(obj => obj.getTitle() !== name);
       delete this.task[(<any>name)];
     }
   }
 
-  // Get stereotype instance of the task by stereotype name
-  getAddedStereotypeInstanceByName(name: String) {
+  // Return stereotype instance of the task by stereotype name
+  getTaskStereotypeInstanceByName(name: String) {
     for (let sType of this.stereotypes) {
       if (sType.getTitle() == name) {
         return sType;
       }
     }
+    return null;
   }
 
   // Add stereotype label to the task by stereotype name
   addStereotypeLabelToElement(title: String) {
+    let stereotypesOnTaskNames = this.stereotypes.map(a => a.getTitle());
+    let bottomPosition = 0;
+    if (stereotypesOnTaskNames.length > 1) {
+      bottomPosition = stereotypesOnTaskNames.indexOf(title)*-14;
+    }
     if (title != null) {
       let taskTypeLabel = $(
         `<div class="stereotype-label" id="` + this.task.id + `-` + title + `-label" style="padding:5px; border-radius:2px">
@@ -616,7 +669,7 @@ export class TaskHandler {
       );
       let stLabel = this.overlays.add(this.registry.get(this.task.id), {
         position: {
-          bottom: 0,
+          bottom: bottomPosition,
           left: -5
         },
         show: {
@@ -625,64 +678,8 @@ export class TaskHandler {
         },
         html: taskTypeLabel
       });
-      this.getAddedStereotypeInstanceByName(title).setLabel(stLabel);
+      this.getTaskStereotypeInstanceByName(title).setLabel(stLabel);
     }
-  }
-
-  // Get all input elements of the task
-  getTaskInputObjects() {
-    let objects = [];
-    if (this.task.id != null) {
-      let task = this.registry.get(this.task.id).businessObject;
-      if (task.dataInputAssociations) {
-        for (var i = 0; i < task.dataInputAssociations.length; i++) {
-          if (task.dataInputAssociations[i].sourceRef) {
-            objects.push(this.registry.get(task.dataInputAssociations[i].sourceRef[0].id));
-          }
-        }
-      }
-    }
-    return objects;
-  }
-
-  // Get all output elements of the task
-  getTaskOutputObjects() {
-    let objects = [];
-    if (this.task.id != null) {
-      let task = this.registry.get(this.task.id).businessObject;
-      if (task.dataOutputAssociations) {
-        for (var i = 0; i < task.dataOutputAssociations.length; i++) {
-          if (task.dataOutputAssociations[i].targetRef) {
-            objects.push(this.registry.get(task.dataOutputAssociations[i].targetRef.id));
-          }
-        }
-      }
-    }
-    return objects;
-  }
-
-  // Get all elements that are inputs and outputs at the same time of the task
-  getTaskInputOutputObjects() {
-    let objects = [];
-    if (this.task.id != null) {
-      let allInputsOutputs = [];
-      let allInputs = [];
-      let allOutputs = [];
-      for (let inputObj of this.getTaskInputObjects()) {
-        allInputsOutputs.push(inputObj);
-        allInputs.push(inputObj);
-      }
-      for (let outputObj of this.getTaskOutputObjects()) {
-        allInputsOutputs.push(outputObj);
-        allOutputs.push(outputObj);
-      }
-      for (let obj of allInputsOutputs) {
-        if (allInputs.indexOf(obj) !== -1 && allOutputs.indexOf(obj) !== -1 && objects.indexOf(obj) === -1) {
-           objects.push(obj);
-        }
-      }
-    }
-    return objects;
   }
 
   // Highlight inputs and outputs of the task
@@ -715,22 +712,111 @@ export class TaskHandler {
       this.canvas.removeMarker(outputObj.id, 'highlight-output-selected');
     }
   }
-  
+
+  // Return all input elements of the task
+  getTaskInputObjects() {
+    let objects = [];
+    if (this.task.id != null) {
+      let task = this.registry.get(this.task.id).businessObject;
+      if (task.dataInputAssociations) {
+        for (let i = 0; i < task.dataInputAssociations.length; i++) {
+          if (task.dataInputAssociations[i].sourceRef) {
+            objects.push(this.registry.get(task.dataInputAssociations[i].sourceRef[0].id));
+          }
+        }
+      }
+    }
+    return objects;
+  }
+
+  // Return all output elements of the task
+  getTaskOutputObjects() {
+    let objects = [];
+    if (this.task.id != null) {
+      let task = this.registry.get(this.task.id).businessObject;
+      if (task.dataOutputAssociations) {
+        for (let i = 0; i < task.dataOutputAssociations.length; i++) {
+          if (task.dataOutputAssociations[i].targetRef) {
+            objects.push(this.registry.get(task.dataOutputAssociations[i].targetRef.id));
+          }
+        }
+      }
+    }
+    return objects;
+  }
+
+  // Return all elements that are inputs and outputs at the same time of the task
+  getTaskInputOutputObjects() {
+    let objects = [];
+    if (this.task.id != null) {
+      let allInputsOutputs = [];
+      let allInputs = [];
+      let allOutputs = [];
+      for (let inputObj of this.getTaskInputObjects()) {
+        allInputsOutputs.push(inputObj);
+        allInputs.push(inputObj);
+      }
+      for (let outputObj of this.getTaskOutputObjects()) {
+        allInputsOutputs.push(outputObj);
+        allOutputs.push(outputObj);
+      }
+      for (let obj of allInputsOutputs) {
+        if (allInputs.indexOf(obj) !== -1 && allOutputs.indexOf(obj) !== -1 && objects.indexOf(obj) === -1) {
+           objects.push(obj);
+        }
+      }
+    }
+    return objects;
+  }
+
+  // Return all task stereotype instances
+  getAllTaskStereotypeInstances() {
+    return this.stereotypes;
+  }
+
 
   /** Wrappers to access elementsHandler functions*/
 
-  // Get taskHandler instance of task by task id
   getTaskHandlerByTaskId(taskId: String) {
     return this.elementsHandler.getTaskHandlerByTaskId(taskId);
   }
 
-  // Get all taskHandler instances of the model
   getAllModelTaskHandlers() {
     return this.elementsHandler.getAllModelTaskHandlers();
   }
 
+  getMessageFlowHandlerByMessageFlowId(messageFlowId: String) {
+    return this.elementsHandler.getMessageFlowHandlerByMessageFlowId(messageFlowId);
+  }
+
   updateModelContentVariable(xml: String) {
     this.elementsHandler.updateModelContentVariable(xml);
+  }
+
+  /** Wrappers to access validationHandler functions*/
+
+  addStereotypeToTheListOfGroupStereotypesOnModel(stereotype: String) {
+    this.validationHandler.addStereotypeToTheListOfGroupStereotypesOnModel(stereotype);
+  }
+
+  addLaneOrPoolToTheListOfModelLanesAndPools(layer: String) {
+    this.validationHandler.addLaneOrPoolToTheListOfModelLanesAndPools(layer);
+  }
+
+  loadTaskOntoParentLaneOrPool(parentId: String, taskId: String) {
+    this.validationHandler.loadTaskOntoParentLaneOrPool(parentId, taskId);
+  }
+
+  areGroupsTasksInSameOrderOnAllPoolsAndLanes() {
+    return this.validationHandler.areGroupsTasksInSameOrderOnAllPoolsAndLanes();
+  }
+
+  getGroupsTasksThatAreNotInSameOrderOnAllPoolsAndLanes() {
+    return this.validationHandler.getGroupsTasksThatAreNotInSameOrderOnAllPoolsAndLanes()
+  }
+
+  getTasksOfIncomingPath() {
+    return this.validationHandler.getTasksOfIncomingPathByInputElement(this.task);
   }
 
 }

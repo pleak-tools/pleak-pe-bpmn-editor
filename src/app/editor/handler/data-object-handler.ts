@@ -1,9 +1,12 @@
 import * as Viewer from 'bpmn-js/lib/NavigatedViewer';
 
 import { ElementsHandler } from "./elements-handler";
+import { ValidationHandler, ValidationErrorObject } from "./validation-handler";
 import { DataObjectStereotype } from "../stereotype/data-object-stereotype";
+import { PKPublic } from "../stereotype/stereotypes/PKPublic";
+import { PKPrivate } from "../stereotype/stereotypes/PKPrivate";
 
-declare var $: any;
+declare let $: any;
 let is = (element, type) => element.$instanceOf(type);
 
 export class DataObjectHandler {
@@ -15,6 +18,7 @@ export class DataObjectHandler {
     this.overlays = this.viewer.get('overlays');
 
     this.elementsHandler = elementsHandler;
+    this.validationHandler = elementsHandler.validationHandler;
     this.dataObject = dataObject;
 
     this.init();
@@ -28,15 +32,52 @@ export class DataObjectHandler {
   overlays: any;
 
   elementsHandler: ElementsHandler;
+  validationHandler: ValidationHandler;
   dataObject: any;
+  parentLaneOrPool: any;
+  parentTasks: any[];
+  incomingParentTasks: any[] = [];
+  outgoingParentTasks: any[] = [];
+  tasksVisibleTo: any[] = [];
+  visibilityStatus: any[] = [];
 
   stereotypes: DataObjectStereotype[] = [];
   stereotypeSelector: String = null;
+  stereotypeSelectorHidden: Boolean = false;
   tempStereotype: DataObjectStereotype = null;
 
   supportedStereotypes: String[] = [
-    // ""
+    "PKPublic",
+    "PKPrivate"
   ];
+
+  getDataObjectId() {
+    return this.dataObject.id;
+  }
+
+  getDataObjectParentLaneOrPool() {
+    return this.parentLaneOrPool;
+  }
+
+  getLanesAndPoolsDataObjectIsVisibleTo() {
+    return this.tasksVisibleTo;
+  }
+
+  getDataObjectParentTasks() {
+    return this.parentTasks;
+  }
+
+  getDataObjectIncomingParentTasks() {
+    return this.incomingParentTasks;
+  }
+
+  getDataObjectOutgoingParentTasks() {
+    return this.outgoingParentTasks;
+  }
+
+  getVisibilityStatus() {
+    return this.visibilityStatus;
+  }
 
   init() {
     // Add stereotype instances to the dataObject (based on xml of the model)
@@ -47,6 +88,107 @@ export class DataObjectHandler {
       }
     }
     this.loadDataObjectStereotypes();
+    this.loadParentLaneOrPool();
+    this.loadParentTasks();
+    //this.loadIncomingParentTasks();
+    //this.loadOutgoingParentTasks();
+    this.loadLanesAndPoolsToWhichDataObjectIsVisible();
+    this.loadDataObjectVisibilityStatus();
+  }
+
+  loadParentLaneOrPool() {
+    this.parentLaneOrPool = null;
+    if (this.registry.get(this.dataObject.id).parent && this.registry.get(this.registry.get(this.dataObject.id).parent.id)) {
+      this.parentLaneOrPool = this.registry.get(this.registry.get(this.dataObject.id).parent.id).businessObject;
+    }
+  }
+
+  loadParentTasks() {
+    let parentTasks = [];
+    if (this.registry.get(this.dataObject.id) && this.registry.get(this.dataObject.id).incoming) {
+      for (let incoming of this.registry.get(this.dataObject.id).incoming) {
+        if (incoming.businessObject && incoming.businessObject.$parent && incoming.businessObject.$parent.$type === "bpmn:Task") {
+          parentTasks.push(incoming.businessObject.$parent);
+        }
+      }
+    }
+    if (this.registry.get(this.dataObject.id) && this.registry.get(this.dataObject.id).outgoing) {
+      for (let outgoing of this.registry.get(this.dataObject.id).outgoing) {
+        if (outgoing.businessObject && outgoing.businessObject.$parent && outgoing.businessObject.$parent.$type === "bpmn:Task") {
+          parentTasks.push(outgoing.businessObject.$parent);
+        }
+      }
+    }
+    this.parentTasks = parentTasks;
+  }
+
+  loadIncomingParentTasks() {
+    let parentTasks = [];
+    if (this.registry.get(this.dataObject.id) && this.registry.get(this.dataObject.id).incoming) {
+      for (let incoming of this.registry.get(this.dataObject.id).incoming) {
+        if (incoming.businessObject && incoming.businessObject.$parent && incoming.businessObject.$parent.$type === "bpmn:Task") {
+          parentTasks.push(incoming.businessObject.$parent);
+        }
+      }
+    }
+    this.incomingParentTasks = parentTasks;
+  }
+
+  loadOutgoingParentTasks() {
+    let parentTasks = [];
+    if (this.registry.get(this.dataObject.id) && this.registry.get(this.dataObject.id).outgoing) {
+      for (let outgoing of this.registry.get(this.dataObject.id).outgoing) {
+        if (outgoing.businessObject && outgoing.businessObject.$parent && outgoing.businessObject.$parent.$type === "bpmn:Task") {
+          parentTasks.push(outgoing.businessObject.$parent);
+        }
+      }
+    }
+    this.outgoingParentTasks = parentTasks;
+  }
+
+  loadLanesAndPoolsToWhichDataObjectIsVisible() {
+    let tasksVisibleTo = [];
+    if (this.registry.get(this.dataObject.id) && this.registry.get(this.dataObject.id).incoming) {
+      for (let incoming of this.registry.get(this.dataObject.id).incoming) {
+        if (incoming.businessObject && incoming.businessObject.$parent && incoming.businessObject.$parent.$type === "bpmn:Task") {
+          if (this.registry.get(incoming.businessObject.$parent.id).businessObject.lanes) {
+            tasksVisibleTo.push(this.registry.get(incoming.businessObject.$parent.id).businessObject.lanes[0].id);
+          }
+          if (!this.registry.get(incoming.businessObject.$parent.id).businessObject.lanes && this.registry.get(incoming.businessObject.$parent.id).parent) {
+            tasksVisibleTo.push(this.registry.get(incoming.businessObject.$parent.id).parent.id);
+          }
+        }
+      }
+    }
+    if (this.registry.get(this.dataObject.id) && this.registry.get(this.dataObject.id).outgoing) {
+      for (let outgoing of this.registry.get(this.dataObject.id).outgoing) {
+        if (outgoing.businessObject && outgoing.businessObject.$parent && outgoing.businessObject.$parent.$type === "bpmn:Task") {
+          if (this.registry.get(outgoing.businessObject.$parent.id)) {
+            if (this.registry.get(outgoing.businessObject.$parent.id).businessObject.lanes) {
+              tasksVisibleTo.push(this.registry.get(outgoing.businessObject.$parent.id).businessObject.lanes[0].id);
+            }
+            if (!this.registry.get(outgoing.businessObject.$parent.id).businessObject.lanes && this.registry.get(outgoing.businessObject.$parent.id).parent) {
+              tasksVisibleTo.push(this.registry.get(outgoing.businessObject.$parent.id).parent.id);
+            }
+          }
+        }
+      }
+    }
+    if (tasksVisibleTo.length === 0) {
+      tasksVisibleTo.push(this.parentLaneOrPool.id);
+    }
+    this.tasksVisibleTo = tasksVisibleTo;
+  }
+
+  loadDataObjectVisibilityStatus() {
+    let statuses = [];
+    for (let parentTask of this.getDataObjectParentTasks()) {
+      let status = this.elementsHandler.getTaskHandlerByTaskId(parentTask.id).getDataObjectVisibilityStatus(this.dataObject.id);
+      if (status) {
+        statuses = statuses.concat(status);
+      }
+    }
+    this.visibilityStatus = this.visibilityStatus.concat(statuses);
   }
 
   // Add already existing stereotype labels to the model
@@ -67,11 +209,22 @@ export class DataObjectHandler {
     this.beingEdited = true;
   }
 
+  // Start stereotype public view for the viewer
+  initPublicStereotypeView() {
+    for (let sType of this.stereotypes) {
+      sType.initStereotypePublicView();
+    }
+    this.beingEdited = false;
+    this.stereotypeSelectorHidden = true;
+    this.stereotypeSelector = null;
+  }
+
   // End dataObject editing (stereotype adding) process
   terminateStereotypeEditProcess() {
     this.terminateDataObjectStereotypeSelector();
     this.terminateDataObjectStereotypeSettings();
     this.beingEdited = false;
+    this.stereotypeSelectorHidden = false;
   }
 
   // Init settings panels for all already added stereotypes
@@ -94,27 +247,47 @@ export class DataObjectHandler {
 
   // Show stereotype selector next to dataObject element on the model
   initDataObjectStereotypeSelector() {
-    var overlayHtml = 
-      `<div class="stereotype-editor" id="` + this.dataObject.id + `-stereotype-selector" style="background:white; padding:10px; border-radius:2px">
-        <span><b>Select type:</b></span>`;
-    for (let stereotype of this.supportedStereotypes) {
-      let disabled = "";
-      if (this.dataObject[(<any>stereotype)] != null) {
-        disabled = `disabled style="opacity:0.5"`;
-      }
-      overlayHtml += `<button id="` + this.dataObject.id + `-` + stereotype + `-button" ` + disabled + `>` + stereotype + `</button><br>`;
-    }
-    overlayHtml += `</div>`;
+    let overlayHtml = `
+      <div class="panel panel-default stereotype-editor" id="` + this.dataObject.id + `-stereotype-selector">
+        <div class="stereotype-editor-close-link" style="float: right; color: darkgray; cursor: pointer">X</div>
+        <div class="stereotype-selector-main-menu">
+          <div style="margin-bottom:10px;">
+            <b>Stereotypes menu</b>
+          </div>
+          <table class="table table-hover stereotypes-table">
+            <tbody>
+              <tr>
+                <td class="link-row" id="PKPublic-button">PKPublic</td>
+              </tr>
+              <tr>
+              <td class="link-row" id="PKPrivate-button">PKPrivate</td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
 
     overlayHtml = $(overlayHtml);
 
+    $(overlayHtml).on('click', '.stereotype-editor-close-link', (e) => {
+      this.terminateDataObjectStereotypeSelector();
+      this.beingEdited = false;
+      this.stereotypeSelectorHidden = true;
+    });
+
+    // Stereotype links
     for (let stereotype of this.supportedStereotypes) {
-      $(overlayHtml).on('click', '#' + this.dataObject.id+'-' + stereotype + '-button', (e) => {
+      $(overlayHtml).on('click', '#' + stereotype + '-button', (e) => {
         this.addStereotypeByName(stereotype);
       });
+
+      if (this.dataObject[(<any>stereotype)] != null) {
+        $(overlayHtml).find('#' + stereotype + '-button').addClass('disabled-link');
+      }
     }
 
-    var stOverlay = this.overlays.add(this.registry.get(this.dataObject.id), {
+    let stOverlay = this.overlays.add(this.registry.get(this.dataObject.id), {
       position: {
         bottom: 0,
         right: 0
@@ -138,9 +311,11 @@ export class DataObjectHandler {
   createStereotypeByName(name: String) {
     let st = null;
     if (name) {
-    //   if (name == "Test") {
-    //     st = new Test(this);
-    //   }
+      if (name == "PKPublic") {
+        st = new PKPublic(this);
+      } else if (name == "PKPrivate") {
+        st = new PKPrivate(this);
+      }
     }
     return st;
   }
@@ -153,14 +328,14 @@ export class DataObjectHandler {
   // Start adding new stereotype to the dataObject (open settings panel etc)
   addStereotypeByName(name: String) {
     if (this.tempStereotype == null) {
-      var st = this.createStereotypeByName(name);
+      let st = this.createStereotypeByName(name);
       st.loadStereotypeTemplateAndInitStereotypeSettingsWithHighlight();
       this.tempStereotype = st;
     } else {
       if (this.tempStereotype.getTitle() != name) {
         this.tempStereotype.terminateStereotypeSettings();
         this.initElementStereotypeSettings();
-        var st = this.createStereotypeByName(name);
+        let st = this.createStereotypeByName(name);
         st.loadStereotypeTemplateAndInitStereotypeSettingsWithHighlight();
         this.tempStereotype = st;
       }
@@ -175,15 +350,15 @@ export class DataObjectHandler {
 
   // Remove stereotype from the dataObject by stereotype name
   removeStereotypeByName(name: String) {
-    if (this.getAddedStereotypeInstanceByName(name)) {
-      this.overlays.remove({id: this.getAddedStereotypeInstanceByName(name).getLabel()});
+    if (this.getDataObjectStereotypeInstanceByName(name)) {
+      this.overlays.remove({id: this.getDataObjectStereotypeInstanceByName(name).getLabel()});
       this.stereotypes = this.stereotypes.filter(obj => obj.getTitle() !== name);
       delete this.dataObject[(<any>name)];
     }
   }
 
   // Get stereotype instance of the dataObject by stereotype name
-  getAddedStereotypeInstanceByName(name: String) {
+  getDataObjectStereotypeInstanceByName(name: String) {
     for (let sType of this.stereotypes) {
       if (sType.getTitle() == name) {
         return sType;
@@ -196,13 +371,13 @@ export class DataObjectHandler {
     if (title != null) {
       let dataObjectTypeLabel = $(
         `<div class="stereotype-label" id="` + this.dataObject.id + `-` + title + `-label" style="padding:5px; border-radius:2px">
-           <span class="stereotype-label-color" style="font-size:12px;"><b>` + title + `</b></span>
+           <span class="stereotype-label-color" style="font-size:10px;"><b>` + title + `</b></span>
          </div>`
       );
       let stLabel = this.overlays.add(this.registry.get(this.dataObject.id), {
         position: {
-          bottom: 0,
-          left: -5
+          top: 0,
+          left: -10
         },
         show: {
           minZoom: 0,
@@ -210,19 +385,22 @@ export class DataObjectHandler {
         },
         html: dataObjectTypeLabel
       });
-      this.getAddedStereotypeInstanceByName(title).setLabel(stLabel);
+      this.getDataObjectStereotypeInstanceByName(title).setLabel(stLabel);
     }
+  }
+
+  // Return all task stereotype instances
+  getAllDataObjectStereotypeInstances() {
+    return this.stereotypes;
   }
 
 
   /** Wrappers to access elementsHandler functions*/
 
-  // Get dataObjectHandler instance of dataObject by dataObject id
   getDataObjectHandlerByDataObjectId(dataObjectId: String) {
     return this.elementsHandler.getDataObjectHandlerByDataObjectId(dataObjectId);
   }
 
-  // Get all dataObjectHandler instances of the model
   getAllModelDataObjectHandlers() {
     return this.elementsHandler.getAllModelDataObjectHandlers();
   }

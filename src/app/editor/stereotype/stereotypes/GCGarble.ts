@@ -1,14 +1,10 @@
-import { TaskStereotype } from "../task-stereotype";
+import { ValidationErrorObject } from "../../handler/validation-handler";
+import { TaskStereotype, TaskStereotypeGroupObject } from "../task-stereotype";
 import { TaskHandler } from "../../handler/task-handler";
 import { GCEvaluate } from "./GCEvaluate";
 
-declare var $: any;
+declare let $: any;
 let is = (element, type) => element.$instanceOf(type);
-
-interface GCGarbleGroupTaskObject {
-    groupId: String;
-    taskId: String;
-}
 
 export class GCGarble extends TaskStereotype {
 
@@ -19,7 +15,7 @@ export class GCGarble extends TaskStereotype {
 
   group: String = null;
   selectedGroup: String = null;
-  GCGarbleAndEvaluateGroupsTasks: GCGarbleGroupTaskObject[] = [];
+  GCGarbleAndEvaluateGroupsTasks: TaskStereotypeGroupObject[] = [];
 
   /** Functions inherited from TaskStereotype and Stereotype classes */
   getTitle() {
@@ -47,12 +43,12 @@ export class GCGarble extends TaskStereotype {
     this.initAddGroupButton();
     this.initGroupSelectDropdown();
 
-    var selectedGroupId = null;
-    var groups;
+    let selectedGroupId = null;
+    let groups;
     let inputScript;
-    var garbledCircuit;
-    var inputEncoding;
-    var selected = null;
+    let garbledCircuit;
+    let inputEncoding;
+    let selected = null;
 
     this.loadAllGCGarbleAndGCEvaluateGroupsTasks();
 
@@ -75,9 +71,9 @@ export class GCGarble extends TaskStereotype {
     this.highlightGCGarbleAndGCEvaluateGroupMembersAndTheirInputsOutputs(selectedGroupId);
 
     for (let group of this.getModelGCGarbleAndGCEvaluateGroups()) {
-      var sel = "";
+      let sel = "";
       if (selectedGroupId !== null) {
-        if (group == selectedGroupId) {
+        if (group.trim() == selectedGroupId.trim()) {
           sel = "selected";
         }
       }
@@ -90,8 +86,8 @@ export class GCGarble extends TaskStereotype {
     }
 
     for (let outputObject of this.getTaskOutputObjects()) {
-      var selectedGarbledCircuit = "";
-      var selectedInputEncoding = "";
+      let selectedGarbledCircuit = "";
+      let selectedInputEncoding = "";
       if (selected !== null) {
         if (outputObject.id == selected.garbledCircuit) {
           selectedGarbledCircuit = "selected";
@@ -108,7 +104,10 @@ export class GCGarble extends TaskStereotype {
     if (selectedGroupId !== null) {
       for (let groupTask of this.getGCGarbleAndGCEvaluateGroupTasks(selectedGroupId)) {
         if (groupTask.id != this.task.id && groupTask.businessObject.GCEvaluate != null) {
-          let taskName = groupTask.businessObject.name.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+          let taskName = undefined;
+          if (groupTask.businessObject.name) {
+            taskName = groupTask.businessObject.name.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+          }
           taskObjs += '<label class="text-16">' + taskName + '</label>'
           taskObjs += '<ul class="stereotype-option">';
 
@@ -154,19 +153,17 @@ export class GCGarble extends TaskStereotype {
     let inputScript = this.settingsPanelContainer.find('#GCGarble-inputScript').val();
     let garbledCircuit = this.settingsPanelContainer.find('#GCGarble-garbledCircuitSelect').val();
     let inputEncoding = this.settingsPanelContainer.find('#GCGarble-inputEncodingSelect').val();
-    let numberOfOutputs = this.getTaskOutputObjects().length;
-    let numberOfInputs = this.getTaskInputObjects().length;
     if (group) {
-      if (numberOfOutputs == 2 && numberOfInputs == 0) {
+      if (this.areInputsAndOutputsNumbersCorrect()) {
         let tasks = this.getGCGarbleAndGCEvaluateGroupTasks(group);
         let taskAlreadyInGroup = tasks.filter(( obj ) => {
           return obj.id == self.task.id;
         });
-        if (tasks.length == 2 && taskAlreadyInGroup.length !== 1) {
+        if (tasks.length === 2 && taskAlreadyInGroup.length !== 1) {
           this.settingsPanelContainer.find('#GCGarble-groupSelect-form-group').addClass('has-error');
           this.settingsPanelContainer.find('#GCGarble-groupSelect-help2').show();
           return;
-        } else if (tasks.length == 1) {
+        } else if (tasks.length === 1) {
           for (let task of tasks) {
             if (task.businessObject.GCGarble != null && task.id != this.task.id) {
               this.settingsPanelContainer.find('#GCGarble-groupSelect-form-group').addClass('has-error');
@@ -298,11 +295,11 @@ export class GCGarble extends TaskStereotype {
 
   highlightGCGarbleAndGCEvaluateGroupMembersAndTheirInputsOutputs(group: String) {
 
-    for (var i = 0; i < this.GCGarbleAndEvaluateGroupsTasks.length; i++) {
-      var groupId = this.GCGarbleAndEvaluateGroupsTasks[i].groupId;
-      var taskId = this.GCGarbleAndEvaluateGroupsTasks[i].taskId;
+    for (let i = 0; i < this.GCGarbleAndEvaluateGroupsTasks.length; i++) {
+      let groupId = this.GCGarbleAndEvaluateGroupsTasks[i].groupId;
+      let taskId = this.GCGarbleAndEvaluateGroupsTasks[i].taskId;
 
-      if (groupId == group) {
+      if (groupId.trim() == group.trim()) {
         this.canvas.addMarker(taskId, 'highlight-group');
 
         let groupInputsOutputs = this.getGCGarbleAndGCEvaluateGroupInputOutputObjects(groupId);
@@ -343,8 +340,8 @@ export class GCGarble extends TaskStereotype {
 
   removeAllGCGarbleAndGCEvaluateGroupsAndTheirInputsOutputsHighlights() {
     if (this.GCGarbleAndEvaluateGroupsTasks) {
-      for (var i = 0; i < this.GCGarbleAndEvaluateGroupsTasks.length; i++) {
-        var taskId = this.GCGarbleAndEvaluateGroupsTasks[i].taskId;
+      for (let i = 0; i < this.GCGarbleAndEvaluateGroupsTasks.length; i++) {
+        let taskId = this.GCGarbleAndEvaluateGroupsTasks[i].taskId;
         this.canvas.removeMarker(taskId, 'highlight-group');
         if (this.task.id != null) {
           for (let inputObj of this.getTaskInputObjectsByTaskId(taskId)) {
@@ -365,8 +362,8 @@ export class GCGarble extends TaskStereotype {
   }
 
   getModelGCGarbleAndGCEvaluateGroups() {
-    var difGroups = [];
-    for (var i = 0; i < this.GCGarbleAndEvaluateGroupsTasks.length; i++) {
+    let difGroups = [];
+    for (let i = 0; i < this.GCGarbleAndEvaluateGroupsTasks.length; i++) {
       if (difGroups.indexOf(this.GCGarbleAndEvaluateGroupsTasks[i].groupId) === -1) {
         difGroups.push(this.GCGarbleAndEvaluateGroupsTasks[i].groupId);
       }
@@ -377,8 +374,8 @@ export class GCGarble extends TaskStereotype {
   getGCGarbleAndGCEvaluateGroupTasks(group: String) {
     let groupTasks = [];
     if (group) {
-      let groups = $.grep(this.GCGarbleAndEvaluateGroupsTasks, function(el, idx) {return el.groupId == group}, false);
-      for (var i = 0; i < groups.length; i++) {
+      let groups = $.grep(this.GCGarbleAndEvaluateGroupsTasks, function(el, idx) {return el.groupId.trim() == group.trim()}, false);
+      for (let i = 0; i < groups.length; i++) {
         groupTasks.push(this.registry.get(groups[i].taskId));
       }
     }
@@ -414,7 +411,7 @@ export class GCGarble extends TaskStereotype {
     let script = "";
     if (group != null) {
       let groupTasks = this.getGCGarbleAndGCEvaluateGroupTasks(group);
-      if (groupTasks.length == 1) {
+      if (groupTasks.length === 1) {
         if (groupTasks[0].businessObject.GCGarble) {
           script = JSON.parse(groupTasks[0].businessObject.GCGarble).inputScript;
         }
@@ -432,6 +429,154 @@ export class GCGarble extends TaskStereotype {
       }
     }
     return script;
+  }
+
+  getMessageFlowsOfOutgoingPath() {
+    let outgMessageFlows = [];
+    let outgoingTasks = this.getTasksOfOutgoingPath();
+    for (let el of this.task.$parent.$parent.rootElements) {
+      if (el.$type === "bpmn:Collaboration") {
+        if (el.messageFlows) {
+          for (let mF of el.messageFlows) {
+            if (mF.sourceRef.$type === "bpmn:Task" && (outgoingTasks.indexOf(mF.sourceRef.id) !== -1 || this.task.id == mF.sourceRef.id)) {
+              outgMessageFlows.push(mF.id)
+            }
+          }
+        }
+      }
+    }
+    return $.unique(outgMessageFlows);
+  }
+
+  getGroupSecondElementId() {
+    let groupTasks = this.getGCGarbleAndGCEvaluateGroupTasks(this.getGroup());
+    let groupTasksIds = groupTasks.map(a => a.id);
+    if (groupTasksIds.length === 2) {
+      groupTasksIds.splice(groupTasksIds.indexOf(this.task.id),1);
+      return groupTasksIds[0];
+    }
+    return null;
+  }
+
+  /** Simple disclosure analysis functions */
+  getDataObjectVisibilityStatus(dataObjectId: String) {
+    // Inputs: public
+    // Outputs: public
+    let statuses = [];
+    let inputIds = this.getTaskInputObjects().map(a => a.id);
+    let outputIds = this.getTaskOutputObjects().map(a => a.id);
+    if (inputIds.indexOf(dataObjectId) !== -1 || outputIds.indexOf(dataObjectId) !== -1) {
+      statuses.push("public");
+    }
+    if (statuses.length > 0) {
+      return statuses;
+    }
+    return null;
+  }
+
+  /** Validation functions */
+  areInputsAndOutputsNumbersCorrect() {
+    // Must have:
+    // Inputs: exactly 0
+    // Outputs: exactly 2
+    let numberOfInputs = this.getTaskInputObjects().length;
+    let numberOfOutputs = this.getTaskOutputObjects().length;
+    if (numberOfInputs != 0 || numberOfOutputs != 2) {
+      return false;
+    }
+    return true;
+  }
+
+  areGroupTasksOnDifferentLanes() {
+    let groupTasks = this.getGCGarbleAndGCEvaluateGroupTasks(this.getGroup());
+    for (let task of groupTasks) {
+      for (let task2 of groupTasks) {
+        if (task.id !== task2.id) {
+          // If some or all of group tasks have same parent, return false
+          if (task.parent.id === task2.parent.id) {
+            if (task.businessObject.lanes && task2.businessObject.lanes && task.businessObject.lanes[0].id == task2.businessObject.lanes[0].id) {
+              return false;
+            }
+            if (!task.businessObject.lanes || !task2.businessObject.lanes) {
+              return false;
+            }
+          }
+        }
+      }
+    }
+    return true;
+  }
+
+  isGarbledCircuitSameForBothGCGarbleAndGCEvaluateGroupMembers() {
+    let GCEvaluateElementId = this.getGroupSecondElementId();
+    let GCEvaluateElement = this.registry.get(GCEvaluateElementId);
+    let GCGarbleElement = JSON.parse(this.task.GCGarble);
+    if (GCEvaluateElement && GCGarbleElement) {
+      let GCEvaluateElementGarbledCircuit = JSON.parse(GCEvaluateElement.businessObject.GCEvaluate).garbledCircuit;
+      let GCGarbleElementGarbledCircuit = GCGarbleElement.garbledCircuit;
+      if (GCEvaluateElementGarbledCircuit && GCGarbleElementGarbledCircuit) {
+        let GCEvaluateGarbledCircuitElement = this.registry.get(GCEvaluateElementGarbledCircuit);
+        let GCGarbleGarbledCircuitElement = this.registry.get(GCGarbleElementGarbledCircuit);
+        if (GCEvaluateGarbledCircuitElement.businessObject.name.trim() !== GCGarbleGarbledCircuitElement.businessObject.name.trim()) {
+          return false;
+        }
+      }
+      return true;
+    }
+  }
+
+  areStereotypesInCorrectOrder() {
+    return this.taskIsInOutgoingPath(this.getGroupSecondElementId()) && !this.taskIsInIncomingPath(this.getGroupSecondElementId());
+  }
+
+  checkForErrors(existingErrors: ValidationErrorObject[]) {
+    this.init();
+    this.loadAllGCGarbleAndGCEvaluateGroupsTasks();
+
+    let groupTasks = this.getGCGarbleAndGCEvaluateGroupTasks(this.getGroup());
+    let groupTasksIds = groupTasks.map(a => a.id);
+    let savedData = JSON.parse(this.task.GCGarble);
+
+    if (!this.areInputsAndOutputsNumbersCorrect()) {
+      this.addUniqueErrorToErrorsList(existingErrors, "GCGarble error: exactly 2 outputs and no inputs are required", [this.task.id], []);
+    }
+    if (!this.taskHasOutputElement(savedData.garbledCircuit)) {
+      this.addUniqueErrorToErrorsList(existingErrors, "GCGarble error: garbledCircuit object is missing", [this.task.id], []);
+    }
+    if (!this.taskHasOutputElement(savedData.inputEncoding)) {
+      this.addUniqueErrorToErrorsList(existingErrors, "GCGarble error: inputEncoding object is missing", [this.task.id], []);
+    } else {
+      if (savedData.garbledCircuit == savedData.inputEncoding) {
+        this.addUniqueErrorToErrorsList(existingErrors, "GCGarble error: garbledCircuit and inputEncoding must be different objects", [this.task.id], []);
+      }
+    }
+    if (groupTasks.length < 2) {
+      this.addUniqueErrorToErrorsList(existingErrors, "GCGarble error: element with GCEvaluate stereotype is missing from the group", [this.task.id], []);
+    } else {
+      if (this.taskHasOutputElement(savedData.garbledCircuit)) {
+        if (!this.isGarbledCircuitSameForBothGCGarbleAndGCEvaluateGroupMembers()) {
+          this.addUniqueErrorToErrorsList(existingErrors, "GCGarble & GCEvaluate error: garbledCircuit objects must be same for both group members", groupTasksIds, []);
+        }
+      }
+      if (!this.areGroupTasksOnDifferentLanes()) {
+        this.addUniqueErrorToErrorsList(existingErrors, "GCGarble & GCEvaluate error: both group tasks must be on separate lane", groupTasksIds, []);
+      }
+      if (!this.areStereotypesInCorrectOrder()) {
+        this.addUniqueErrorToErrorsList(existingErrors, "GCGarble & GCEvaluate error: element with GCGarble stereotype in this group must be before element with GCEvaluate stereotype", groupTasksIds, []);
+      }
+    }
+    if (typeof savedData.groupId == 'undefined') {
+      this.addUniqueErrorToErrorsList(existingErrors, "GCGarble error: groupId is undefined", [this.task.id], []);
+    }
+    if (typeof savedData.inputScript == 'undefined') {
+      this.addUniqueErrorToErrorsList(existingErrors, "GCGarble error: inputScript is undefined", [this.task.id], []);
+    }
+    if (typeof savedData.garbledCircuit == 'undefined') {
+      this.addUniqueErrorToErrorsList(existingErrors, "GCGarble error: garbledCircuit is undefined", [this.task.id], []);
+    }
+    if (typeof savedData.inputEncoding == 'undefined') {
+      this.addUniqueErrorToErrorsList(existingErrors, "GCGarble error: inputEncoding is undefined", [this.task.id], []);
+    }
   }
 
 }

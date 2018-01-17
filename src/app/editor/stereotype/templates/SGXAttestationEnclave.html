@@ -18,6 +18,19 @@
       <br>
       <button class="btn btn-success pull-right" type="button" id="SGXAttestationEnclave-add-button">Add</button>
     </div>
+    <div class="form-group" id="SGXAttestationEnclave-SGXComputation-groupSelect-form-group">
+      <label class="text-16" for="SGXAttestationEnclave-SGXComputation-groupSelect">SGXComputation group ID</label>
+      <select class="form-control stereotype-option" id="SGXAttestationEnclave-SGXComputation-groupSelect">
+      </select>
+      <span id="SGXAttestationEnclave-SGXComputation-groupSelect-help" class="help-block">Select group.</span>
+    </div>
+    <div class="form-group" id="SGXAttestationEnclave-SGXComputation-newGroup-form-group">
+      <label class="text-16" for="SGXAttestationEnclave-SGXComputation-newGroup">Add new group</label>
+      <input class="form-control stereotype-option" type="text" id="SGXAttestationEnclave-SGXComputation-newGroup"/>
+      <span class="help-block" id="SGXAttestationEnclave-SGXComputation-newGroup-help">Insert group name.</span>
+      <br>
+      <button class="btn btn-success pull-right" type="button" id="SGXAttestationEnclave-SGXComputation-add-button">Add</button>
+    </div>
     <div class="form-group">
       <label class="text-16" for="SGXAttestationEnclave-inputObject">Input data objects</label>
       <ul class="stereotype-option" id="SGXAttestationEnclave-inputObject"></ul>
@@ -28,6 +41,10 @@
     <hr>
     <h3>SGXAttestationChallenge task in the same group</h3>
     <div class="form-group" id="SGXAttestationEnclave-otherGroupTasks">
+    </div>
+    <hr>
+    <h3>Other tasks in the same SGXComputation group</h3>
+    <div class="form-group" id="SGXAttestationEnclave-SGXComputation-otherGroupTasks">
     </div>
   </div>
   <div class="panel-footer">

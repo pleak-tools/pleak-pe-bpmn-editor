@@ -1,5 +1,6 @@
 import * as Viewer from 'bpmn-js/lib/NavigatedViewer';
 
+import { ValidationErrorObject } from "../handler/validation-handler";
 import { DataObjectHandler } from "../handler/data-object-handler";
 import { Stereotype } from "./stereotype";
 

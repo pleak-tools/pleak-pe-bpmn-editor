@@ -1,7 +1,8 @@
+import { ValidationErrorObject } from "../../handler/validation-handler";
 import { TaskStereotype } from "../task-stereotype";
 import { TaskHandler } from "../../handler/task-handler";
 
-declare var $: any;
+declare let $: any;
 let is = (element, type) => element.$instanceOf(type);
 
 export class PKDecrypt extends TaskStereotype {
@@ -26,18 +27,18 @@ export class PKDecrypt extends TaskStereotype {
 
     this.highlightTaskInputAndOutputObjects();
 
-    var keyValues;
-    var inputValues;
-    var outputObject = "";
-    var selected = null;
+    let keyValues;
+    let inputValues;
+    let outputObject = "";
+    let selected = null;
 
     if (this.task.PKDecrypt != null) {
       selected = JSON.parse(this.task.PKDecrypt);
     }
 
     for (let inputObject of this.getTaskInputObjects()) {
-      var selectedKey = "";
-      var selectedData = "";
+      let selectedKey = "";
+      let selectedData = "";
       if (selected !== null) {
         if (inputObject.id == selected.key) {
           selectedKey = "selected";
@@ -66,9 +67,7 @@ export class PKDecrypt extends TaskStereotype {
   }
 
   saveStereotypeSettings() {
-    let numberOfOutputs = this.getTaskOutputObjects().length;
-    let numberOfInputs = this.getTaskInputObjects().length;
-    if (numberOfInputs == 2 && numberOfOutputs == 1) {
+    if (this.areInputsAndOutputsNumbersCorrect()) {
       let key = this.settingsPanelContainer.find('#PKDecrypt-keySelect').val();
       let ciphertext = this.settingsPanelContainer.find('#PKDecrypt-ciphertextSelect').val();
       if (key == ciphertext) {
@@ -95,6 +94,167 @@ export class PKDecrypt extends TaskStereotype {
   
   removeStereotype() {
     super.removeStereotype();
+  }
+
+  /** Simple disclosure analysis functions */
+  getDataObjectVisibilityStatus(dataObjectId: String) {
+    // Inputs: if key - public, if cipherText - private
+    // Outputs: public
+    let statuses = [];
+    let inputIds = this.getTaskInputObjects().map(a => a.id);
+    let outputIds = this.getTaskOutputObjects().map(a => a.id);
+    if (inputIds.indexOf(dataObjectId) !== -1) {
+      let savedData = JSON.parse(this.task.PKDecrypt);
+      if (savedData.key == dataObjectId) {
+        statuses.push("public");
+      } else if (savedData.ciphertext == dataObjectId) {
+        statuses.push("private");
+      }
+    }
+    if (outputIds.indexOf(dataObjectId) !== -1) {
+      statuses.push("public");
+    }
+    if (statuses.length > 0) {
+      return statuses;
+    }
+    return null;
+  }
+
+  /** Validation functions */
+  areInputsAndOutputsNumbersCorrect() {
+    // Must have:
+    // Inputs: exactly 2
+    // Outputs: exactly 1
+    let numberOfInputs = this.getTaskInputObjects().length;
+    let numberOfOutputs = this.getTaskOutputObjects().length;
+    if (numberOfInputs != 2 || numberOfOutputs != 1) {
+      return false;
+    }
+    return true;
+  }
+
+  areInputsFromTaskWithStereotypeAccepted(taskId: String) {
+    // Accepted:
+    // PKEncrypt
+    // PKComputation
+    if (taskId) {
+      let task = this.registry.get(taskId);
+      if (task) {
+        if (task.businessObject.PKEncrypt || task.businessObject.PKComputation) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  isKeyObjectOfTypePKPrivate() {
+    let savedData = JSON.parse(this.task.PKDecrypt);
+    if (savedData.key) {
+      if (!this.registry.get(savedData.key) || !this.registry.get(savedData.key).businessObject.PKPrivate) {
+        return false;
+      }
+      return true;
+    }
+  }
+
+  getKeyForEncryptedInput(inputId: String, taskId: String) {
+    let keys = [];
+    for (let incTask of this.getTaskHandlerByTaskId(taskId).getTasksOfIncomingPath()) {
+      if (this.isOneOfInputObjectsInTaskStereotypeOutputs(incTask, [this.registry.get(inputId)]) && this.getTaskHandlerByTaskId(taskId).getTaskStereotypeInstanceByName("PKDecrypt").areInputsFromTaskWithStereotypeAccepted(incTask)) {
+        let incTaskOutputElementsNames = this.getTaskHandlerByTaskId(incTask).getTaskOutputObjects().map(a => a.businessObject.name.trim());
+        let incTaskInputElementsNames = this.getTaskHandlerByTaskId(incTask).getTaskInputObjects().map(a => a.businessObject.name.trim());
+        let inputKeyName = null;
+        if (this.registry.get(incTask).businessObject.PKComputation) {
+          for (let encryptedInput of this.getTaskHandlerByTaskId(incTask).getTaskStereotypeInstanceByName("PKComputation").getTaskEncryptedInputs()) {
+            let PKComputationTaskKeys = this.getTaskHandlerByTaskId(incTask).getTaskStereotypeInstanceByName("PKComputation").getKeyForEncryptedInput(encryptedInput.id, incTask);
+            keys = keys.concat(PKComputationTaskKeys);
+          }
+        }
+        if (this.registry.get(incTask).businessObject.PKEncrypt) {
+          inputKeyName = this.registry.get(JSON.parse(this.registry.get(incTask).businessObject.PKEncrypt).key).businessObject.name.trim();
+        }
+        if (inputKeyName && incTaskOutputElementsNames.indexOf(this.registry.get(inputId).businessObject.name.trim()) !== -1 && incTaskInputElementsNames.indexOf(inputKeyName) !== -1) {
+          keys.push(this.registry.get(JSON.parse(this.registry.get(incTask).businessObject.PKEncrypt).key));
+        }
+      }
+    }
+    return $.unique(keys);
+  }
+
+  getKeysFromIncomingPathOfTask(taskId: String) {
+    let keys = [];
+    keys = keys.concat(this.getKeyForEncryptedInput(JSON.parse(this.task.PKDecrypt).ciphertext, taskId));
+    return keys;
+  }
+
+  getKeysForAllTaskEncryptedInputs() {
+    return this.getKeysFromIncomingPathOfTask(this.task.id);
+  }
+
+  getKeysFromDifferentPairs() {
+    let currentTaskInputKey = this.registry.get(JSON.parse(this.task.PKDecrypt).key);
+    let keys = this.getKeysForAllTaskEncryptedInputs();
+    let notMatchingKeys = [];
+    if (keys) {
+      for (let key of keys) {
+        if (currentTaskInputKey && currentTaskInputKey.businessObject.PKPrivate && key.businessObject.PKPublic && (JSON.parse(currentTaskInputKey.businessObject.PKPrivate).groupId.trim() !== JSON.parse(key.businessObject.PKPublic).groupId.trim())) {
+          notMatchingKeys.push(currentTaskInputKey);
+          notMatchingKeys.push(key.id);
+        }
+      }
+    }
+    return notMatchingKeys;
+  }
+
+  areAllKeysFromSamePair() {
+    let keys = this.getKeysFromDifferentPairs();
+    if (keys.length > 0) {
+      return false;
+    }
+    return true;
+  }
+
+  isCiphertextCorrectlyEncrypted() {
+    let keys = this.getKeysFromIncomingPathOfTask(this.task.id);
+    if (keys.length < 1) {
+      return false;
+    }
+    return true;
+  }
+
+  checkForErrors(existingErrors: ValidationErrorObject[]) {
+    let savedData = JSON.parse(this.task.PKDecrypt);
+    if (!this.areInputsAndOutputsNumbersCorrect()) {
+      this.addUniqueErrorToErrorsList(existingErrors, "PKDecrypt error: exactly 2 inputs and 1 output are required", [this.task.id], []);
+    }
+    if (!this.taskHasInputElement(savedData.ciphertext)) {
+      this.addUniqueErrorToErrorsList(existingErrors, "PKDecrypt error: ciphertext object is missing", [this.task.id], []);
+    }
+    if (!this.taskHasInputElement(savedData.key)) {
+      this.addUniqueErrorToErrorsList(existingErrors, "PKDecrypt error: key object is missing", [this.task.id], []);
+    } else {
+      if (savedData.key == savedData.ciphertext) {
+        this.addUniqueErrorToErrorsList(existingErrors, "PKDecrypt error: ciphertext and key must be different objects", [this.task.id], []);
+      }
+      if (!this.isKeyObjectOfTypePKPrivate()) {
+        this.addUniqueErrorToErrorsList(existingErrors, "PKDecrypt error: key object must have PKPrivate stereotype", [this.task.id], [savedData.key]);
+      } else {
+        if (!this.isCiphertextCorrectlyEncrypted()) {
+          this.addUniqueErrorToErrorsList(existingErrors, "PKDecrypt error: ciphertext is encrypted with wrong encryption method or is not encrypted", [this.task.id], []);
+        } else {
+          if (!this.areAllKeysFromSamePair()) {
+            this.addUniqueErrorToErrorsList(existingErrors, "PKDecrypt error: all keys must be from the same PKPublic-PKPrivate key pair", [this.task.id], this.getKeysFromDifferentPairs());
+          }
+        }
+      }
+    }
+    if (typeof savedData.key == 'undefined') {
+      this.addUniqueErrorToErrorsList(existingErrors, "PKDecrypt error: key is undefined", [this.task.id], []);
+    }
+    if (typeof savedData.ciphertext == 'undefined') {
+      this.addUniqueErrorToErrorsList(existingErrors, "PKDecrypt error: ciphertext is undefined", [this.task.id], []);
+    }
   }
 
 }

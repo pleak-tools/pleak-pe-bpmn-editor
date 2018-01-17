@@ -5,16 +5,16 @@ import { TaskHandler } from "../../handler/task-handler";
 declare let $: any;
 let is = (element, type) => element.$instanceOf(type);
 
-export class MPC extends TaskStereotype {
+export class GCComputation extends TaskStereotype {
 
   constructor(taskHandler: TaskHandler) {
-    super("MPC", taskHandler);
+    super("GCComputation", taskHandler);
     this.init();
   }
 
   group: String = null;
   selectedGroup: String = null;
-  MPCGroupsTasks: TaskStereotypeGroupObject[] = [];
+  GCComputationGroupsTasks: TaskStereotypeGroupObject[] = [];
 
   /** Functions inherited from TaskStereotype and Stereotype classes */
   getTitle() {
@@ -31,9 +31,9 @@ export class MPC extends TaskStereotype {
 
   initStereotypePublicView() {
     this.init();
-    this.loadAllMPCGroupsTasks();
+    this.loadAllGCComputationGroupsTasks();
     super.initStereotypePublicView();
-    this.highlightMPCGroupMembersAndTheirInputsOutputs(this.getGroup());
+    this.highlightGCComputationGroupMembersAndTheirInputsOutputs(this.getGroup());
   }
 
   initStereotypeSettings() {
@@ -48,26 +48,26 @@ export class MPC extends TaskStereotype {
     let outputObjects = "";
     let inputScript;
 
-    this.loadAllMPCGroupsTasks();
+    this.loadAllGCComputationGroupsTasks();
 
     if (this.selectedGroup != null) {
-      if (this.getModelMPCGroups().indexOf(this.selectedGroup) === -1) {
+      if (this.getModelGCComputationGroups().indexOf(this.selectedGroup) === -1) {
         // If selected group is new group that has no tasks in it yet, add current task into it so its inputs and outputs would be highlighted
-        this.MPCGroupsTasks.push({groupId: this.selectedGroup, taskId: this.task.id});
+        this.GCComputationGroupsTasks.push({groupId: this.selectedGroup, taskId: this.task.id});
       }
       selectedGroupId = this.selectedGroup;
-    } else if (this.task.MPC != null) {
+    } else if (this.task.GCComputation != null) {
       selectedGroupId = this.getGroup();
     } else {
-      if (this.MPCGroupsTasks.length > 0) {
-        selectedGroupId = this.MPCGroupsTasks[0].groupId;
+      if (this.GCComputationGroupsTasks.length > 0) {
+        selectedGroupId = this.GCComputationGroupsTasks[0].groupId;
       }
     }
 
-    inputScript = this.getMPCGroupInputScript(selectedGroupId);
-    this.highlightMPCGroupMembersAndTheirInputsOutputs(selectedGroupId);
+    inputScript = this.getGCComputationGroupInputScript(selectedGroupId);
+    this.highlightGCComputationGroupMembersAndTheirInputsOutputs(selectedGroupId);
 
-    for (let group of this.getModelMPCGroups()) {
+    for (let group of this.getModelGCComputationGroups()) {
       let sel = "";
       if (selectedGroupId !== null) {
         if (group.trim() == selectedGroupId.trim()) {
@@ -77,7 +77,7 @@ export class MPC extends TaskStereotype {
       groups += '<option ' + sel + ' value="' + group + '">' + group + '</option>';
     }
 
-    if (this.getModelMPCGroups().indexOf(this.selectedGroup) === -1 && this.selectedGroup != null) {
+    if (this.getModelGCComputationGroups().indexOf(this.selectedGroup) === -1 && this.selectedGroup != null) {
       // If selected group is new group that has no tasks in it yet, add it to the list of groups and select it
       groups += '<option selected value="' + this.selectedGroup + '">' + this.selectedGroup + '</option>';
     }
@@ -92,7 +92,7 @@ export class MPC extends TaskStereotype {
 
     let taskObjs = "";
     if (selectedGroupId !== null) {
-      for (let groupTask of this.getMPCGroupTasks(selectedGroupId)) {
+      for (let groupTask of this.getGCComputationGroupTasks(selectedGroupId)) {
         if (groupTask.id != this.task.id) {
           let taskName = undefined;
           if (groupTask.businessObject.name) {
@@ -119,13 +119,13 @@ export class MPC extends TaskStereotype {
       }
     }
   
-    this.settingsPanelContainer.find('#MPC-taskName').text(this.task.name);
-    this.settingsPanelContainer.find('#MPC-groupSelect').html(groups);
-    this.settingsPanelContainer.find('#MPC-inputScript').val(inputScript);
-    this.settingsPanelContainer.find('#MPC-inputObjects').html(inputObjects);
-    this.settingsPanelContainer.find('#MPC-outputObjects').html(outputObjects);
-    this.settingsPanelContainer.find('#MPC-newGroup').html('');
-    this.settingsPanelContainer.find('#MPC-otherGroupTasks').html(taskObjs);
+    this.settingsPanelContainer.find('#GCComputation-taskName').text(this.task.name);
+    this.settingsPanelContainer.find('#GCComputation-groupSelect').html(groups);
+    this.settingsPanelContainer.find('#GCComputation-inputScript').val(inputScript);
+    this.settingsPanelContainer.find('#GCComputation-inputObjects').html(inputObjects);
+    this.settingsPanelContainer.find('#GCComputation-outputObjects').html(outputObjects);
+    this.settingsPanelContainer.find('#GCComputation-newGroup').html('');
+    this.settingsPanelContainer.find('#GCComputation-otherGroupTasks').html(taskObjs);
     this.settingsPanelContainer.show();
   }
 
@@ -133,30 +133,40 @@ export class MPC extends TaskStereotype {
     super.terminateStereotypeSettings();
     this.terminateAddGroupButton();
     this.terminateGroupSelectDropdown();
-    this.removeAllMPCGroupsAndTheirInputsOutputsHighlights();
-    this.MPCGroupsTasks = null;
+    this.removeAllGCComputationGroupsAndTheirInputsOutputsHighlights();
+    this.GCComputationGroupsTasks = null;
     this.selectedGroup = null;
   }
 
   saveStereotypeSettings() {
-    let group = this.settingsPanelContainer.find('#MPC-groupSelect').val();
-    let inputScript = this.settingsPanelContainer.find('#MPC-inputScript').val();
+    let self = this;
+    let group = this.settingsPanelContainer.find('#GCComputation-groupSelect').val();
+    let inputScript = this.settingsPanelContainer.find('#GCComputation-inputScript').val();
     if (group) {
-      if (this.task.MPC == null) {
+      let tasks = this.getGCComputationGroupTasks(group);
+      let taskAlreadyInGroup = tasks.filter(( obj ) => {
+        return obj.id == self.task.id;
+      });
+      if (tasks.length === 2 && taskAlreadyInGroup.length !== 1) {
+        this.settingsPanelContainer.find('#GCComputation-groupSelect-form-group').addClass('has-error');
+        this.settingsPanelContainer.find('#GCComputation-groupSelect-help2').show();
+        return;
+      }
+      if (this.task.GCComputation == null) {
         this.addStereotypeToElement();
       }
       this.setGroup(group);
-      this.MPCGroupsTasks = $.grep(this.MPCGroupsTasks, (el, idx) => {return el.taskId == this.task.id}, true);
-      this.MPCGroupsTasks.push({groupId: group, taskId: this.task.id});
-      for (let task of this.getMPCGroupTasks(group)) {
-        task.businessObject.MPC = JSON.stringify({groupId: group, inputScript: inputScript});
+      this.GCComputationGroupsTasks = $.grep(this.GCComputationGroupsTasks, (el, idx) => {return el.taskId == this.task.id}, true);
+      this.GCComputationGroupsTasks.push({groupId: group, taskId: this.task.id});
+      for (let task of this.getGCComputationGroupTasks(group)) {
+        task.businessObject.GCComputation = JSON.stringify({groupId: group, inputScript: inputScript});
       }
       this.settingsPanelContainer.find('.form-group').removeClass('has-error');
       this.settingsPanelContainer.find('.help-block').hide();
       super.saveStereotypeSettings();
     } else {
-      this.settingsPanelContainer.find('#MPC-groupSelect-form-group').addClass('has-error');
-      this.settingsPanelContainer.find('#MPC-groupSelect-help').show();
+      this.settingsPanelContainer.find('#GCComputation-groupSelect-form-group').addClass('has-error');
+      this.settingsPanelContainer.find('#GCComputation-groupSelect-help').show();
     }
   }
 
@@ -164,59 +174,59 @@ export class MPC extends TaskStereotype {
     super.removeStereotype();
   }
 
-  /** MPC class specific functions */
+  /** GCComputation class specific functions */
   init() {
-    if (this.task.MPC != null) {
-      this.setGroup(JSON.parse(this.task.MPC).groupId);
+    if (this.task.GCComputation != null) {
+      this.setGroup(JSON.parse(this.task.GCComputation).groupId);
     }
     this.addStereotypeToTheListOfGroupStereotypesOnModel(this.getTitle());
   }
 
-  loadAllMPCGroupsTasks() {
-    this.MPCGroupsTasks = [];
+  loadAllGCComputationGroupsTasks() {
+    this.GCComputationGroupsTasks = [];
     for (let taskHandler of this.taskHandler.getAllModelTaskHandlers()) {
       for (let stereotype of taskHandler.stereotypes) {
-        if (stereotype.getTitle() == "MPC" && (<MPC>stereotype).getGroup() != null) {
-          this.MPCGroupsTasks.push({groupId: (<MPC>stereotype).getGroup(), taskId: stereotype.task.id});
+        if (stereotype.getTitle() == "GCComputation" && (<GCComputation>stereotype).getGroup() != null) {
+          this.GCComputationGroupsTasks.push({groupId: (<GCComputation>stereotype).getGroup(), taskId: stereotype.task.id});
         }
       }
     }
   }
 
   initAddGroupButton() {
-    this.settingsPanelContainer.one('click', '#MPC-add-button', (e) => {
-      let group = this.settingsPanelContainer.find('#MPC-newGroup').val();
-      this.addMPCGroup(group);
+    this.settingsPanelContainer.one('click', '#GCComputation-add-button', (e) => {
+      let group = this.settingsPanelContainer.find('#GCComputation-newGroup').val();
+      this.addGCComputationGroup(group);
     });
   }
 
   terminateAddGroupButton() {
-    this.settingsPanelContainer.off('click', '#MPC-add-button');
+    this.settingsPanelContainer.off('click', '#GCComputation-add-button');
   }
 
   initGroupSelectDropdown() {
-    this.settingsPanelContainer.one('change', '#MPC-groupSelect', (e) => {
+    this.settingsPanelContainer.one('change', '#GCComputation-groupSelect', (e) => {
       this.reloadStereotypeSettingsWithSelectedGroup(e.target.value);
     });
 
   }
 
   terminateGroupSelectDropdown() {
-    this.settingsPanelContainer.off('change', '#MPC-groupSelect');
+    this.settingsPanelContainer.off('change', '#GCComputation-groupSelect');
   }
 
-  addMPCGroup(group: String) {
+  addGCComputationGroup(group: String) {
     if (group) {
       this.reloadStereotypeSettingsWithSelectedGroup(group);
-      this.settingsPanelContainer.find('#MPC-newGroup').val('');
-      this.settingsPanelContainer.find('#MPC-inputScript').val('');
-      this.settingsPanelContainer.find('#MPC-otherGroupTasks').html('');
+      this.settingsPanelContainer.find('#GCComputation-newGroup').val('');
+      this.settingsPanelContainer.find('#GCComputation-inputScript').val('');
+      this.settingsPanelContainer.find('#GCComputation-otherGroupTasks').html('');
       this.settingsPanelContainer.find('.form-group').removeClass('has-error');
       this.settingsPanelContainer.find('.help-block').hide();
     } else {
       this.initAddGroupButton();
-      this.settingsPanelContainer.find('#MPC-newGroup-form-group').addClass('has-error');
-      this.settingsPanelContainer.find('#MPC-newGroup-help').show();
+      this.settingsPanelContainer.find('#GCComputation-newGroup-form-group').addClass('has-error');
+      this.settingsPanelContainer.find('#GCComputation-newGroup-help').show();
     }
   }
 
@@ -242,16 +252,16 @@ export class MPC extends TaskStereotype {
     this.selectedGroup = null;
   }
 
-  highlightMPCGroupMembersAndTheirInputsOutputs(group: String) {
+  highlightGCComputationGroupMembersAndTheirInputsOutputs(group: String) {
 
-    for (let i = 0; i < this.MPCGroupsTasks.length; i++) {
-      let groupId = this.MPCGroupsTasks[i].groupId;
-      let taskId = this.MPCGroupsTasks[i].taskId;
+    for (let i = 0; i < this.GCComputationGroupsTasks.length; i++) {
+      let groupId = this.GCComputationGroupsTasks[i].groupId;
+      let taskId = this.GCComputationGroupsTasks[i].taskId;
 
       if (groupId.trim() == group.trim()) {
         this.canvas.addMarker(taskId, 'highlight-group');
 
-        let groupInputsOutputs = this.getMPCGroupInputOutputObjects(groupId);
+        let groupInputsOutputs = this.getGCComputationGroupInputOutputObjects(groupId);
 
         for (let inputOutputObj of groupInputsOutputs) {
           if (this.getTaskInputObjects().indexOf(inputOutputObj) !== -1 || this.getTaskOutputObjects().indexOf(inputOutputObj) !== -1) {
@@ -287,10 +297,10 @@ export class MPC extends TaskStereotype {
 
   }
 
-  removeAllMPCGroupsAndTheirInputsOutputsHighlights() {
-    if (this.MPCGroupsTasks) {
-      for (let i = 0; i < this.MPCGroupsTasks.length; i++) {
-        let taskId = this.MPCGroupsTasks[i].taskId;
+  removeAllGCComputationGroupsAndTheirInputsOutputsHighlights() {
+    if (this.GCComputationGroupsTasks) {
+      for (let i = 0; i < this.GCComputationGroupsTasks.length; i++) {
+        let taskId = this.GCComputationGroupsTasks[i].taskId;
         this.canvas.removeMarker(taskId, 'highlight-group');
         if (this.task.id != null) {
           for (let inputObj of this.getTaskInputObjectsByTaskId(taskId)) {
@@ -301,7 +311,7 @@ export class MPC extends TaskStereotype {
             this.canvas.removeMarker(outputObj.id, 'highlight-output');
             this.canvas.removeMarker(outputObj.id, 'highlight-output-selected');
           }
-          for (let inputOutputObj of this.getMPCGroupInputOutputObjects(this.MPCGroupsTasks[i].groupId)) {
+          for (let inputOutputObj of this.getGCComputationGroupInputOutputObjects(this.GCComputationGroupsTasks[i].groupId)) {
             this.canvas.removeMarker(inputOutputObj.id, 'highlight-input-output-selected');
             this.canvas.removeMarker(inputOutputObj.id, 'highlight-input-output');
           }
@@ -310,20 +320,20 @@ export class MPC extends TaskStereotype {
     }
   }
 
-  getModelMPCGroups() {
+  getModelGCComputationGroups() {
     let difGroups = [];
-    for (let i = 0; i < this.MPCGroupsTasks.length; i++) {
-      if (difGroups.indexOf(this.MPCGroupsTasks[i].groupId) === -1) {
-        difGroups.push(this.MPCGroupsTasks[i].groupId);
+    for (let i = 0; i < this.GCComputationGroupsTasks.length; i++) {
+      if (difGroups.indexOf(this.GCComputationGroupsTasks[i].groupId) === -1) {
+        difGroups.push(this.GCComputationGroupsTasks[i].groupId);
       }
     }
     return difGroups;
   }
 
-  getMPCGroupTasks(group: String) {
+  getGCComputationGroupTasks(group: String) {
     let groupTasks = [];
     if (group) {
-      let groups = $.grep(this.MPCGroupsTasks, function(el, idx) {return el.groupId.trim() == group.trim()}, false);
+      let groups = $.grep(this.GCComputationGroupsTasks, function(el, idx) {return el.groupId.trim() == group.trim()}, false);
       for (let i = 0; i < groups.length; i++) {
         groupTasks.push(this.registry.get(groups[i].taskId));
       }
@@ -331,13 +341,13 @@ export class MPC extends TaskStereotype {
     return groupTasks;
   }
 
-  getMPCGroupInputOutputObjects(group: String) {
+  getGCComputationGroupInputOutputObjects(group: String) {
     let objects = [];
-    if (this.MPCGroupsTasks && group != null) {
+    if (this.GCComputationGroupsTasks && group != null) {
       let allInputsOutputs = [];
       let allInputs = [];
       let allOutputs = [];
-      for (let task of this.getMPCGroupTasks(group)) {
+      for (let task of this.getGCComputationGroupTasks(group)) {
         for (let inputObj of this.getTaskInputObjectsByTaskId(task.id)) {
           allInputsOutputs.push(inputObj);
           allInputs.push(inputObj);
@@ -356,18 +366,18 @@ export class MPC extends TaskStereotype {
     return objects;
   }
 
-  getMPCGroupInputScript(group: String) {
+  getGCComputationGroupInputScript(group: String) {
     let script = "";
     if (group != null) {
-      let groupTasks = this.getMPCGroupTasks(group);
+      let groupTasks = this.getGCComputationGroupTasks(group);
       if (groupTasks.length === 1) {
-        if (groupTasks[0].businessObject.MPC) {
-          script = JSON.parse(groupTasks[0].businessObject.MPC).inputScript;
+        if (groupTasks[0].businessObject.GCComputation) {
+          script = JSON.parse(groupTasks[0].businessObject.GCComputation).inputScript;
         }
         } else {
         for (let groupTask of groupTasks) {
           if (groupTask.id != this.task.id) {
-            script = JSON.parse(groupTask.businessObject.MPC).inputScript;
+            script = JSON.parse(groupTask.businessObject.GCComputation).inputScript;
             break;
           }
         }
@@ -393,8 +403,8 @@ export class MPC extends TaskStereotype {
   }
 
   /** Validation functions */
-  getNumberOfMPCGroupInputs() {
-    let groupTasks = this.getMPCGroupTasks(this.getGroup());
+  getNumberOfGCComputationGroupInputs() {
+    let groupTasks = this.getGCComputationGroupTasks(this.getGroup());
     let numberOfgroupInputs = 0;
     for (let task of groupTasks) {
       let numberOfTaskInputs = this.getTaskInputObjectsByTaskId(task.id).length;
@@ -403,8 +413,8 @@ export class MPC extends TaskStereotype {
     return numberOfgroupInputs;
   }
 
-  getNumberOfMPCGroupOutputs() {
-    let groupTasks = this.getMPCGroupTasks(this.getGroup());
+  getNumberOfGCComputationGroupOutputs() {
+    let groupTasks = this.getGCComputationGroupTasks(this.getGroup());
     let numberOfGroupOutputs = 0;
     for (let task of groupTasks) {
       let numberOfTaskOutputs = this.getTaskOutputObjectsByTaskId(task.id).length;
@@ -414,7 +424,7 @@ export class MPC extends TaskStereotype {
   }
 
   areGroupTasksOnDifferentLanes() {
-    let groupTasks = this.getMPCGroupTasks(this.getGroup());
+    let groupTasks = this.getGCComputationGroupTasks(this.getGroup());
     for (let task of groupTasks) {
       for (let task2 of groupTasks) {
         if (task.id !== task2.id) {
@@ -433,8 +443,8 @@ export class MPC extends TaskStereotype {
     return true;
   }
 
-  getMPCGroupsTasksThatAreNotInSameOrderOnAllPoolsAndLanes() {
-    let groupTasks = this.getMPCGroupTasks(this.getGroup());
+  getGCComputationGroupsTasksThatAreNotInSameOrderOnAllPoolsAndLanes() {
+    let groupTasks = this.getGCComputationGroupTasks(this.getGroup());
     let problematicTasks = this.getGroupsTasksThatAreNotInSameOrderOnAllPoolsAndLanes();
     for (let task of groupTasks) {
       if (problematicTasks.indexOf(task.id) !== -1) {
@@ -444,8 +454,8 @@ export class MPC extends TaskStereotype {
     return [];
   }
 
-  areMPCGroupsTasksInSameOrderOnAllPoolsAndLanes() {
-    if (!this.areGroupsTasksInSameOrderOnAllPoolsAndLanes() && this.getMPCGroupsTasksThatAreNotInSameOrderOnAllPoolsAndLanes().length > 0) {
+  areGCComputationroupsTasksInSameOrderOnAllPoolsAndLanes() {
+    if (!this.areGroupsTasksInSameOrderOnAllPoolsAndLanes() && this.getGCComputationGroupsTasksThatAreNotInSameOrderOnAllPoolsAndLanes().length > 0) {
       return false;
     }
     return true;
@@ -453,44 +463,44 @@ export class MPC extends TaskStereotype {
 
   checkForErrors(existingErrors: ValidationErrorObject[]) {
     this.init();
-    this.loadAllMPCGroupsTasks();
+    this.loadAllGCComputationGroupsTasks();
 
-    let groupTasks = this.getMPCGroupTasks(this.getGroup());
+    let groupTasks = this.getGCComputationGroupTasks(this.getGroup());
     let groupTasksIds = groupTasks.map(a => a.id);
-    let savedData = JSON.parse(this.task.MPC);
+    let savedData = JSON.parse(this.task.GCComputation);
 
     // If group has no inputs or outputs
-    if (this.getNumberOfMPCGroupInputs() == 0 || this.getNumberOfMPCGroupOutputs() == 0) {
-      this.addUniqueErrorToErrorsList(existingErrors, "MPC error: group must have at least 1 input and 1 output object", groupTasksIds, []);
+    if (this.getNumberOfGCComputationGroupInputs() == 0 || this.getNumberOfGCComputationGroupOutputs() == 0) {
+      this.addUniqueErrorToErrorsList(existingErrors, "GCComputation error: group must have at least 1 input and 1 output object", groupTasksIds, []);
     }
     // If group has not enough members
     if (groupTasks.length < 2) {
-      this.addUniqueErrorToErrorsList(existingErrors, "MPC error: group must have at least 2 members", groupTasksIds, []);
+      this.addUniqueErrorToErrorsList(existingErrors, "GCComputation error: group must have exactly 2 members", groupTasksIds, []);
     } else {
       if (!this.areGroupTasksOnDifferentLanes()) {
-        this.addUniqueErrorToErrorsList(existingErrors, "MPC error: each group task must be on separate lane", groupTasksIds, []);
+        this.addUniqueErrorToErrorsList(existingErrors, "GCComputation error: each group task must be on separate lane", groupTasksIds, []);
       } else {
         if (!this.areTasksParallel(groupTasksIds)) {
-          this.addUniqueErrorToErrorsList(existingErrors, "MPC error: all group tasks must be parallel", groupTasksIds, []);
+          this.addUniqueErrorToErrorsList(existingErrors, "GCComputation error: all group tasks must be parallel", groupTasksIds, []);
         } else {
-          if (!this.areMPCGroupsTasksInSameOrderOnAllPoolsAndLanes()) {
-            this.addUniqueErrorToErrorsList(existingErrors, "MPC warning: all group tasks are possibly not parallel", this.getMPCGroupsTasksThatAreNotInSameOrderOnAllPoolsAndLanes(), []);
+          if (!this.areGCComputationroupsTasksInSameOrderOnAllPoolsAndLanes()) {
+            this.addUniqueErrorToErrorsList(existingErrors, "GCComputation warning: all group tasks are possibly not parallel", this.getGCComputationGroupsTasksThatAreNotInSameOrderOnAllPoolsAndLanes(), []);
           }
           if (!this.isThereAtLeastOneStartEventInCurrentTaskProcess()) {
-            this.addUniqueErrorToErrorsList(existingErrors, "MPC warning: StartEvent element is missing", [this.task.id], []);
+            this.addUniqueErrorToErrorsList(existingErrors, "GCComputation warning: StartEvent element is missing", [this.task.id], []);
           } else {
             if (!this.areAllGroupTasksAccesible()) {
-              this.addUniqueErrorToErrorsList(existingErrors, "MPC warning: group task is possibly not accessible to the rest of the group", [this.task.id], []);
+              this.addUniqueErrorToErrorsList(existingErrors, "GCComputation warning: group task is possibly not accessible to the rest of the group", [this.task.id], []);
             }
           }
         }
       }
     }
     if (typeof savedData.groupId == 'undefined') {
-      this.addUniqueErrorToErrorsList(existingErrors, "MPC error: groupId is undefined", [this.task.id], []);
+      this.addUniqueErrorToErrorsList(existingErrors, "GCComputation error: groupId is undefined", [this.task.id], []);
     }
     if (typeof savedData.inputScript == 'undefined') {
-      this.addUniqueErrorToErrorsList(existingErrors, "MPC error: inputScript is undefined", [this.task.id], []);
+      this.addUniqueErrorToErrorsList(existingErrors, "GCComputation error: inputScript is undefined", [this.task.id], []);
     }
   }
 

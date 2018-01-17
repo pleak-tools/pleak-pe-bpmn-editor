@@ -18,17 +18,21 @@
       <br>
       <button class="btn btn-success pull-right" type="button" id="FunSSComputation-add-button">Add</button>
     </div>
-    <div class="form-group">
-      <label class="text-16" for="FunSSComputation-inputScript">Input script</label>
-      <textarea class="form-control stereotype-option" id="FunSSComputation-inputScript"></textarea>
+    <div class="form-group" id="FunSSComputation-evaluationPoint-form-group">
+      <label class="text-16" for="FunSSComputation-evaluationPointSelect">Evaluation point</label>
+      <select class="form-control stereotype-option" id="FunSSComputation-evaluationPointSelect"></select>
     </div>
-    <div class="form-group">
-      <label class="text-16" for="FunSSComputation-inputObjects">Input data objects</label>
-      <ul class="stereotype-option" id="FunSSComputation-inputObjects"></ul>
+    <div class="form-group" id="FunSSComputation-shareOfFunction-form-group">
+      <label class="text-16" for="FunSSComputation-shareOfFunctionSelect">Share of function</label>
+      <select class="form-control stereotype-option" id="FunSSComputation-shareOfFunctionSelect"></select>
     </div>
     <div class="form-group">
       <label class="text-16" for="FunSSComputation-outputObjects">Output data</label>
       <ul class="stereotype-option" id="FunSSComputation-outputObjects"></ul>
+    </div>
+    <div class="form-group" id="FunSSComputation-conditions-form-group">
+      <span class="help-block" id="FunSSComputation-conditions-help">This task does not meet all the requirements of this stereotype (exactly 2 inputs and 1 output are required).</span>
+      <span class="help-block" id="FunSSComputation-conditions-help2">Evaluation point and share of function must be different objects.</span>
     </div>
     <hr>
     <h3>Other tasks in the same FunSSComputation group</h3>

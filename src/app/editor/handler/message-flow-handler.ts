@@ -1,10 +1,11 @@
 import * as Viewer from 'bpmn-js/lib/NavigatedViewer';
 
 import { ElementsHandler } from "./elements-handler";
+import { ValidationHandler, ValidationErrorObject } from "./validation-handler";
 import { MessageFlowStereotype } from "../stereotype/message-flow-stereotype";
 import { SecureChannel } from "../stereotype/stereotypes/SecureChannel";
 
-declare var $: any;
+declare let $: any;
 let is = (element, type) => element.$instanceOf(type);
 
 export class MessageFlowHandler {
@@ -16,6 +17,7 @@ export class MessageFlowHandler {
     this.overlays = this.viewer.get('overlays');
 
     this.elementsHandler = elementsHandler;
+    this.validationHandler = elementsHandler.validationHandler;
     this.messageFlow = messageFlow;
 
     this.init();
@@ -28,6 +30,7 @@ export class MessageFlowHandler {
   canvas: any;
   overlays: any;
 
+  validationHandler: ValidationHandler;
   elementsHandler: ElementsHandler;
   messageFlow: any;
 
@@ -38,6 +41,10 @@ export class MessageFlowHandler {
   supportedStereotypes: String[] = [
     "SecureChannel"
   ];
+
+  getMessageFlowId() {
+    return this.messageFlow.id;
+  }
 
   init() {
     // Add stereotype instances to the messageFlow (based on xml of the model)
@@ -95,7 +102,7 @@ export class MessageFlowHandler {
 
   // Show stereotype selector next to messageFlow element on the model
   initMessageFlowStereotypeSelector() {
-    var overlayHtml = 
+    let overlayHtml =
       `<div class="stereotype-editor" id="` + this.messageFlow.id + `-stereotype-selector" style="background:white; padding:10px; border-radius:2px">
         <span><b>Select type:</b></span>`;
     for (let stereotype of this.supportedStereotypes) {
@@ -115,7 +122,7 @@ export class MessageFlowHandler {
       });
     }
 
-    var stOverlay = this.overlays.add(this.registry.get(this.messageFlow.id), {
+    let stOverlay = this.overlays.add(this.registry.get(this.messageFlow.id), {
       position: {
         bottom: 0,
         right: 0
@@ -154,14 +161,14 @@ export class MessageFlowHandler {
   // Start adding new stereotype to the messageFlow (open settings panel etc)
   addStereotypeByName(name: String) {
     if (this.tempStereotype == null) {
-      var st = this.createStereotypeByName(name);
+      let st = this.createStereotypeByName(name);
       st.loadStereotypeTemplateAndInitStereotypeSettingsWithHighlight();
       this.tempStereotype = st;
     } else {
       if (this.tempStereotype.getTitle() != name) {
         this.tempStereotype.terminateStereotypeSettings();
         this.initElementStereotypeSettings();
-        var st = this.createStereotypeByName(name);
+        let st = this.createStereotypeByName(name);
         st.loadStereotypeTemplateAndInitStereotypeSettingsWithHighlight();
         this.tempStereotype = st;
       }
@@ -176,15 +183,15 @@ export class MessageFlowHandler {
 
   // Remove stereotype from the messageFlow by stereotype name
   removeStereotypeByName(name: String) {
-    if (this.getAddedStereotypeInstanceByName(name)) {
-      this.overlays.remove({id: this.getAddedStereotypeInstanceByName(name).getLabel()});
+    if (this.getMessageFlowStereotypeInstanceByName(name)) {
+      this.overlays.remove({id: this.getMessageFlowStereotypeInstanceByName(name).getLabel()});
       this.stereotypes = this.stereotypes.filter(obj => obj.getTitle() !== name);
       delete this.messageFlow[(<any>name)];
     }
   }
 
   // Get stereotype instance of the messageFlow by stereotype name
-  getAddedStereotypeInstanceByName(name: String) {
+  getMessageFlowStereotypeInstanceByName(name: String) {
     for (let sType of this.stereotypes) {
       if (sType.getTitle() == name) {
         return sType;
@@ -211,19 +218,58 @@ export class MessageFlowHandler {
         },
         html: messageFlowTypeLabel
       });
-      this.getAddedStereotypeInstanceByName(title).setLabel(stLabel);
+      this.getMessageFlowStereotypeInstanceByName(title).setLabel(stLabel);
     }
+  }
+
+  // Get all input elements of the messageFlow
+  getMessageFlowInputObjects() {
+    let objects = [];
+    if (this.messageFlow.id && this.messageFlow.sourceRef.dataInputAssociations) {
+      for (let inputAssociation of this.messageFlow.sourceRef.dataInputAssociations) {
+        for (let inputData of inputAssociation.sourceRef) {
+          if (inputData.$type === "bpmn:DataObjectReference") {
+            objects.push(this.registry.get(inputData.id));
+          }
+        }
+      }
+    }
+    return objects;
+  }
+
+  // Get all output elements of the messageFlow
+  getMessageFlowOutputObjects() {
+    let objects = [];
+    if (this.messageFlow.id && this.messageFlow.targetRef.dataOutputAssociations) {
+      for (let outputAssociation of this.messageFlow.targetRef.dataOutputAssociations) {
+        if (outputAssociation.targetRef && outputAssociation.targetRef.length > 1) {
+          for (let outputData of outputAssociation.targetRef) {
+            if (outputData.$type === "bpmn:DataObjectReference") {
+              objects.push(this.registry.get(outputData.id));
+            }
+          }
+        } else {
+          if (outputAssociation.targetRef && outputAssociation.targetRef.$type === "bpmn:DataObjectReference") {
+            objects.push(this.registry.get(outputAssociation.targetRef.id));
+          }
+        }
+      }
+    }
+    return objects;
+  }
+
+  // Return all task stereotype instances
+  getAllMessageFlowStereotypeInstances() {
+    return this.stereotypes;
   }
 
 
   /** Wrappers to access elementsHandler functions*/
 
-  // Get messageFlowHandler instance of messageFlow by messageFlow id
   getMessageFlowHandlerByMessageFlowId(messageFlowId: String) {
     return this.elementsHandler.getMessageFlowHandlerByMessageFlowId(messageFlowId);
   }
 
-  // Get all messageFlowHandler instances of the model
   getAllModelMessageFlowHandlers() {
     return this.elementsHandler.getAllModelMessageFlowHandlers();
   }

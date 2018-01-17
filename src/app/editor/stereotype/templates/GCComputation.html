@@ -1,0 +1,42 @@
+<div class="panel panel-default stereotype-options-panel" id="GCComputation-stereotype-options" style="display:none;">
+    <div class="panel-heading">
+      <h4>GCComputation options</h4>
+    </div>
+    <div class="panel-body">
+      <h3 class="stereotype-option" id="GCComputation-taskName"></h3>
+      <div class="form-group" id="GCComputation-groupSelect-form-group">
+        <label class="text-16" for="GCComputation-groupSelect">Group ID</label>
+        <select class="form-control stereotype-option" id="GCComputation-groupSelect">
+        </select>
+        <span id="GCComputation-groupSelect-help" class="help-block">Select group.</span>
+        <span id="GCComputation-groupSelect-help2" class="help-block">This group has already maximum number of GCComputation tasks (two) in it, please choose another group.</span>
+      </div>
+      <div class="form-group" id="GCComputation-newGroup-form-group">
+        <label class="text-16" for="GCComputation-newGroup">Add new group</label>
+        <input class="form-control stereotype-option" type="text" id="GCComputation-newGroup"/>
+        <span class="help-block" id="GCComputation-newGroup-help">Insert group name.</span>
+        <br>
+        <button class="btn btn-success pull-right" type="button" id="GCComputation-add-button">Add</button>
+      </div>
+      <div class="form-group">
+        <label class="text-16" for="GCComputation-inputScript">Input script</label>
+        <textarea class="form-control stereotype-option" id="GCComputation-inputScript"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="text-16" for="GCComputation-inputObjects">Input data objects</label>
+        <ul class="stereotype-option" id="GCComputation-inputObjects"></ul>
+      </div>
+      <div class="form-group">
+        <label class="text-16" for="GCComputation-outputObjects">Output data</label>
+        <ul class="stereotype-option" id="GCComputation-outputObjects"></ul>
+      </div>
+      <hr>
+      <h3>Other tasks in the same GCComputation group</h3>
+      <div class="form-group" id="GCComputation-otherGroupTasks">
+      </div>
+    </div>
+    <div class="panel-footer">
+      <button class="btn btn-success" type="button" id="GCComputation-save-button">Save</button>
+      <button class="btn btn-default" type="button" id="GCComputation-remove-button">Remove</button>
+    </div>
+  </div>

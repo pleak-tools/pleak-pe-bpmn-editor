@@ -4,13 +4,12 @@ import * as Rx from 'rxjs/Rx';
 import { Subject } from "rxjs/Subject";
 import { Observable } from "rxjs/Observable";
 
-declare var $: any;
+declare let $: any;
 declare function require(name:string);
 
-var jwt_decode = require('jwt-decode');
+let jwt_decode = require('jwt-decode');
 
-var config = require('../../config.json');
-var backend = config.backend.host;
+let config = require('../../config.json');
 
 interface LoginCredentials {
   email: String,
@@ -51,7 +50,7 @@ export class AuthService {
   }
 
   loadRequestOptions() {
-    var headers = new Headers();
+    let headers = new Headers();
     headers.append('JSON-Web-Token', localStorage.getItem('jwt'));
     return new RequestOptions({ headers: headers });
   }
@@ -66,8 +65,10 @@ export class AuthService {
         localStorage.removeItem('jwt');
         this.user = null;
         this.authStatusChanged(false);
+        return false;
       }
     );
+    return true;
   }
 
   verifyTokenWithCallbacks(callbacks: any) {
@@ -94,7 +95,7 @@ export class AuthService {
     this.http.post(config.backend.host + '/rest/auth/login', user, this.loadRequestOptions()).subscribe(
       success => {
         if (success.status === 200) {
-          var token = JSON.parse((<any>success)._body).token;
+          let token = JSON.parse((<any>success)._body).token;
           localStorage.setItem("jwt", token);
           this.user = jwt_decode(token);
           this.authStatusChanged(true);

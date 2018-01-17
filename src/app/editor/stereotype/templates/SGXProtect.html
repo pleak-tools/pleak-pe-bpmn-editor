@@ -1,0 +1,40 @@
+<div class="panel panel-default stereotype-options-panel" id="SGXProtect-stereotype-options" style="display:none;">
+    <div class="panel-heading">
+      <h4>SGXProtect options</h4>
+    </div>
+    <div class="panel-body">
+      <h3 class="stereotype-option" id="SGXProtect-taskName"></h3>
+      <div class="form-group" id="SGXProtect-groupSelect-form-group">
+        <label class="text-16" for="SGXProtect-groupSelect">Group ID</label>
+        <select class="form-control stereotype-option" id="SGXProtect-groupSelect">
+        </select>
+        <span id="SGXProtect-groupSelect-help" class="help-block">Select group.</span>
+      </div>
+      <div class="form-group" id="SGXProtect-newGroup-form-group">
+        <label class="text-16" for="SGXProtect-newGroup">Add new group</label>
+        <input class="form-control stereotype-option" type="text" id="SGXProtect-newGroup"/>
+        <span class="help-block" id="SGXProtect-newGroup-help">Insert group name.</span>
+        <br>
+        <button class="btn btn-success pull-right" type="button" id="SGXProtect-add-button">Add</button>
+      </div>
+      <div class="form-group" id="SGXProtect-inputObjects-form-group">
+        <label class="text-16" for="SGXProtect-inputObjects">Input data</label>
+        <ul class="stereotype-option" id="SGXProtect-inputObjects"></ul>
+      </div>
+      <div class="form-group">
+        <label class="text-16" for="SGXProtect-outputObjects">Output data (SGXPrivate)</label>
+        <ul class="stereotype-option" id="SGXProtect-outputObjects"></ul>
+      </div>
+      <div class="form-group" id="SGXProtect-conditions-form-group">
+        <span class="help-block" id="SGXProtect-conditions-help">This task does not meet all the requirements of this stereotype (exactly 1 input and 1 output are required).</span>
+      </div>
+      <hr>
+      <h3>Other tasks in the same SGXComputation group</h3>
+      <div class="form-group" id="SGXProtect-otherGroupTasks">
+      </div>
+    </div>
+    <div class="panel-footer">
+      <button class="btn btn-success" type="button" id="SGXProtect-save-button">Save</button>
+      <button class="btn btn-default" type="button" id="SGXProtect-remove-button">Remove</button>
+    </div>
+  </div>

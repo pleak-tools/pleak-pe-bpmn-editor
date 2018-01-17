@@ -6,11 +6,11 @@ import * as Viewer from 'bpmn-js/lib/NavigatedViewer';
 
 import { ElementsHandler } from "./handler/elements-handler";
 
-declare var $: any;
+declare let $: any;
 declare function require(name:string);
 let is = (element, type) => element.$instanceOf(type);
 
-var config = require('../../config.json');
+let config = require('../../config.json');
 
 @Component({
   selector: 'app-pe-bpmn-editor',
@@ -22,8 +22,11 @@ export class EditorComponent implements OnInit {
   constructor(public http: Http, private authService: AuthService) {
     this.authService.authStatus.subscribe(status => {
       this.authenticated = status;
-      this.getModel();
+      if (!status || !this.file) {
+        this.getModel();
+      }
     });
+    this.getModel();
   }
 
   @Input() authenticated: Boolean;
@@ -38,13 +41,15 @@ export class EditorComponent implements OnInit {
   private fileId: Number = null;
   private file: any;
 
+  private lastModified: Number = null;
+
   isAuthenticated() {
     return this.authenticated;
   }
 
   // Load model
   getModel() {
-    var self = this;
+    let self = this;
     $('#canvas').html('');
     $('.buttons-container').off('click', '#save-diagram');
     self.viewer = null;
@@ -59,6 +64,7 @@ export class EditorComponent implements OnInit {
         self.lastContent = self.file.content;
         document.title = 'Pleak PE-BPMN editor - ' + self.file.title;
         $('#fileName').text(this.file.title);
+        self.lastModified = new Date().getTime();
       },
       fail => {
         self.fileId = null;
@@ -71,7 +77,7 @@ export class EditorComponent implements OnInit {
 
   // Load diagram and add editor
   openDiagram(diagram: String) {
-    var self = this;
+    let self = this;
     if (diagram && this.viewer == null) {
       this.viewer = new Viewer({
         container: '#canvas',
@@ -83,7 +89,7 @@ export class EditorComponent implements OnInit {
         }
       });
 
-      new ElementsHandler(this.viewer, diagram, this, "private");
+      let elementsHandler = new ElementsHandler(this.viewer, diagram, this, "private");
 
       $('.buttons-container').on('click', '.buttons a', (e) => {
         if (!$(e.target).is('.active')) {
@@ -96,6 +102,12 @@ export class EditorComponent implements OnInit {
         e.preventDefault();
         e.stopPropagation();
         this.save();
+      });
+
+      $('.buttons-container').on('click', '#analyze-diagram', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        elementsHandler.checkForStereotypeErrorsAndShowErrorsList();
       });
 
       $(window).on('keydown', (e) => {
@@ -119,7 +131,7 @@ export class EditorComponent implements OnInit {
 
       $(window).on('wheel', (event) => {
         // Change the color of stereotype labels more visible when zooming out
-        var zoomLevel = this.viewer.get('canvas').zoom();
+        let zoomLevel = this.viewer.get('canvas').zoom();
         if (zoomLevel < 1.0) {
           if ($('.stereotype-label-color').css("color") != "rgb(0, 0, 255)") {
             $('.stereotype-label-color').css('color','blue');
@@ -136,7 +148,7 @@ export class EditorComponent implements OnInit {
 
   // Save model
   save() {
-    var self = this;
+    let self = this;
     if ($('#save-diagram').is('.active')) {
       this.viewer.saveXML(
         {
@@ -149,13 +161,13 @@ export class EditorComponent implements OnInit {
             self.file.content = xml;
             this.http.put(config.backend.host + '/rest/directories/files/' + self.fileId, self.file, this.authService.loadRequestOptions()).subscribe(
               success => {
-                // console.log(success)
                 if (success.status === 200 || success.status === 201) {
-                  var data = JSON.parse((<any>success)._body);
+                  let data = JSON.parse((<any>success)._body);
                   $('#fileSaveSuccess').show();
                   $('#fileSaveSuccess').fadeOut(5000);
                   $('#save-diagram').removeClass('active');
-                  var date = new Date();
+                  let date = new Date();
+                  self.lastModified = date.getTime();
                   localStorage.setItem("lastModifiedFileId", '"' + data.id + '"');
                   localStorage.setItem("lastModified", '"' + date.getTime() + '"');
                   if (self.fileId !== data.id) {
@@ -173,7 +185,6 @@ export class EditorComponent implements OnInit {
               fail => {
               }
             );
-            // console.log(xml)
           }
         });
     }
@@ -193,8 +204,20 @@ export class EditorComponent implements OnInit {
   ngOnInit() {
     window.addEventListener('storage', (e) => {
       if (e.storageArea === localStorage) {
-        this.authService.verifyToken();
-        this.getModel();
+        if (!this.authService.verifyToken()) {
+          this.getModel();
+        } else {
+          let lastModifiedFileId = Number(localStorage.getItem('lastModifiedFileId').replace(/['"]+/g, ''));
+          let currentFileId = null;
+          if (this.file) {
+            currentFileId = this.file.id;
+          }
+          let localStorageLastModifiedTime = Number(localStorage.getItem('lastModified').replace(/['"]+/g, ''))
+          let lastModifiedTime = this.lastModified;
+          if (lastModifiedFileId && currentFileId && localStorageLastModifiedTime && lastModifiedTime && lastModifiedFileId == currentFileId && localStorageLastModifiedTime > lastModifiedTime) {
+            this.getModel();
+          }
+        }
       }
     });
   }

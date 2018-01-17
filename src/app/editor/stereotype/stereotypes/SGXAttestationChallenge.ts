@@ -1,14 +1,10 @@
-import { TaskStereotype } from "../task-stereotype";
+import { ValidationErrorObject } from "../../handler/validation-handler";
+import { TaskStereotype, TaskStereotypeGroupObject } from "../task-stereotype";
 import { TaskHandler } from "../../handler/task-handler";
 import { SGXAttestationEnclave } from "./SGXAttestationEnclave";
 
-declare var $: any;
+declare let $: any;
 let is = (element, type) => element.$instanceOf(type);
-
-interface SGXAttestationChallengeGroupTaskObject {
-    groupId: String;
-    taskId: String;
-}
 
 export class SGXAttestationChallenge extends TaskStereotype {
 
@@ -19,7 +15,7 @@ export class SGXAttestationChallenge extends TaskStereotype {
 
   group: String = null;
   selectedGroup: String = null;
-  SGXAttestationEnclaveAndEvaluateGroupsTasks: SGXAttestationChallengeGroupTaskObject[] = [];
+  SGXAttestationEnclaveAndEvaluateGroupsTasks: TaskStereotypeGroupObject[] = [];
 
   /** Functions inherited from TaskStereotype and Stereotype classes */
   getTitle() {
@@ -47,11 +43,11 @@ export class SGXAttestationChallenge extends TaskStereotype {
     this.initAddGroupButton();
     this.initGroupSelectDropdown();
 
-    var selectedGroupId = null;
-    var groups;
-    var inputObject = "";
-    var outputObject = "";
-    var selected = null;
+    let selectedGroupId = null;
+    let groups;
+    let inputObject = "";
+    let outputObject = "";
+    let selected = null;
 
     this.loadAllSGXAttestationGroupsTasks();
 
@@ -73,9 +69,9 @@ export class SGXAttestationChallenge extends TaskStereotype {
     this.highlightSGXAttestationGroupMembersAndTheirInputsOutputs(selectedGroupId);
 
     for (let group of this.getModelSGXAttestationGroups()) {
-      var sel = "";
+      let sel = "";
       if (selectedGroupId !== null) {
-        if (group == selectedGroupId) {
+        if (group.trim() == selectedGroupId.trim()) {
           sel = "selected";
         }
       }
@@ -99,7 +95,10 @@ export class SGXAttestationChallenge extends TaskStereotype {
     if (selectedGroupId !== null) {
       for (let groupTask of this.getSGXAttestationGroupTasks(selectedGroupId)) {
         if (groupTask.id != this.task.id && groupTask.businessObject.SGXAttestationEnclave != null) {
-          let taskName = groupTask.businessObject.name.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+          let taskName = undefined;
+          if (groupTask.businessObject.name) {
+            taskName = groupTask.businessObject.name.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+          }
           taskObjs += '<label class="text-16">' + taskName + '</label>'
           taskObjs += '<ul class="stereotype-option">';
 
@@ -135,19 +134,17 @@ export class SGXAttestationChallenge extends TaskStereotype {
   saveStereotypeSettings() {
     let self = this;
     let group = this.settingsPanelContainer.find('#SGXAttestationChallenge-groupSelect').val();
-    let numberOfOutputs = this.getTaskOutputObjects().length;
-    let numberOfInputs = this.getTaskInputObjects().length;
     if (group) {
-      if (numberOfOutputs == 1) {
+      if (this.areInputsAndOutputsNumbersCorrect()) {
         let tasks = this.getSGXAttestationGroupTasks(group);
         let taskAlreadyInGroup = tasks.filter(( obj ) => {
           return obj.id == self.task.id;
         });
-        if (tasks.length == 2 && taskAlreadyInGroup.length !== 1) {
+        if (tasks.length === 2 && taskAlreadyInGroup.length !== 1) {
           this.settingsPanelContainer.find('#SGXAttestationChallenge-groupSelect-form-group').addClass('has-error');
           this.settingsPanelContainer.find('#SGXAttestationChallenge-groupSelect-help2').show();
           return;
-        } else if (tasks.length == 1) {
+        } else if (tasks.length === 1) {
           for (let task of tasks) {
             if (task.businessObject.SGXAttestationChallenge != null && task.id != this.task.id) {
               this.settingsPanelContainer.find('#SGXAttestationChallenge-groupSelect-form-group').addClass('has-error');
@@ -165,8 +162,6 @@ export class SGXAttestationChallenge extends TaskStereotype {
         for (let task of this.getSGXAttestationGroupTasks(group)) {
           if (task.id == this.task.id) {
             task.businessObject.SGXAttestationChallenge = JSON.stringify({groupId: group});
-          } else {
-            task.businessObject.SGXAttestationEnclave = JSON.stringify({groupId: group});
           }
         }
         this.settingsPanelContainer.find('.form-group').removeClass('has-error');
@@ -192,6 +187,7 @@ export class SGXAttestationChallenge extends TaskStereotype {
     if (this.task.SGXAttestationChallenge != null) {
       this.setGroup(JSON.parse(this.task.SGXAttestationChallenge).groupId);
     }
+    this.addStereotypeToTheListOfGroupStereotypesOnModel(this.getTitle());
   }
 
   loadAllSGXAttestationGroupsTasks() {
@@ -268,11 +264,11 @@ export class SGXAttestationChallenge extends TaskStereotype {
 
   highlightSGXAttestationGroupMembersAndTheirInputsOutputs(group: String) {
 
-    for (var i = 0; i < this.SGXAttestationEnclaveAndEvaluateGroupsTasks.length; i++) {
-      var groupId = this.SGXAttestationEnclaveAndEvaluateGroupsTasks[i].groupId;
-      var taskId = this.SGXAttestationEnclaveAndEvaluateGroupsTasks[i].taskId;
+    for (let i = 0; i < this.SGXAttestationEnclaveAndEvaluateGroupsTasks.length; i++) {
+      let groupId = this.SGXAttestationEnclaveAndEvaluateGroupsTasks[i].groupId;
+      let taskId = this.SGXAttestationEnclaveAndEvaluateGroupsTasks[i].taskId;
 
-      if (groupId == group) {
+      if (groupId.trim() == group.trim()) {
         this.canvas.addMarker(taskId, 'highlight-group');
 
         let groupInputsOutputs = this.getSGXAttestationGroupInputOutputObjects(groupId);
@@ -313,8 +309,8 @@ export class SGXAttestationChallenge extends TaskStereotype {
 
   removeAllSGXAttestationGroupsAndTheirInputsOutputsHighlights() {
     if (this.SGXAttestationEnclaveAndEvaluateGroupsTasks) {
-      for (var i = 0; i < this.SGXAttestationEnclaveAndEvaluateGroupsTasks.length; i++) {
-        var taskId = this.SGXAttestationEnclaveAndEvaluateGroupsTasks[i].taskId;
+      for (let i = 0; i < this.SGXAttestationEnclaveAndEvaluateGroupsTasks.length; i++) {
+        let taskId = this.SGXAttestationEnclaveAndEvaluateGroupsTasks[i].taskId;
         this.canvas.removeMarker(taskId, 'highlight-group');
         if (this.task.id != null) {
           for (let inputObj of this.getTaskInputObjectsByTaskId(taskId)) {
@@ -335,8 +331,8 @@ export class SGXAttestationChallenge extends TaskStereotype {
   }
 
   getModelSGXAttestationGroups() {
-    var difGroups = [];
-    for (var i = 0; i < this.SGXAttestationEnclaveAndEvaluateGroupsTasks.length; i++) {
+    let difGroups = [];
+    for (let i = 0; i < this.SGXAttestationEnclaveAndEvaluateGroupsTasks.length; i++) {
       if (difGroups.indexOf(this.SGXAttestationEnclaveAndEvaluateGroupsTasks[i].groupId) === -1) {
         difGroups.push(this.SGXAttestationEnclaveAndEvaluateGroupsTasks[i].groupId);
       }
@@ -347,8 +343,8 @@ export class SGXAttestationChallenge extends TaskStereotype {
   getSGXAttestationGroupTasks(group: String) {
     let groupTasks = [];
     if (group) {
-      let groups = $.grep(this.SGXAttestationEnclaveAndEvaluateGroupsTasks, function(el, idx) {return el.groupId == group}, false);
-      for (var i = 0; i < groups.length; i++) {
+      let groups = $.grep(this.SGXAttestationEnclaveAndEvaluateGroupsTasks, function(el, idx) {return el.groupId.trim() == group.trim()}, false);
+      for (let i = 0; i < groups.length; i++) {
         groupTasks.push(this.registry.get(groups[i].taskId));
       }
     }
@@ -378,6 +374,119 @@ export class SGXAttestationChallenge extends TaskStereotype {
       }
     }
     return objects;
+  }
+
+  getGroupSecondElementId() {
+    let groupTasks = this.getSGXAttestationGroupTasks(this.getGroup());
+    let groupTasksIds = groupTasks.map(a => a.id);
+    if (groupTasksIds.length === 2) {
+      groupTasksIds.splice(groupTasksIds.indexOf(this.task.id),1);
+      return groupTasksIds[0];
+    }
+    return null;
+  }
+
+  /** Simple disclosure analysis functions */
+  getDataObjectVisibilityStatus(dataObjectId: String) {
+    // Inputs: public
+    // Outputs: public
+    let statuses = [];
+    let inputIds = this.getTaskInputObjects().map(a => a.id);
+    let outputIds = this.getTaskOutputObjects().map(a => a.id);
+    if (inputIds.indexOf(dataObjectId) !== -1 || outputIds.indexOf(dataObjectId) !== -1) {
+      statuses.push("public");
+    }
+    if (statuses.length > 0) {
+      return statuses;
+    }
+    return null;
+  }
+
+  /** Validation functions */
+  areInputsAndOutputsNumbersCorrect() {
+    // Must have:
+    // Outputs: exactly 1
+    let numberOfOutputs = this.getTaskOutputObjects().length;
+    if (numberOfOutputs != 1) {
+      return false;
+    }
+    return true;
+  }
+
+  areGroupTasksOnDifferentLanes() {
+    let groupTasks = this.getSGXAttestationGroupTasks(this.getGroup());
+    for (let task of groupTasks) {
+      for (let task2 of groupTasks) {
+        if (task.id !== task2.id) {
+          // If some or all of group tasks have same parent, return false
+          if (task.parent.id === task2.parent.id) {
+            if (task.businessObject.lanes && task2.businessObject.lanes && task.businessObject.lanes[0].id == task2.businessObject.lanes[0].id) {
+              return false;
+            }
+            if (!task.businessObject.lanes || !task2.businessObject.lanes) {
+              return false;
+            }
+          }
+        }
+      }
+    }
+    return true;
+  }
+
+  getSGXAttestationGroupsTasksThatAreNotInSameOrderOnAllPoolsAndLanes() {
+    let groupTasks = this.getSGXAttestationGroupTasks(this.getGroup());
+    let problematicTasks = this.getGroupsTasksThatAreNotInSameOrderOnAllPoolsAndLanes();
+    for (let task of groupTasks) {
+      if (problematicTasks.indexOf(task.id) !== -1) {
+        return groupTasks.map(a => a.id);
+      }
+    }
+    return [];
+  }
+
+  areSGXAttestationTasksInSameOrderOnAllPoolsAndLanes() {
+    if (!this.areGroupsTasksInSameOrderOnAllPoolsAndLanes() && this.getSGXAttestationGroupsTasksThatAreNotInSameOrderOnAllPoolsAndLanes().length > 0) {
+      return false;
+    }
+    return true;
+  }
+
+  checkForErrors(existingErrors: ValidationErrorObject[]) {
+    this.init();
+    this.loadAllSGXAttestationGroupsTasks();
+
+    let groupTasks = this.getSGXAttestationGroupTasks(this.getGroup());
+    let groupTasksIds = groupTasks.map(a => a.id);
+    let savedData = JSON.parse(this.task.SGXAttestationChallenge);
+
+    if (!this.areInputsAndOutputsNumbersCorrect()) {
+      this.addUniqueErrorToErrorsList(existingErrors, "SGXAttestationChallenge error: exactly 1 output is required", [this.task.id], []);
+    }
+    if (groupTasks.length < 2) {
+      this.addUniqueErrorToErrorsList(existingErrors, "SGXAttestationChallenge error: element with SGXAttestationEnclave stereotype is missing from the group", [this.task.id], []);
+    } else {
+      if (!this.areGroupTasksOnDifferentLanes()) {
+        this.addUniqueErrorToErrorsList(existingErrors, "SGXAttestationEnclave & SGXAttestationChallenge error: both group tasks must be on separate lane", groupTasksIds, []);
+      } else {
+        if (!this.areTasksParallel(groupTasksIds)) {
+          this.addUniqueErrorToErrorsList(existingErrors, "SGXAttestationEnclave & SGXAttestationChallenge error: both group tasks must be parallel", groupTasksIds, []);
+        } else {
+          if (!this.areSGXAttestationTasksInSameOrderOnAllPoolsAndLanes()) {
+            this.addUniqueErrorToErrorsList(existingErrors, "SGXAttestationEnclave & SGXAttestationChallenge warning: all group tasks are possibly not parallel", this.getSGXAttestationGroupsTasksThatAreNotInSameOrderOnAllPoolsAndLanes(), []);
+          }
+          if (!this.isThereAtLeastOneStartEventInCurrentTaskProcess()) {
+            this.addUniqueErrorToErrorsList(existingErrors, "SGXAttestationEnclave & SGXAttestationChallenge warning warning: StartEvent element is missing", [this.task.id], []);
+          } else {
+            if (!this.areAllGroupTasksAccesible()) {
+              this.addUniqueErrorToErrorsList(existingErrors, "SGXAttestationEnclave & SGXAttestationChallenge warning: group task is possibly not accessible to the rest of the group", [this.task.id], []);
+            }
+          }
+        }
+      }
+    }
+    if (typeof savedData.groupId == 'undefined') {
+      this.addUniqueErrorToErrorsList(existingErrors, "SGXAttestationChallenge error: groupId is undefined", [this.task.id], []);
+    }
   }
 
 }

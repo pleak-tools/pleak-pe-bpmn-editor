@@ -1,13 +1,9 @@
-import { TaskStereotype } from "../task-stereotype";
+import { ValidationErrorObject } from "../../handler/validation-handler";
+import { TaskStereotype, TaskStereotypeGroupObject } from "../task-stereotype";
 import { TaskHandler } from "../../handler/task-handler";
 
-declare var $: any;
+declare let $: any;
 let is = (element, type) => element.$instanceOf(type);
-
-interface FunSSComputationGroupTaskObject {
-    groupId: String;
-    taskId: String;
-}
 
 export class FunSSComputation extends TaskStereotype {
 
@@ -18,7 +14,7 @@ export class FunSSComputation extends TaskStereotype {
 
   group: String = null;
   selectedGroup: String = null;
-  FunSSComputationGroupsTasks: FunSSComputationGroupTaskObject[] = [];
+  FunSSComputationGroupsTasks: TaskStereotypeGroupObject[] = [];
 
   /** Functions inherited from TaskStereotype and Stereotype classes */
   getTitle() {
@@ -46,11 +42,16 @@ export class FunSSComputation extends TaskStereotype {
     this.initAddGroupButton();
     this.initGroupSelectDropdown();
 
-    var selectedGroupId = null;
-    var groups;
-    var inputObjects = "";
-    var outputObjects = "";
-    let inputScript;
+    let selectedGroupId = null;
+    let groups;
+    let evaluationPointValues;
+    let shareOfFunctionValues;
+    let outputObject = "";
+    let selected = null;
+
+    if (this.task.FunSSComputation != null) {
+      selected = JSON.parse(this.task.FunSSComputation);
+    }
 
     this.loadAllFunSSComputationGroupsTasks();
 
@@ -68,13 +69,12 @@ export class FunSSComputation extends TaskStereotype {
       }
     }
 
-    inputScript = this.getFunSSComputationGroupInputScript(selectedGroupId);
     this.highlightFunSSComputationGroupMembersAndTheirInputsOutputs(selectedGroupId);
 
     for (let group of this.getModelFunSSComputationGroups()) {
-      var sel = "";
+      let sel = "";
       if (selectedGroupId !== null) {
-        if (group == selectedGroupId) {
+        if (group.trim() == selectedGroupId.trim()) {
           sel = "selected";
         }
       }
@@ -87,27 +87,50 @@ export class FunSSComputation extends TaskStereotype {
     }
 
     for (let inputObject of this.getTaskInputObjects()) {
-      inputObjects += '<li>' + inputObject.businessObject.name + '</li>';
+      let selectedEvaluationPoint = "";
+      let selectedShareOfFunction = "";
+      if (selected !== null) {
+        if (inputObject.id == selected.evaluationPoint) {
+          selectedEvaluationPoint = "selected";
+        }
+        if (inputObject.id == selected.shareOfFunction) {
+          selectedShareOfFunction = "selected";
+        }
+      }
+      evaluationPointValues += '<option ' + selectedEvaluationPoint + ' value="' + inputObject.id + '">' + inputObject.businessObject.name + '</option>';
+      shareOfFunctionValues += '<option ' + selectedShareOfFunction + ' value="' + inputObject.id + '">' + inputObject.businessObject.name + '</option>';
     }
 
-    for (let outputObject of this.getTaskOutputObjects()) {
-      outputObjects += '<li>' + outputObject.businessObject.name + '</li>';
+    for (let outputObj of this.getTaskOutputObjects()) {
+      outputObject += '<li>' + outputObj.businessObject.name + '</li>';
     }
 
     let taskObjs = "";
     if (selectedGroupId !== null) {
       for (let groupTask of this.getFunSSComputationGroupTasks(selectedGroupId)) {
         if (groupTask.id != this.task.id) {
-          let taskName = groupTask.businessObject.name.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+          let taskName = undefined;
+          if (groupTask.businessObject.name) {
+            taskName = groupTask.businessObject.name.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+          }
           taskObjs += '<label class="text-16">' + taskName + '</label>'
           taskObjs += '<ul class="stereotype-option">';
 
-          let taskInputs = '<label class="text-16">Input data objects</label>';
-          let taskOutputs = '<label class="text-16">Output data</label>';
-
-          for (let inputObj of this.getTaskHandlerByTaskId(groupTask.id).getTaskInputObjects()) {
-            taskInputs += '<li>' + inputObj.businessObject.name + '</li>';
+          let evaluationPoint = undefined;
+          if (groupTask.businessObject.FunSSComputation && JSON.parse(groupTask.businessObject.FunSSComputation).evaluationPoint && this.registry.get(JSON.parse(groupTask.businessObject.FunSSComputation).evaluationPoint)) {
+            evaluationPoint = this.registry.get(JSON.parse(groupTask.businessObject.FunSSComputation).evaluationPoint).businessObject.name;
           }
+          let shareOfFunction = undefined;
+          if (groupTask.businessObject.FunSSComputation && JSON.parse(groupTask.businessObject.FunSSComputation).shareOfFunction && this.registry.get(JSON.parse(groupTask.businessObject.FunSSComputation).evaluationPoint)) {
+            shareOfFunction = this.registry.get(JSON.parse(groupTask.businessObject.FunSSComputation).shareOfFunction).businessObject.name;
+          }
+
+          let taskInputs = '<label class="text-16">Evaluation point</label>';
+          taskInputs += '<li>' + evaluationPoint + '</li>';
+          taskInputs += '<label class="text-16">Share of function</label>';
+          taskInputs += '<li>' + shareOfFunction + '</li>';
+
+          let taskOutputs = '<label class="text-16">Output data</label>';
           for (let outputObj of this.getTaskHandlerByTaskId(groupTask.id).getTaskOutputObjects()) {
             taskOutputs += '<li>' + outputObj.businessObject.name + '</li>';
           }
@@ -122,10 +145,11 @@ export class FunSSComputation extends TaskStereotype {
   
     this.settingsPanelContainer.find('#FunSSComputation-taskName').text(this.task.name);
     this.settingsPanelContainer.find('#FunSSComputation-groupSelect').html(groups);
-    this.settingsPanelContainer.find('#FunSSComputation-inputScript').val(inputScript);
-    this.settingsPanelContainer.find('#FunSSComputation-inputObjects').html(inputObjects);
-    this.settingsPanelContainer.find('#FunSSComputation-outputObjects').html(outputObjects);
+    this.settingsPanelContainer.find('#FunSSComputation-evaluationPointSelect').html(evaluationPointValues);
+    this.settingsPanelContainer.find('#FunSSComputation-shareOfFunctionSelect').html(shareOfFunctionValues);
+    this.settingsPanelContainer.find('#FunSSComputation-outputObject').html(outputObject);
     this.settingsPanelContainer.find('#FunSSComputation-newGroup').html('');
+    this.settingsPanelContainer.find('#FunSSComputation-otherGroupTasks').html('');
     this.settingsPanelContainer.find('#FunSSComputation-otherGroupTasks').html(taskObjs);
     this.settingsPanelContainer.show();
   }
@@ -140,29 +164,51 @@ export class FunSSComputation extends TaskStereotype {
   }
 
   saveStereotypeSettings() {
+    let self = this;
     let group = this.settingsPanelContainer.find('#FunSSComputation-groupSelect').val();
-    let inputScript = this.settingsPanelContainer.find('#FunSSComputation-inputScript').val();
-    if (group) {
-      if (this.getFunSSComputationGroupTasks(group).length == 2) {
+    let evaluationPoint = this.settingsPanelContainer.find('#FunSSComputation-evaluationPointSelect').val();
+    let shareOfFunction = this.settingsPanelContainer.find('#FunSSComputation-shareOfFunctionSelect').val();
+    if (this.areInputsAndOutputsNumbersCorrect()) {
+      if (group) {
+        let tasks = this.getFunSSComputationGroupTasks(group);
+        let taskAlreadyInGroup = tasks.filter(( obj ) => {
+          return obj.id == self.task.id;
+        });
+        if (tasks.length == 2 && taskAlreadyInGroup.length !== 1) {
+          this.settingsPanelContainer.find('#FunSSComputation-groupSelect-form-group').addClass('has-error');
+          this.settingsPanelContainer.find('#FunSSComputation-groupSelect-help2').show();
+          return;
+        }
+        if (evaluationPoint == shareOfFunction) {
+          this.settingsPanelContainer.find('#FunSSComputation-conditions-form-group').addClass('has-error');
+          this.settingsPanelContainer.find('#FunSSComputation-evaluationPoint-form-group').addClass('has-error');
+          this.settingsPanelContainer.find('#FunSSComputation-shareOfFunction-form-group').addClass('has-error');
+          this.settingsPanelContainer.find('#FunSSComputation-conditions-help2').show();
+          this.initSaveAndRemoveButtons();
+          return;
+        }
+        if (this.task.FunSSComputation == null) {
+          this.addStereotypeToElement();
+        }
+        this.setGroup(group);
+        this.FunSSComputationGroupsTasks = $.grep(this.FunSSComputationGroupsTasks, (el, idx) => {return el.taskId == this.task.id}, true);
+        this.FunSSComputationGroupsTasks.push({groupId: group, taskId: this.task.id});
+        for (let task of this.getFunSSComputationGroupTasks(group)) {
+          if (task.id == this.task.id) {
+            task.businessObject.FunSSComputation = JSON.stringify({groupId: group, evaluationPoint: evaluationPoint, shareOfFunction: shareOfFunction});
+          }
+        }
+        this.settingsPanelContainer.find('.form-group').removeClass('has-error');
+        this.settingsPanelContainer.find('.help-block').hide();
+        super.saveStereotypeSettings();
+      } else {
         this.settingsPanelContainer.find('#FunSSComputation-groupSelect-form-group').addClass('has-error');
-        this.settingsPanelContainer.find('#FunSSComputation-groupSelect-help2').show();
-        return;
+        this.settingsPanelContainer.find('#FunSSComputation-groupSelect-help').show();
       }
-      if (this.task.FunSSComputation == null) {
-        this.addStereotypeToElement();
-      }
-      this.setGroup(group);
-      this.FunSSComputationGroupsTasks = $.grep(this.FunSSComputationGroupsTasks, (el, idx) => {return el.taskId == this.task.id}, true);
-      this.FunSSComputationGroupsTasks.push({groupId: group, taskId: this.task.id});
-      for (let task of this.getFunSSComputationGroupTasks(group)) {
-        task.businessObject.FunSSComputation = JSON.stringify({groupId: group, inputScript: inputScript});
-      }
-      this.settingsPanelContainer.find('.form-group').removeClass('has-error');
-      this.settingsPanelContainer.find('.help-block').hide();
-      super.saveStereotypeSettings();
     } else {
-      this.settingsPanelContainer.find('#FunSSComputation-groupSelect-form-group').addClass('has-error');
-      this.settingsPanelContainer.find('#FunSSComputation-groupSelect-help').show();
+      this.settingsPanelContainer.find('#FunSSComputation-conditions-form-group').addClass('has-error');
+      this.settingsPanelContainer.find('#FunSSComputation-conditions-help').show();
+      this.initSaveAndRemoveButtons();
     }
   }
 
@@ -175,6 +221,7 @@ export class FunSSComputation extends TaskStereotype {
     if (this.task.FunSSComputation != null) {
       this.setGroup(JSON.parse(this.task.FunSSComputation).groupId);
     }
+    this.addStereotypeToTheListOfGroupStereotypesOnModel(this.getTitle());
   }
 
   loadAllFunSSComputationGroupsTasks() {
@@ -214,7 +261,6 @@ export class FunSSComputation extends TaskStereotype {
     if (group) {
       this.reloadStereotypeSettingsWithSelectedGroup(group);
       this.settingsPanelContainer.find('#FunSSComputation-newGroup').val('');
-      this.settingsPanelContainer.find('#FunSSComputation-inputScript').val('');
       this.settingsPanelContainer.find('#FunSSComputation-otherGroupTasks').html('');
       this.settingsPanelContainer.find('.form-group').removeClass('has-error');
       this.settingsPanelContainer.find('.help-block').hide();
@@ -249,11 +295,11 @@ export class FunSSComputation extends TaskStereotype {
 
   highlightFunSSComputationGroupMembersAndTheirInputsOutputs(group: String) {
 
-    for (var i = 0; i < this.FunSSComputationGroupsTasks.length; i++) {
-      var groupId = this.FunSSComputationGroupsTasks[i].groupId;
-      var taskId = this.FunSSComputationGroupsTasks[i].taskId;
+    for (let i = 0; i < this.FunSSComputationGroupsTasks.length; i++) {
+      let groupId = this.FunSSComputationGroupsTasks[i].groupId;
+      let taskId = this.FunSSComputationGroupsTasks[i].taskId;
 
-      if (groupId == group) {
+      if (groupId.trim() == group.trim()) {
         this.canvas.addMarker(taskId, 'highlight-group');
 
         let groupInputsOutputs = this.getFunSSComputationGroupInputOutputObjects(groupId);
@@ -294,8 +340,8 @@ export class FunSSComputation extends TaskStereotype {
 
   removeAllFunSSComputationGroupsAndTheirInputsOutputsHighlights() {
     if (this.FunSSComputationGroupsTasks) {
-      for (var i = 0; i < this.FunSSComputationGroupsTasks.length; i++) {
-        var taskId = this.FunSSComputationGroupsTasks[i].taskId;
+      for (let i = 0; i < this.FunSSComputationGroupsTasks.length; i++) {
+        let taskId = this.FunSSComputationGroupsTasks[i].taskId;
         this.canvas.removeMarker(taskId, 'highlight-group');
         if (this.task.id != null) {
           for (let inputObj of this.getTaskInputObjectsByTaskId(taskId)) {
@@ -316,8 +362,8 @@ export class FunSSComputation extends TaskStereotype {
   }
 
   getModelFunSSComputationGroups() {
-    var difGroups = [];
-    for (var i = 0; i < this.FunSSComputationGroupsTasks.length; i++) {
+    let difGroups = [];
+    for (let i = 0; i < this.FunSSComputationGroupsTasks.length; i++) {
       if (difGroups.indexOf(this.FunSSComputationGroupsTasks[i].groupId) === -1) {
         difGroups.push(this.FunSSComputationGroupsTasks[i].groupId);
       }
@@ -328,12 +374,23 @@ export class FunSSComputation extends TaskStereotype {
   getFunSSComputationGroupTasks(group: String) {
     let groupTasks = [];
     if (group) {
-      let groups = $.grep(this.FunSSComputationGroupsTasks, function(el, idx) {return el.groupId == group}, false);
-      for (var i = 0; i < groups.length; i++) {
+      let groups = $.grep(this.FunSSComputationGroupsTasks, function(el, idx) {return el.groupId.trim() == group.trim()}, false);
+      for (let i = 0; i < groups.length; i++) {
         groupTasks.push(this.registry.get(groups[i].taskId));
       }
     }
     return groupTasks;
+  }
+
+  getFunSSComputationGroupOutputs(group: String) {
+    this.init();
+    this.loadAllFunSSComputationGroupsTasks();
+    let groupTasks = this.getFunSSComputationGroupTasks(group);
+    let outputs = [];
+    for (let task of groupTasks) {
+      outputs = outputs.concat(this.getTaskOutputObjectsByTaskId(task.id));
+    }
+    return outputs;
   }
 
   getFunSSComputationGroupInputOutputObjects(group: String) {
@@ -361,24 +418,235 @@ export class FunSSComputation extends TaskStereotype {
     return objects;
   }
 
-  getFunSSComputationGroupInputScript(group: String) {
-    let script = "";
-    if (group != null) {
-      let groupTasks = this.getFunSSComputationGroupTasks(group);
-      if (groupTasks.length == 1) {
-        if (groupTasks[0].businessObject.FunSSComputation) {
-          script = JSON.parse(groupTasks[0].businessObject.FunSSComputation).inputScript;
+  getGroupSecondElementId() {
+    let groupTasks = this.getFunSSComputationGroupTasks(this.getGroup());
+    let groupTasksIds = groupTasks.map(a => a.id);
+    if (groupTasksIds.length === 2) {
+      groupTasksIds.splice(groupTasksIds.indexOf(this.task.id),1);
+      return groupTasksIds[0];
+    }
+    return null;
+  }
+
+  /** Simple disclosure analysis functions */
+  getDataObjectVisibilityStatus(dataObjectId: String) {
+    // Inputs: if evaluationPoint - public, if shareOfFunction - private
+    // Outputs: private
+    let statuses = [];
+    let inputIds = this.getTaskInputObjects().map(a => a.id);
+    let outputIds = this.getTaskOutputObjects().map(a => a.id);
+    if (inputIds.indexOf(dataObjectId) !== -1) {
+      let savedData = JSON.parse(this.task.FunSSComputation);
+      if (savedData.evaluationPoint == dataObjectId) {
+        statuses.push("public");
+      } else if (savedData.shareOfFunction == dataObjectId) {
+        statuses.push("private");
+      }
+    }
+    if (outputIds.indexOf(dataObjectId) !== -1) {
+      statuses.push("private");
+    }
+    if (statuses.length > 0) {
+      return statuses;
+    }
+    return null;
+  }
+
+  /** Validation functions */
+  areInputsAndOutputsNumbersCorrect() {
+    // Must have:
+    // Inputs: exactly 2
+    // Outputs: exactly 1
+    let numberOfInputs = this.getTaskInputObjects().length;
+    let numberOfOutputs = this.getTaskOutputObjects().length;
+    if (numberOfInputs != 2 || numberOfOutputs != 1) {
+      return false;
+    }
+    return true;
+  }
+
+  areInputsFromTaskWithStereotypeAccepted(taskId: String) {
+    // Accepted:
+    // FunSSSharing
+    if (taskId) {
+      let task = this.registry.get(taskId);
+      if (task) {
+        if (task.businessObject.FunSSSharing) {
+          return true;
         }
-        } else {
-        for (let groupTask of groupTasks) {
-          if (groupTask.id != this.task.id) {
-            script = JSON.parse(groupTask.businessObject.FunSSComputation).inputScript;
-            break;
+      }
+    }
+    return false;
+  }
+
+  areGroupTasksOnDifferentLanes() {
+    let groupTasks = this.getFunSSComputationGroupTasks(this.getGroup());
+    for (let task of groupTasks) {
+      for (let task2 of groupTasks) {
+        if (task.id !== task2.id) {
+          // If some or all of group tasks have same parent, return false
+          if (task.parent.id === task2.parent.id) {
+            if (task.businessObject.lanes && task2.businessObject.lanes && task.businessObject.lanes[0].id == task2.businessObject.lanes[0].id) {
+              return false;
+            }
+            if (!task.businessObject.lanes || !task2.businessObject.lanes) {
+              return false;
+            }
           }
         }
       }
     }
-    return script;
+    return true;
+  }
+
+  haveGroupTasksSameNumberOfInputsAndOutputs() {
+    let groupTasks = this.getFunSSComputationGroupTasks(this.getGroup());
+    let numberOfFirstTaskInputs = this.getTaskInputObjectsByTaskId(groupTasks[0].id).length;
+    let numberOfFirstTaskOutputs = this.getTaskOutputObjectsByTaskId(groupTasks[0].id).length;
+    groupTasks.shift();
+    for (let task of groupTasks) {
+      let numberOfTaskInputs = this.getTaskInputObjectsByTaskId(task.id).length;
+      let numberOfTaskOutputs = this.getTaskOutputObjectsByTaskId(task.id).length;
+      // If not all group tasks have same number of inputs and outputs
+      if (numberOfFirstTaskInputs != numberOfTaskInputs || numberOfFirstTaskOutputs != numberOfTaskOutputs) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  areGroupShareOfFunctionSharesDifferent() {
+    if (JSON.parse(this.task.FunSSComputation).shareOfFunction && JSON.parse(this.registry.get(this.getGroupSecondElementId()).businessObject.FunSSComputation)) {
+      let shareOfFunctionElementName = this.registry.get(JSON.parse(this.task.FunSSComputation).shareOfFunction).businessObject.name.trim();
+      let secondGroupTaskShareOfFunctionElementName = this.registry.get(JSON.parse(this.registry.get(this.getGroupSecondElementId()).businessObject.FunSSComputation).shareOfFunction).businessObject.name.trim();
+      if (shareOfFunctionElementName == secondGroupTaskShareOfFunctionElementName) {
+        return false;
+      }
+      return true;
+    }
+    return false;
+  }
+
+  areGroupShareOfFunctionSharesFromSameOrigin() {
+    if (JSON.parse(this.task.FunSSComputation).shareOfFunction && JSON.parse(this.registry.get(this.getGroupSecondElementId()).businessObject.FunSSComputation)) {
+      let shareOfFunctionElementName = this.registry.get(JSON.parse(this.task.FunSSComputation).shareOfFunction).businessObject.name.trim();
+      let secondGroupTaskShareOfFunctionElementName = this.registry.get(JSON.parse(this.registry.get(this.getGroupSecondElementId()).businessObject.FunSSComputation).shareOfFunction).businessObject.name.trim();
+      let flag = false;
+      for (let incTask of this.getTasksOfIncomingPath()) {
+        if (this.isOneOfInputObjectsInTaskStereotypeOutputs(incTask, [this.registry.get(JSON.parse(this.task.FunSSComputation).shareOfFunction), this.registry.get(JSON.parse(this.registry.get(this.getGroupSecondElementId()).businessObject.FunSSComputation).shareOfFunction)]) && this.areInputsFromTaskWithStereotypeAccepted(incTask)) {
+          let outputElementsNames = this.getTaskOutputObjectsBasedOnTaskStereotype(incTask).map(a => a.businessObject.name.trim());
+          if (outputElementsNames.indexOf(shareOfFunctionElementName) !== -1 && outputElementsNames.indexOf(secondGroupTaskShareOfFunctionElementName) !== -1) {
+            flag = true;
+          }
+        }
+      }
+      if (!flag) {
+        return false
+      }
+      return true;
+    }
+  }
+
+  areEvaluationPointsSameForBothGroupTasks() {
+    if (JSON.parse(this.task.FunSSComputation).evaluationPoint &&
+    this.registry.get(JSON.parse(this.task.FunSSComputation).evaluationPoint) &&
+    this.registry.get(this.getGroupSecondElementId()).businessObject.FunSSComputation &&
+    JSON.parse(this.registry.get(this.getGroupSecondElementId()).businessObject.FunSSComputation).evaluationPoint &&
+    this.registry.get(JSON.parse(this.registry.get(this.getGroupSecondElementId()).businessObject.FunSSComputation).evaluationPoint)) {
+      let evaluationPointElementName = this.registry.get(JSON.parse(this.task.FunSSComputation).evaluationPoint).businessObject.name.trim();
+      let secondGroupTaskEvaluationPointElementName = this.registry.get(JSON.parse(this.registry.get(this.getGroupSecondElementId()).businessObject.FunSSComputation).evaluationPoint).businessObject.name.trim();
+      if (evaluationPointElementName != secondGroupTaskEvaluationPointElementName) {
+        return false;
+      }
+      return true;
+    }
+    return false;
+  }
+
+  getFunSSComputationGroupsTasksThatAreNotInSameOrderOnAllPoolsAndLanes() {
+    let groupTasks = this.getFunSSComputationGroupTasks(this.getGroup());
+    let problematicTasks = this.getGroupsTasksThatAreNotInSameOrderOnAllPoolsAndLanes();
+    for (let task of groupTasks) {
+      if (problematicTasks.indexOf(task.id) !== -1) {
+        return groupTasks.map(a => a.id);
+      }
+    }
+    return [];
+  }
+
+  areFunSSComputationGroupsTasksInSameOrderOnAllPoolsAndLanes() {
+    if (!this.areGroupsTasksInSameOrderOnAllPoolsAndLanes() && this.getFunSSComputationGroupsTasksThatAreNotInSameOrderOnAllPoolsAndLanes().length > 0) {
+      return false;
+    }
+    return true;
+  }
+
+  checkForErrors(existingErrors: ValidationErrorObject[]) {
+    this.init();
+    this.loadAllFunSSComputationGroupsTasks();
+
+    let groupTasks = this.getFunSSComputationGroupTasks(this.getGroup());
+    let groupTasksIds = groupTasks.map(a => a.id);
+    let savedData = JSON.parse(this.task.FunSSComputation);
+
+    if (!this.areInputsAndOutputsNumbersCorrect()) {
+      this.addUniqueErrorToErrorsList(existingErrors, "FunSSComputation error: exactly 2 inputs and 1 output are required", [this.task.id], []);
+    }
+    if (!this.taskHasInputElement(savedData.evaluationPoint)) {
+      this.addUniqueErrorToErrorsList(existingErrors, "FunSSComputation error: evaluationPoint object is missing", [this.task.id], []);
+    }
+    if (!this.taskHasInputElement(savedData.shareOfFunction)) {
+      this.addUniqueErrorToErrorsList(existingErrors, "FunSSComputation error: shareOfFunction object is missing", [this.task.id], []);
+    }
+    // If group has not enough or too many members
+    if (groupTasks.length < 2) {
+      this.addUniqueErrorToErrorsList(existingErrors, "FunSSComputation error: group must have exactly 2 members", groupTasksIds, []);
+    } else {
+      if (!this.haveGroupTasksSameNumberOfInputsAndOutputs()) {
+        this.addUniqueErrorToErrorsList(existingErrors, "FunSSComputation error: both group tasks must have same number of inputs and outputs", groupTasksIds, []);
+      }
+      if (!this.areGroupTasksOnDifferentLanes()) {
+        this.addUniqueErrorToErrorsList(existingErrors, "FunSSComputation error: both group tasks must be on separate lane", groupTasksIds, []);
+      } else {
+        if (!this.areTasksParallel(groupTasksIds)) {
+          this.addUniqueErrorToErrorsList(existingErrors, "FunSSComputation error: group tasks must be parallel", groupTasksIds, []);
+        } else {
+          if (!this.areFunSSComputationGroupsTasksInSameOrderOnAllPoolsAndLanes()) {
+            this.addUniqueErrorToErrorsList(existingErrors, "FunSSComputation warning: all group tasks are possibly not parallel", this.getFunSSComputationGroupsTasksThatAreNotInSameOrderOnAllPoolsAndLanes(), []);
+          }
+          if (!this.isThereAtLeastOneStartEventInCurrentTaskProcess()) {
+            this.addUniqueErrorToErrorsList(existingErrors, "FunSSComputation warning: StartEvent element is missing", [this.task.id], []);
+          } else {
+            if (!this.areAllGroupTasksAccesible()) {
+              this.addUniqueErrorToErrorsList(existingErrors, "FunSSComputation warning: group task is possibly not accessible to the rest of the group", [this.task.id], []);
+            }
+          }
+        }
+      }
+      if (!this.areGroupShareOfFunctionSharesFromSameOrigin()) {
+        this.addUniqueErrorToErrorsList(existingErrors, "FunSSComputation error: both group input function shares must originate from the same task with FunSSSharing stereotype", groupTasksIds, []);
+      } else {
+        if (!this.areGroupShareOfFunctionSharesDifferent()) {
+          this.addUniqueErrorToErrorsList(existingErrors, "FunSSComputation error: both group members must have different input function shares", groupTasksIds, []);
+        }
+      }
+      if (!this.areEvaluationPointsSameForBothGroupTasks()) {
+        this.addUniqueErrorToErrorsList(existingErrors, "FunSSComputation error: evaluation point must be the same (with same name) for both group members", groupTasksIds, []);
+      }
+    }
+    // If groupId is undefined
+    if (typeof savedData.groupId == 'undefined') {
+      this.addUniqueErrorToErrorsList(existingErrors, "FunSSComputation error: groupId is undefined", [this.task.id], []);
+    }
+    // If evaluationPoint is undefined
+    if (typeof savedData.evaluationPoint == 'undefined') {
+      this.addUniqueErrorToErrorsList(existingErrors, "FunSSComputation error: evaluationPoint is undefined", [this.task.id], []);
+    }
+    // If shareOfFunction is undefined
+    if (typeof savedData.shareOfFunction == 'undefined') {
+      this.addUniqueErrorToErrorsList(existingErrors, "FunSSComputation error: shareOfFunction is undefined", [this.task.id], []);
+    }
+
   }
 
 }

@@ -1,10 +1,11 @@
 import * as Viewer from 'bpmn-js/lib/NavigatedViewer';
+import { ValidationHandler, ValidationErrorObject } from '../handler/validation-handler';
 
-declare var $: any;
+declare let $: any;
 let is = (element, type) => element.$instanceOf(type);
 
 declare function require(name:string);
-var config = require('../../../config.json');
+let config = require('../../../config.json');
 
 export class Stereotype {
 
@@ -16,6 +17,7 @@ export class Stereotype {
     this.overlays = this.viewer.get('overlays');
 
     this.elementHandler = elementHandler;
+    this.validationHandler = elementHandler.validationHandler;
 
     this.title = title;
     this.settingsPanelContainer = $('#' + this.title + '-stereotype-options');
@@ -28,6 +30,7 @@ export class Stereotype {
   overlays: any;
 
   elementHandler: any;
+  validationHandler: ValidationHandler;
 
   title: String;
   label: String;
@@ -119,6 +122,7 @@ export class Stereotype {
   }
 
   initSaveAndRemoveButtons() {
+    this.terminateSaveAndRemoveButtons();
     this.settingsPanelContainer.one('click', '#' + this.getTitle() + '-save-button', (e) => {
       this.saveStereotypeSettings();
     });
@@ -143,7 +147,9 @@ export class Stereotype {
     );
   }
 
-  /** Wrappers to access elementHandler functions*/
+  checkForErrors(existingErrors: ValidationErrorObject[]) {}
+
+  /** Wrappers to access elementHandler functions */
   addStereotypeToElement() {
     this.elementHandler.addTempStereotypeToElement();
   }
@@ -162,6 +168,11 @@ export class Stereotype {
 
   updateModelContentVariable(xml: String) {
     return this.elementHandler.updateModelContentVariable(xml);
+  }
+
+  /** Wrappers to access validationHandler functions */
+  addUniqueErrorToErrorsList(errors: ValidationErrorObject[], error: String, ids: String[], highlight: String[]) {
+    this.validationHandler.addUniqueErrorToErrorsList(errors, error, ids, highlight);
   }
 
 }
