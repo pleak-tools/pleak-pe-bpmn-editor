@@ -493,8 +493,8 @@ export class ValidationHandler {
       if (task) {
         let outputElements = this.getTaskOutputObjectsBasedOnTaskStereotype(task.id);
         if (outputElements) {
-          let outputElementsNames = outputElements.map(a => a.businessObject.name);
-          let inputObjectsNames = inputObjects.map(a => a.businessObject.name);
+          let outputElementsNames = outputElements.map(a => a.businessObject.name.trim());
+          let inputObjectsNames = inputObjects.map(a => a.businessObject.name.trim());
           for (let inputObjectName of inputObjectsNames) {
             if (outputElementsNames.indexOf(inputObjectName) !== -1) {
               return true;
@@ -822,7 +822,7 @@ export class ValidationHandler {
     if (taskId) {
       let task = this.registry.get(taskId);
       if (task) {
-        if (task.businessObject.AddSSSharing || task.businessObject.FunSSSharing || task.businessObject.SSSharing || task.businessObject.PKEncrypt || task.businessObject.SKEncrypt || task.businessObject.PKComputation || task.businessObject.SKComputation || task.businessObject.SGXComputation || task.businessObject.SGXProtect) {
+        if (task.businessObject.AddSSSharing || task.businessObject.FunSSSharing || task.businessObject.SSSharing || task.businessObject.PKEncrypt || task.businessObject.SKEncrypt || task.businessObject.PKComputation || task.businessObject.SKComputation || task.businessObject.SGXComputation || task.businessObject.SGXProtect || task.businessObject.ProtectConfidentiality || task.businessObject.OpenConfidentiality || task.businessObject.PETComputation) {
           outputObjects = this.elementsHandler.getTaskHandlerByTaskId(task.id).getTaskOutputObjects();
         } else if (task.businessObject.AddSSComputation) {
           outputObjects = this.elementsHandler.getTaskHandlerByTaskId(task.id).getTaskStereotypeInstanceByName("AddSSComputation").getAddSSComputationGroupOutputs(JSON.parse(this.registry.get(task.id).businessObject.AddSSComputation).groupId);
