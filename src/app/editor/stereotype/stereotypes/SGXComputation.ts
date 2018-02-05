@@ -547,9 +547,9 @@ export class SGXComputation extends TaskStereotype {
     if (inputIds.indexOf(dataObjectId) !== -1) {
       let encryptedInputIds = this.getTaskPrivateInputs().map(a => a.id);
       if (encryptedInputIds.indexOf(dataObjectId) !== -1) {
-        statuses.push("private");
+        statuses.push("private-i");
       } else if (encryptedInputIds.indexOf(dataObjectId) === -1) {
-        statuses.push("public");
+        statuses.push("public-i");
       }
     }
     if (outputIds.indexOf(dataObjectId) !== -1) {
@@ -561,9 +561,9 @@ export class SGXComputation extends TaskStereotype {
       }
       let outputType = JSON.parse(this.task.SGXComputation).outputTypes[0].type;
       if (outputType == "private") {
-        statuses.push("private");
+        statuses.push("private-o");
       } else if (outputType == "public") {
-        statuses.push("public");
+        statuses.push("public-o");
       }
     }
     if (statuses.length > 0) {

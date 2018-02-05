@@ -35,7 +35,6 @@ export class DataObjectHandler {
   validationHandler: ValidationHandler;
   dataObject: any;
   parentLaneOrPool: any;
-  parentTasks: any[];
   incomingParentTasks: any[] = [];
   outgoingParentTasks: any[] = [];
   tasksVisibleTo: any[] = [];
@@ -64,14 +63,16 @@ export class DataObjectHandler {
   }
 
   getDataObjectParentTasks() {
-    return this.parentTasks;
+    return this.incomingParentTasks.concat(this.outgoingParentTasks);
   }
 
   getDataObjectIncomingParentTasks() {
+    this.loadIncomingParentTasks();
     return this.incomingParentTasks;
   }
 
   getDataObjectOutgoingParentTasks() {
+    this.loadOutgoingParentTasks();
     return this.outgoingParentTasks;
   }
 
@@ -89,13 +90,13 @@ export class DataObjectHandler {
     }
     this.loadDataObjectStereotypes();
     this.loadParentLaneOrPool();
-    this.loadParentTasks();
-    //this.loadIncomingParentTasks();
-    //this.loadOutgoingParentTasks();
-    this.loadLanesAndPoolsToWhichDataObjectIsVisible();
+    this.loadIncomingParentTasks();
+    this.loadOutgoingParentTasks();
+    this.loadLanesAndPoolsToWhichDataObjectIsVisibleTo();
     this.loadDataObjectVisibilityStatus();
   }
 
+  // Load data object's parent lane/pool information
   loadParentLaneOrPool() {
     this.parentLaneOrPool = null;
     if (this.registry.get(this.dataObject.id).parent && this.registry.get(this.registry.get(this.dataObject.id).parent.id)) {
@@ -103,25 +104,7 @@ export class DataObjectHandler {
     }
   }
 
-  loadParentTasks() {
-    let parentTasks = [];
-    if (this.registry.get(this.dataObject.id) && this.registry.get(this.dataObject.id).incoming) {
-      for (let incoming of this.registry.get(this.dataObject.id).incoming) {
-        if (incoming.businessObject && incoming.businessObject.$parent && incoming.businessObject.$parent.$type === "bpmn:Task") {
-          parentTasks.push(incoming.businessObject.$parent);
-        }
-      }
-    }
-    if (this.registry.get(this.dataObject.id) && this.registry.get(this.dataObject.id).outgoing) {
-      for (let outgoing of this.registry.get(this.dataObject.id).outgoing) {
-        if (outgoing.businessObject && outgoing.businessObject.$parent && outgoing.businessObject.$parent.$type === "bpmn:Task") {
-          parentTasks.push(outgoing.businessObject.$parent);
-        }
-      }
-    }
-    this.parentTasks = parentTasks;
-  }
-
+  // Load data object's incoming "parents" (tasks) information
   loadIncomingParentTasks() {
     let parentTasks = [];
     if (this.registry.get(this.dataObject.id) && this.registry.get(this.dataObject.id).incoming) {
@@ -134,6 +117,7 @@ export class DataObjectHandler {
     this.incomingParentTasks = parentTasks;
   }
 
+  // Load data object's outgoing "parents" (tasks) information
   loadOutgoingParentTasks() {
     let parentTasks = [];
     if (this.registry.get(this.dataObject.id) && this.registry.get(this.dataObject.id).outgoing) {
@@ -146,7 +130,8 @@ export class DataObjectHandler {
     this.outgoingParentTasks = parentTasks;
   }
 
-  loadLanesAndPoolsToWhichDataObjectIsVisible() {
+  // Load information about lanes/pools to which the data objects is visible to
+  loadLanesAndPoolsToWhichDataObjectIsVisibleTo() {
     let tasksVisibleTo = [];
     if (this.registry.get(this.dataObject.id) && this.registry.get(this.dataObject.id).incoming) {
       for (let incoming of this.registry.get(this.dataObject.id).incoming) {
@@ -180,6 +165,7 @@ export class DataObjectHandler {
     this.tasksVisibleTo = tasksVisibleTo;
   }
 
+  // Load visibility status of data object
   loadDataObjectVisibilityStatus() {
     let statuses = [];
     for (let parentTask of this.getDataObjectParentTasks()) {

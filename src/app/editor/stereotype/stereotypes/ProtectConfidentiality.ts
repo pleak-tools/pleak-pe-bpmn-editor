@@ -5,10 +5,10 @@ import { TaskHandler } from "../../handler/task-handler";
 declare let $: any;
 let is = (element, type) => element.$instanceOf(type);
 
-export class FunSSSharing extends TaskStereotype {
+export class ProtectConfidentiality extends TaskStereotype {
 
   constructor(taskHandler: TaskHandler) {
-    super("FunSSSharing", taskHandler);
+    super("ProtectConfidentiality", taskHandler);
   }
 
   /** Functions inherited from TaskStereotype and Stereotype classes */
@@ -38,8 +38,8 @@ export class FunSSSharing extends TaskStereotype {
       outputObjects += '<li>' + outputObject.businessObject.name + '</li>';
     }
 
-    this.settingsPanelContainer.find('#FunSSSharing-inputObjects').html(inputObjects);
-    this.settingsPanelContainer.find('#FunSSSharing-outputObjects').html(outputObjects);
+    this.settingsPanelContainer.find('#ProtectConfidentiality-inputObjects').html(inputObjects);
+    this.settingsPanelContainer.find('#ProtectConfidentiality-outputObjects').html(outputObjects);
     this.settingsPanelContainer.show();
   }
 
@@ -50,16 +50,22 @@ export class FunSSSharing extends TaskStereotype {
 
   saveStereotypeSettings() {
     if (this.areInputsAndOutputsNumbersCorrect()) {
-      if (this.task.FunSSSharing == null) {
+      if (!this.areInputAndOutputObjectsDifferent()) {
+        this.settingsPanelContainer.find('#ProtectConfidentiality-conditions-form-group').addClass('has-error');
+        this.settingsPanelContainer.find('#ProtectConfidentiality-conditions-help2').show();
+        this.initSaveAndRemoveButtons();
+        return;
+      }
+      if (this.task.ProtectConfidentiality == null) {
         this.addStereotypeToElement();
       }
-      this.task.FunSSSharing = JSON.stringify({});
+      this.task.ProtectConfidentiality = JSON.stringify({});
       this.settingsPanelContainer.find('.form-group').removeClass('has-error');
       this.settingsPanelContainer.find('.help-block').hide();
       super.saveStereotypeSettings();
     } else {
-      this.settingsPanelContainer.find('#FunSSSharing-conditions-form-group').addClass('has-error');
-      this.settingsPanelContainer.find('#FunSSSharing-conditions-help').show();
+      this.settingsPanelContainer.find('#ProtectConfidentiality-conditions-form-group').addClass('has-error');
+      this.settingsPanelContainer.find('#ProtectConfidentiality-conditions-help').show();
       this.initSaveAndRemoveButtons();
     }
   }
@@ -91,17 +97,17 @@ export class FunSSSharing extends TaskStereotype {
   areInputsAndOutputsNumbersCorrect() {
     // Must have:
     // Inputs: exactly 1
-    // Outputs: exactly 2
+    // Outputs: exactly 1
     let numberOfInputs = this.getTaskInputObjects().length;
     let numberOfOutputs = this.getTaskOutputObjects().length;
-    if (numberOfInputs != 1 || numberOfOutputs != 2) {
+    if (numberOfInputs != 1 || numberOfOutputs != 1) {
       return false;
     }
     return true;
   }
 
-  areOutputObjectsDifferent() {
-    if (this.getTaskOutputObjects()[0].businessObject.name.trim() === this.getTaskOutputObjects()[1].businessObject.name.trim()) {
+  areInputAndOutputObjectsDifferent() {
+    if (this.getTaskInputObjects()[0].id === this.getTaskOutputObjects()[0].id) {
       return false;
     }
     return true;
@@ -109,10 +115,10 @@ export class FunSSSharing extends TaskStereotype {
 
   checkForErrors(existingErrors: ValidationErrorObject[]) {
     if (!this.areInputsAndOutputsNumbersCorrect()) {
-      this.addUniqueErrorToErrorsList(existingErrors, "FunSSSharing error: exactly 1 input and 2 outputs are required", [this.task.id], []);
+      this.addUniqueErrorToErrorsList(existingErrors, "ProtectConfidentiality error: exactly 1 input and 1 output are required", [this.task.id], []);
     } else {
-      if (!this.areOutputObjectsDifferent()) {
-        this.addUniqueErrorToErrorsList(existingErrors, "FunSSSharing error: output objects must have different names", [this.task.id], []);
+      if (!this.areInputAndOutputObjectsDifferent()) {
+        this.addUniqueErrorToErrorsList(existingErrors, "ProtectConfidentiality error: input and output objects must be different data objects", [this.task.id], []);
       }
     }
   }

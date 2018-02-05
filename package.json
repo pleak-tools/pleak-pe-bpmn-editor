@@ -25,7 +25,7 @@
     "@angular/platform-browser-dynamic": "^4.4.6",
     "@angular/router": "^4.4.6",
     "bootstrap": "^3.3.7",
-    "bpmn-js": "^0.23.1",
+    "bpmn-js": "^0.26.6",
     "classlist.js": "^1.1.20150312",
     "core-js": "^2.5.1",
     "font-awesome": "^4.7.0",

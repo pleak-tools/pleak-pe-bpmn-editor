@@ -126,13 +126,13 @@ export class SKComputation extends TaskStereotype {
     if (inputIds.indexOf(dataObjectId) !== -1) {
       let encryptedInputIds = this.getTaskEncryptedInputs().map(a => a.id);
       if (encryptedInputIds.indexOf(dataObjectId) !== -1) {
-        statuses.push("private");
+        statuses.push("private-i");
       } else if (encryptedInputIds.indexOf(dataObjectId) === -1) {
-        statuses.push("public");
+        statuses.push("public-i");
       }
     }
     if (outputIds.indexOf(dataObjectId) !== -1) {
-      statuses.push("private");
+      statuses.push("private-o");
     }
     if (statuses.length > 0) {
       return statuses;

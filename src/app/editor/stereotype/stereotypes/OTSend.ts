@@ -394,7 +394,7 @@ export class OTSend extends TaskStereotype {
     let inputIds = this.getTaskInputObjects().map(a => a.id);
     let outputIds = this.getTaskOutputObjects().map(a => a.id);
     if (inputIds.indexOf(dataObjectId) !== -1 || outputIds.indexOf(dataObjectId) !== -1) {
-      statuses.push("public");
+      statuses.push("public-io");
     }
     if (statuses.length > 0) {
       return statuses;

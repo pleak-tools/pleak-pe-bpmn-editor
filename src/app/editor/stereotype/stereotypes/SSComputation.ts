@@ -552,9 +552,9 @@ export class SSComputation extends TaskStereotype {
           let sharesGroup = this.getSSComputationGroupInputObjectsByShareGroupId(inputs.id);
           if (sharesGroup.map(a => a.id).indexOf(dataObjectId) !== -1) {
             if (sharesGroup.map(a => a.businessObject.name.trim()).every( (val, i, arr) => val === arr[0] )) {
-              statuses.push("public");
+              statuses.push("public-i");
             } else if (!sharesGroup.map(a => a.businessObject.name.trim()).every( (val, i, arr) => val === arr[0] )) {
-              statuses.push("private");
+              statuses.push("private-i");
             }
           }
         }
@@ -562,7 +562,7 @@ export class SSComputation extends TaskStereotype {
     }
     let taskOutputs = this.getTaskOutputObjects();
     if (taskOutputs.map(a => a.id).indexOf(dataObjectId)) {
-      statuses.push("private");
+      statuses.push("private-o");
     }
     if (statuses.length > 0) {
       return statuses;

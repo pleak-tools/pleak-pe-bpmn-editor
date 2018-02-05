@@ -58,7 +58,7 @@
   <div id="model-correct" *ngIf="isAuthenticated()" style="padding:10px; background-color:white; display:none; color: forestgreen">
     <h3><i class="fa fa-check-square-o" aria-hidden="true"></i> Passed validation!</h3>
   </div>
-  <div id="simple-disclosure-analysis" style="margin-top:10px; padding:10px; background-color:white; display:none">
+  <div id="analysis" style="margin-top:10px; padding:10px; background-color:white; display:none">
     <h3>Simple disclosure analysis</h3>
     <div style="text-align:left">
       <ul class="buttons analyze">
@@ -69,7 +69,16 @@
         </li>
       </ul>
     </div>
-    <div id="simple-disclosure-report"></div>
+    <h3>Data dependencies analysis</h3>
+    <div style="text-align:left">
+      <ul class="buttons analyze">
+        <li>
+          <a class="active" id="analyze-dependencies" title="Analyze" href="#">
+            <span class="glyphicon glyphicon-equalizer"></span> Analyze
+          </a>
+        </li>
+      </ul>
+    </div>
   </div>
 </div>
 <!-- Simple Disclosure Analysis report modal -->
@@ -85,7 +94,31 @@
         </div>
         <div class="modal-footer">
           <div class="pull-left">
-            V = visible, H = hidden
+            V = visible, H = hidden, MF = MessageFlow, S = SecureChannel
+          </div>
+          <div class="pull-right">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!--Connections modal -->
+<div class="modal fade" id="dataDependenciesAnalysisReportModal" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel">
+  <div class="modal-dialog" style="width:90%">
+    <div class="modal-content">
+      <form>
+        <div class="modal-header">
+          <h4><span id="dependenciesAnalysisReportTitle"></span> - Data dependencies</h4>
+        </div>
+        <div class="modal-body">
+          <div id="report-table" style="overflow-x:auto;"></div>
+        </div>
+        <div class="modal-footer">
+          <div class="pull-left">
+            How is the element in the row dependent on the element in the column: D = directly, I = indirectly
           </div>
           <div class="pull-right">
             <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>

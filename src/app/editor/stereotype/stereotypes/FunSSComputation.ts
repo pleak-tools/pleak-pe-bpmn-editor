@@ -438,13 +438,13 @@ export class FunSSComputation extends TaskStereotype {
     if (inputIds.indexOf(dataObjectId) !== -1) {
       let savedData = JSON.parse(this.task.FunSSComputation);
       if (savedData.evaluationPoint == dataObjectId) {
-        statuses.push("public");
+        statuses.push("public-i");
       } else if (savedData.shareOfFunction == dataObjectId) {
-        statuses.push("private");
+        statuses.push("private-i");
       }
     }
     if (outputIds.indexOf(dataObjectId) !== -1) {
-      statuses.push("private");
+      statuses.push("private-o");
     }
     if (statuses.length > 0) {
       return statuses;

@@ -102,10 +102,10 @@ export class SSSharing extends TaskStereotype {
     let inputIds = this.getTaskInputObjects().map(a => a.id);
     let outputIds = this.getTaskOutputObjects().map(a => a.id);
     if (inputIds.indexOf(dataObjectId) !== -1) {
-      statuses.push("public");
+      statuses.push("public-i");
     }
     if (outputIds.indexOf(dataObjectId) !== -1) {
-      statuses.push("private");
+      statuses.push("private-o");
     }
     if (statuses.length > 0) {
       return statuses;

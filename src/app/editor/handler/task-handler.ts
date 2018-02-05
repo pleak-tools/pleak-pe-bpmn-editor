@@ -32,6 +32,9 @@ import { GCComputation } from "../stereotype/stereotypes/GCComputation";
 import { OTSend } from "../stereotype/stereotypes/OTSend";
 import { OTReceive } from "../stereotype/stereotypes/OTReceive";
 import { DifferentialPrivacy } from "../stereotype/stereotypes/DifferentialPrivacy";
+import { ProtectConfidentiality } from "../stereotype/stereotypes/ProtectConfidentiality";
+import { OpenConfidentiality } from "../stereotype/stereotypes/OpenConfidentiality";
+import { PETComputation } from "../stereotype/stereotypes/PETComputation";
 
 declare let $: any;
 let is = (element, type) => element.$instanceOf(type);
@@ -96,7 +99,10 @@ export class TaskHandler {
     "GCComputation",
     "OTSend",
     "OTReceive",
-    "DifferentialPrivacy"
+    "DifferentialPrivacy",
+    "ProtectConfidentiality",
+    "OpenConfidentiality",
+    "PETComputation"
   ];
 
   getTaskId() {
@@ -242,7 +248,7 @@ export class TaskHandler {
             </thead>
             <tbody>
               <tr>
-                <td class="link-row" id="SGXQuoting-button">SGXQuoting</td>
+                <td class="link-row SGXQuoting-button">SGXQuoting</td>
               </tr>
             </tbody>
           <table>
@@ -254,7 +260,7 @@ export class TaskHandler {
             </thead>
             <tbody>
               <tr>
-                <td class="link-row" id="SGXQuoteVerification-button">SGXQuoteVerification</td>
+                <td class="link-row SGXQuoteVerification-button">SGXQuoteVerification</td>
               </tr>
             </tbody>
           </table>
@@ -269,22 +275,25 @@ export class TaskHandler {
             </thead>
             <tbody>
               <tr>
-                <td class="link-row" id="PKEncrypt-button">PKEncrypt</td>
+                <td class="link-row PKEncrypt-button">PKEncrypt</td>
               </tr>
               <tr>
-                <td class="link-row" id="SKEncrypt-button">SKEncrypt</td>
+                <td class="link-row SKEncrypt-button">SKEncrypt</td>
               </tr>
               <tr>
-                <td class="link-row" id="SSSharing-button">SSSharing</td>
+                <td class="link-row SSSharing-button">SSSharing</td>
               </tr>
               <tr>
-                <td class="link-row" id="AddSSSharing-button">AddSSSharing</td>
+                <td class="link-row AddSSSharing-button">AddSSSharing</td>
               </tr>
               <tr>
-                <td class="link-row" id="FunSSSharing-button">FunSSSharing</td>
+                <td class="link-row FunSSSharing-button">FunSSSharing</td>
               </tr>
               <tr>
-                <td class="link-row" id="SGXProtect-button">SGXProtect</td>
+                <td class="link-row SGXProtect-button">SGXProtect</td>
+              </tr>
+              <tr>
+                <td class="link-row ProtectConfidentiality-button">ProtectConfidentiality</td>
               </tr>
             </tbody>
           </table>
@@ -296,19 +305,22 @@ export class TaskHandler {
             </thead>
             <tbody>
               <tr>
-                <td class="link-row" id="PKDecrypt-button">PKDecrypt</td>
+                <td class="link-row PKDecrypt-button">PKDecrypt</td>
               </tr>
               <tr>
-                <td class="link-row" id="SKDecrypt-button">SKDecrypt</td>
+                <td class="link-row SKDecrypt-button">SKDecrypt</td>
               </tr>
               <tr>
-                <td class="link-row" id="SSReconstruction-button">SSReconstruction</td>
+                <td class="link-row SSReconstruction-button">SSReconstruction</td>
               </tr>
               <tr>
-                <td class="link-row" id="AddSSReconstruction-button">AddSSReconstruction</td>
+                <td class="link-row AddSSReconstruction-button">AddSSReconstruction</td>
               </tr>
               <tr>
-                <td class="link-row" id="FunSSReconstruction-button">FunSSReconstruction</td>
+                <td class="link-row FunSSReconstruction-button">FunSSReconstruction</td>
+              </tr>
+              <tr>
+                <td class="link-row OpenConfidentiality-button">OpenConfidentiality</td>
               </tr>
             </tbody>
           </table>
@@ -331,6 +343,13 @@ export class TaskHandler {
         <div class="stereotype-submenu" id="data-processing-privacy-preserving-menu">
           <span class="back-main-menu-link link-row">Stereotypes main menu</span> > <span class="back-data-processing-menu-link link-row">Data processing</span> > <b>Privacy preserving</b>
           <table class="table table-hover stereotypes-table">
+            <tbody>
+              <tr>
+                <td class="link-row PETComputation-button">PETComputation</td>
+              </tr>
+            </tbody>
+          </table>
+          <table class="table table-hover stereotypes-table">
             <thead>
               <tr>
                 <th>MPC</th>
@@ -338,25 +357,25 @@ export class TaskHandler {
             </thead>
             <tbody>
               <tr>
-                <td class="link-row" id="MPC-button">MPC</td>
+                <td class="link-row MPC-button">MPC</td>
               </tr>
               <tr>
-                <td class="link-row" id="SSComputation-button">SSComputation</td>
+                <td class="link-row SSComputation-button">SSComputation</td>
               </tr>
               <tr>
-                <td class="link-row" id="AddSSComputation-button">AddSSComputation</td>
+                <td class="link-row AddSSComputation-button">AddSSComputation</td>
               </tr>
               <tr>
-                <td class="link-row" id="FunSSComputation-button">FunSSComputation</td>
+                <td class="link-row FunSSComputation-button">FunSSComputation</td>
               </tr>
               <tr>
-                <td class="link-row" id="GCEvaluate-button">GCEvaluate</td>
+                <td class="link-row GCEvaluate-button">GCEvaluate</td>
               </tr>
               <tr>
-                <td class="link-row" id="GCGarble-button">GCGarble</td>
+                <td class="link-row GCGarble-button">GCGarble</td>
               </tr>
               <tr>
-                <td class="link-row" id="GCComputation-button">GCComputation</td>
+                <td class="link-row GCComputation-button">GCComputation</td>
               </tr>
             </tbody>
           </table>
@@ -368,7 +387,7 @@ export class TaskHandler {
             </thead>
             <tbody>
               <tr>
-                <td class="link-row" id="SGXComputation-button">SGXComputation</td>
+                <td class="link-row SGXComputation-button">SGXComputation</td>
               </tr>
             </tbody>
           </table>
@@ -380,10 +399,10 @@ export class TaskHandler {
             </thead>
             <tbody>
               <tr>
-                <td class="link-row" id="PKComputation-button">PKComputation</td>
+                <td class="link-row PKComputation-button">PKComputation</td>
               </tr>
               <tr>
-                <td class="link-row" id="SKComputation-button">SKComputation</td>
+                <td class="link-row SKComputation-button">SKComputation</td>
               </tr>
             </tbody>
           </table>
@@ -395,10 +414,10 @@ export class TaskHandler {
             </thead>
             <tbody>
               <tr>
-                <td class="link-row" id="OTSend-button">OTSend</td>
+                <td class="link-row OTSend-button">OTSend</td>
               </tr>
               <tr>
-                <td class="link-row" id="OTReceive-button">OTReceive</td>
+                <td class="link-row OTReceive-button">OTReceive</td>
               </tr>
             </tbody>
           </table>
@@ -410,11 +429,14 @@ export class TaskHandler {
           <table class="table table-hover stereotypes-table">
             <tbody>
               <tr>
-                <td class="link-row" id="DimensionalityReduction-button">DimensionalityReduction</td>
+                <td class="link-row DimensionalityReduction-button">DimensionalityReduction</td>
               </tr>
               <tr>
-              <td class="link-row" id="DifferentialPrivacy-button">DifferentialPrivacy</td>
-            </tr>
+                <td class="link-row DifferentialPrivacy-button">DifferentialPrivacy</td>
+              </tr>
+              <tr>
+                <td class="link-row PETComputation-button">PETComputation</td>
+              </tr>
             </tbody>
           </table>
         </div>
@@ -428,7 +450,7 @@ export class TaskHandler {
             </thead>
             <tbody>
               <tr>
-                <td class="link-row" id="SGXAttestationEnclave-button">SGXAttestationEnclave</td>
+                <td class="link-row SGXAttestationEnclave-button">SGXAttestationEnclave</td>
               </tr>
             </tbody>
           </table>
@@ -440,7 +462,7 @@ export class TaskHandler {
             </thead>
             <tbody>
               <tr>
-                <td class="link-row" id="SGXAttestationChallenge-button">SGXAttestationChallenge</td>
+                <td class="link-row SGXAttestationChallenge-button">SGXAttestationChallenge</td>
               </tr>
             </tbody>
           </table>
@@ -511,12 +533,13 @@ export class TaskHandler {
 
     // Stereotype links
     for (let stereotype of this.supportedStereotypes) {
-      $(overlayHtml).on('click', '#' + stereotype + '-button', (e) => {
+      $(overlayHtml).on('click', '.' + stereotype + '-button', (e) => {
+        $(e.target).addClass('selected');
         this.addStereotypeByName(stereotype);
       });
 
       if (this.task[(<any>stereotype)] != null) {
-        $(overlayHtml).find('#' + stereotype + '-button').addClass('disabled-link');
+        $(overlayHtml).find('.' + stereotype + '-button').addClass('disabled-link');
       }
     }
 
@@ -602,6 +625,12 @@ export class TaskHandler {
         st = new OTReceive(this);
       } else if (name == "DifferentialPrivacy") {
         st = new DifferentialPrivacy(this);
+      } else if (name === "ProtectConfidentiality") {
+        st = new ProtectConfidentiality(this);
+      } else if (name === "OpenConfidentiality") {
+        st = new OpenConfidentiality(this);
+      } else if (name === "PETComputation") {
+        st = new PETComputation(this);
       }
     }
     return st;

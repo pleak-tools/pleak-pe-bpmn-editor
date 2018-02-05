@@ -7,6 +7,7 @@ import { TaskHandler } from "./task-handler";
 import { MessageFlowHandler } from "./message-flow-handler";
 import { DataObjectHandler } from "./data-object-handler";
 import { error } from 'util';
+import { element } from 'protractor';
 
 declare let $: any;
 let is = (element, type) => element.$instanceOf(type);
@@ -99,6 +100,7 @@ export class ValidationHandler {
     $('#model-correct').hide();
     this.removeAllErrorHighlights();
     this.removeErrorsListClickHandlers();
+    this.numberOfErrorsInModel = 0;
     // Create new errors list
     if (errors.length > 0) {
       this.numberOfErrorsInModel = errors.length;
@@ -123,22 +125,36 @@ export class ValidationHandler {
       $('#errors-list').html(errors_list);
       $('#model-errors').show();
     } else {
-      $('#model-errors').html('');
+      $('#errors-list').html('');
       $('#model-errors').hide();
       $('#model-correct').show();
     }
     if (areThereAnyErrorsOnModel) {
-      $('#simple-disclosure-analysis').hide();
-      $('#simple-disclosure-analysis').off('click', '#analyze-simple-disclosure');
+      $('#analysis').hide();
+      $('#analysis').off('click', '#analyze-simple-disclosure');
+      $('#analysis').off('click', '#analyze-dependencies');
+
     } else {
-      $('#simple-disclosure-analysis').show();
-      $('#simple-disclosure-analysis').off('click', '#analyze-simple-disclosure');
-      $('#simple-disclosure-analysis').on('click', '#analyze-simple-disclosure', (e) => {
+      $('#analysis').show();
+      $('#analysis').off('click', '#analyze-simple-disclosure');
+      $('#analysis').off('click', '#analyze-dependencies');
+      $('#analysis').on('click', '#analyze-simple-disclosure', (e) => {
         e.preventDefault();
         e.stopPropagation();
         this.createSimpleDisclosureReportTable();
       });
+      $('#analysis').on('click', '#analyze-dependencies', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        this.createDataDependenciesAnalysisReportTable();
+      });
     }
+  }
+
+  // Hide simple disclosure menu (button) on model change, as the analysis report might have been changed
+  hideSimpleDisclosureAnalysisMenuOnModelChange() {
+    $('#model-correct').hide();
+    $('#analysis').hide();
   }
 
   // Remove click handler of valiation error list links
@@ -188,12 +204,23 @@ export class ValidationHandler {
     return 0;
   }
 
+  // Check if task has a stereotype (by stereotype name)
+  messageFlowHasStereotype(messageFlow: any, stereotype: String) {
+    if (messageFlow && messageFlow[(<any>stereotype)]) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
   // Return list of lanes and pools with their names
   getListOfModelLanesAndPoolsObjects() {
     let lanesAndPools = this.getModelLanesAndPools();
     let lanesAndPoolsObjects = [];
     for (let laneOrPool of lanesAndPools) {
-      lanesAndPoolsObjects.push({id: laneOrPool.id, name: this.registry.get(laneOrPool.id).businessObject.name.trim(), children: laneOrPool.children});
+      if (this.registry.get(laneOrPool.id).businessObject.name) {
+        lanesAndPoolsObjects.push({id: laneOrPool.id, name: this.registry.get(laneOrPool.id).businessObject.name.trim(), children: laneOrPool.children});
+      }
     }
     lanesAndPoolsObjects = lanesAndPoolsObjects.sort(this.compareNames);
     return lanesAndPoolsObjects;
@@ -206,23 +233,235 @@ export class ValidationHandler {
     for (let dataObjectHandler of dataObjectHandlers) {
       let visibleTo = $.unique(dataObjectHandler.getLanesAndPoolsDataObjectIsVisibleTo());
       let visibility = dataObjectHandler.getVisibilityStatus();
-      let dataObjectAlreadyAdded = uniqueDataObjectsByName.filter(( obj ) => {
-        return obj.name.trim() == dataObjectHandler.dataObject.name.trim();
-      });
-      if (dataObjectAlreadyAdded.length > 0) {
-        dataObjectAlreadyAdded[0].visibleTo = $.unique(dataObjectAlreadyAdded[0].visibleTo.concat(visibleTo));
-      } else {
-        uniqueDataObjectsByName.push({name: dataObjectHandler.dataObject.name.trim(), visibleTo: visibleTo, visibility: visibility});
+      if (dataObjectHandler.dataObject.name) {
+        let dataObjectAlreadyAdded = uniqueDataObjectsByName.filter(( obj ) => {
+          return obj.name.trim() == dataObjectHandler.dataObject.name.trim();
+        });
+        if (dataObjectAlreadyAdded.length > 0) {
+          dataObjectAlreadyAdded[0].visibleTo = $.unique(dataObjectAlreadyAdded[0].visibleTo.concat(visibleTo));
+        } else {
+          uniqueDataObjectsByName.push({name: dataObjectHandler.dataObject.name.trim(), visibleTo: visibleTo, visibility: visibility});
+        }
       }
     }
     uniqueDataObjectsByName = uniqueDataObjectsByName.sort(this.compareNames);
     return uniqueDataObjectsByName;
   }
-  
+
+  // Return list of dataObjects that are moved over MessageFlow / SecureChannel
+  getListOfModeldataObjectsAndMessageFlowConnections() {
+    let messageFlowHandlers = this.elementsHandler.getAllModelMessageFlowHandlers();
+    let messageFlowObjects = [];
+    for (let messageFlowHandler of messageFlowHandlers) {
+      let messageFlowOutputNames = messageFlowHandler.getMessageFlowOutputObjects().map(a => a.businessObject.name.trim());
+      let connectedDataObjects = messageFlowOutputNames;
+      let messageFlow = messageFlowHandler.messageFlow;
+      let messageFlowType = "MF";
+      if (this.messageFlowHasStereotype(messageFlow, "SecureChannel")) {
+        messageFlowType = "S";
+      }
+      for (let dObject of connectedDataObjects) {
+        let oTypes = [];
+        oTypes.push(messageFlowType);
+        let messageFlowAlreadyInList = messageFlowObjects.filter(( obj ) => {
+          return obj.dataObject == dObject;
+        });
+        if (messageFlowAlreadyInList.length === 0) {
+          messageFlowObjects.push({dataObject: dObject, types: oTypes});
+        } else {
+          messageFlowAlreadyInList[0].types = $.unique(messageFlowAlreadyInList[0].types.concat(oTypes));
+        }
+      }
+    }
+    return messageFlowObjects;
+  }
+
+  // Return unique objects from array by their id property
+  getUniqueObjectsByIdFromArray(array: any[]) {
+    let uniqueObjects = [];
+    for (let object of array) {
+      let objectAlreadyInArray = uniqueObjects.filter(( obj ) => {
+        return obj.id == object.id;
+      });
+      if (objectAlreadyInArray.length === 0) {
+        uniqueObjects.push(object);
+      }
+    }
+    return uniqueObjects;
+  }
+
+  // Return unique objects from array
+  getUniqueObjectsFromArray(array: any[]) {
+    let uniqueObjects = [];
+    for (let object of array) {
+      let objectAlreadyInArray = uniqueObjects.filter(( obj ) => {
+        return obj == object;
+      });
+      if (objectAlreadyInArray.length === 0) {
+        uniqueObjects.push(object);
+      }
+    }
+    return uniqueObjects;
+  }
+
+  // Return information about data objects that are related to each other
+  getDataObjectsDependencies() {
+    let dependencies = [];
+    let allDataObjectHandlers = this.elementsHandler.getAllModelDataObjectHandlers();
+    for (let dataObjectHandler of allDataObjectHandlers) {
+      for (let parentTask of dataObjectHandler.getDataObjectIncomingParentTasks()) {
+        let parentOutputs = this.elementsHandler.getTaskHandlerByTaskId(parentTask.id).getTaskOutputObjects();
+        for (let dO of parentOutputs) {
+          let dataObjectAlreadyInList = dependencies.filter(( obj ) => {
+            return obj.name === dO.businessObject.name.trim();
+          });
+          if (dataObjectAlreadyInList.length !== 0) {
+            //if (this.getDataObjectsOfIncomingPathByInputElement(dO).length > 0) {
+              dataObjectAlreadyInList[0].connections = $.unique(dataObjectAlreadyInList[0].connections.concat(this.getDataObjectsOfIncomingPathByInputElement(dO).map(a=>a.businessObject.name.trim())));
+            //}
+          } else {
+            //if (this.getDataObjectsOfIncomingPathByInputElement(dO).length > 0 && dO.businessObject.name) {
+            if (dO.businessObject.name) {
+              dependencies.push({name: dO.businessObject.name.trim(), connections: $.unique(this.getDataObjectsOfIncomingPathByInputElement(dO).map(a=>a.businessObject.name.trim()))});
+            }
+          }
+        }
+      }
+    }
+    dependencies = dependencies.sort(this.compareNames);
+    return dependencies;
+  }
+
+  // Return list of unique (by name) data objects on the model
+  getListOfModelUniqueDataObjectNames() {
+    let dataObjectHandlers = this.elementsHandler.getAllModelDataObjectHandlers();
+    let uniqueDataObjectsByName = [];
+    for (let dataObjectHandler of dataObjectHandlers) {
+      if (dataObjectHandler.dataObject.name) {
+        uniqueDataObjectsByName.push(dataObjectHandler.dataObject.name.trim());
+      }
+    }
+    uniqueDataObjectsByName = $.unique(uniqueDataObjectsByName);
+    return uniqueDataObjectsByName.sort();
+  }
+
+  getOutgoingDataObjectInstancesByName(dataObjectName: String) {
+    let allDataObjectHandlers = this.elementsHandler.getAllModelDataObjectHandlers();
+    let dataObjects = [];
+    for (let dataObjectHandler of allDataObjectHandlers) {
+      for (let parentTask of dataObjectHandler.getDataObjectIncomingParentTasks()) {
+        let parentOutputs = this.elementsHandler.getTaskHandlerByTaskId(parentTask.id).getTaskOutputObjects();
+        for (let dO of parentOutputs) {
+          if (dO.businessObject.name) {
+            let dOName = dO.businessObject.name.trim();
+            if (dOName == dataObjectName) {
+              dataObjects.push(dO);
+            }
+          }
+        }
+      }
+    }
+    return dataObjects;
+  }
+
+  getIncomingDataObjectInstancesByName(dataObjectName: String) {
+    let allDataObjectHandlers = this.elementsHandler.getAllModelDataObjectHandlers();
+    let dataObjects = [];
+    for (let dataObjectHandler of allDataObjectHandlers) {
+      for (let parentTask of dataObjectHandler.getDataObjectOutgoingParentTasks()) {
+        let parentOutputs = this.elementsHandler.getTaskHandlerByTaskId(parentTask.id).getTaskInputObjects();
+        for (let dO of parentOutputs) {
+          if (dO.businessObject.name) {
+            let dOName = dO.businessObject.name.trim();
+            if (dOName == dataObjectName) {
+              dataObjects.push(dO);
+            }
+          }
+        }
+      }
+    }
+    return dataObjects;
+  }
+
+  // Check if two data objects (by name) have at least one same parent (by name)
+  isThereACommonParentForDataObjects(dataObject1Name: String, dataObject2Name: String) {
+    let dataObject1Instances = this.getOutgoingDataObjectInstancesByName(dataObject1Name);
+    let dataObject2Instances = this.getIncomingDataObjectInstancesByName(dataObject2Name);
+    let dO1Parents = [];
+    let dO2Parents = [];
+    for (let dO1Instance of dataObject1Instances) {
+      let dO1InstanceParents = this.elementsHandler.getDataObjectHandlerByDataObjectId(dO1Instance.id).getDataObjectIncomingParentTasks();
+      dO1Parents = dO1Parents.concat(dO1InstanceParents);
+    }
+    for (let dO2Instance of dataObject2Instances) {
+      let dO2InstanceParents = this.elementsHandler.getDataObjectHandlerByDataObjectId(dO2Instance.id).getDataObjectOutgoingParentTasks();
+      dO2Parents = dO2Parents.concat(dO2InstanceParents);
+    }
+    for (let parent1 of dO1Parents) {
+      for (let parent2 of dO2Parents) {
+        let p1 = this.registry.get(parent1.id).businessObject.name.trim();
+        let p2 = this.registry.get(parent2.id).businessObject.name.trim();
+        if (p1 == p2) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  // Create data dependencies report table
+  createDataDependenciesAnalysisReportTable() {
+    let uniqueDataObjectNames = this.getListOfModelUniqueDataObjectNames();
+    let dependencies = this.getDataObjectsDependencies();
+    console.log(dependencies);
+    let rows = uniqueDataObjectNames.length;
+    let columns = uniqueDataObjectNames.length;
+
+    let table = "";
+    table += '<table class="table" style="text-align:center">';
+    table += '<tr><th style="background-color:#f5f5f5; text-align:center;">#</th>';
+    for (let c = 0; c < columns; c++) {
+      table += '<th style="background-color:#f5f5f5; text-align:center;">' + uniqueDataObjectNames[c] + '</th>';
+    }
+    table += '</tr>';
+    for (let r = 0; r < rows; r++) {
+      table += '<tr><td style="background-color:#f5f5f5;"><b>' + uniqueDataObjectNames[r] + '</b></td>';
+      for (let c = 0; c < columns; c++) {
+        let value = '-';
+        if (uniqueDataObjectNames[r] != uniqueDataObjectNames[c]) {
+          let hasRelations = dependencies.filter(( obj ) => {
+            return obj.name === uniqueDataObjectNames[r];
+          });
+          if (hasRelations.length !== 0) {
+            if (hasRelations[0].connections.indexOf(uniqueDataObjectNames[c]) !== -1) {
+              if (this.isThereACommonParentForDataObjects(uniqueDataObjectNames[r], uniqueDataObjectNames[c])) {
+                value = 'D';
+              } else {
+                value = 'I';
+              }
+            }
+          }
+        }
+        if (uniqueDataObjectNames[r] == uniqueDataObjectNames[c] && value == '-') {
+          value = '#';
+        }
+        table += '<td>'+value+'</td>';
+      }
+      table += '</tr>';
+    }
+    table += '</tabel>';
+    $('#dataDependenciesAnalysisReportModal').find('#report-table').html('');
+    $('#dataDependenciesAnalysisReportModal').find('#report-table').html(table);
+    $('#dataDependenciesAnalysisReportModal').find('#dependenciesAnalysisReportTitle').text('');
+    $('#dataDependenciesAnalysisReportModal').find('#dependenciesAnalysisReportTitle').text(this.elementsHandler.parent.file.title);
+    $('#dataDependenciesAnalysisReportModal').modal();
+  }
+
   // Create simple disclosure report table
   createSimpleDisclosureReportTable() {
     let uniqueLanesAndPools = this.getListOfModelLanesAndPoolsObjects();
     let uniqueDataObjectsByName = this.getListOfModelUniqueDataObjects();
+    let dataObjectMessageFlowConnections = this.getListOfModeldataObjectsAndMessageFlowConnections();
     let rows = uniqueLanesAndPools.length;
     let columns = uniqueDataObjectsByName.length;
 
@@ -238,7 +477,12 @@ export class ValidationHandler {
       for (let c = 0; c < columns; c++) {
         if (uniqueDataObjectsByName[c].visibleTo.indexOf(uniqueLanesAndPools[r].id) !== -1) {
           let visibility = "";
-          let visibilityData = $.unique(uniqueDataObjectsByName[c].visibility);
+          let visibilityDataOriginal = $.unique(uniqueDataObjectsByName[c].visibility);
+          let visibilityData = [];
+          for (let vData of visibilityDataOriginal) {
+            visibilityData.push(vData.split("-")[0]);
+          }
+          visibilityData = $.unique(visibilityData);
           if (visibilityData.length === 1) {
             if (visibilityData[0] == "private") {
               visibility = "H";
@@ -247,6 +491,16 @@ export class ValidationHandler {
             }
           } else if (visibilityData.length > 1) {
             visibility = "V";
+            for (let data of visibilityDataOriginal) {
+              let source = data.split('-')[1];
+              if (source == "o") {
+                if (data.split('-')[0] == "private") {
+                  visibility = "H";
+                } else if (data.split('-')[0] == "public") {
+                  visibility = "V";
+                }
+              }
+            }
           } else if (visibilityData.length === 0) {
             visibility = "V";
           }
@@ -258,7 +512,22 @@ export class ValidationHandler {
       }
       table += '</tr>';
     }
-    table += '</table>';
+
+    if (dataObjectMessageFlowConnections) {
+      table += '<tr><td colspan="' + (columns+1) + '"></td></tr><tr><td>Shared over</td>'
+      for (let c2 = 0; c2 < columns; c2++) {
+        let messageFlowAlreadyInList = dataObjectMessageFlowConnections.filter(( obj ) => {
+          return obj.dataObject == uniqueDataObjectsByName[c2].name;
+        });
+        if (messageFlowAlreadyInList.length !== 0) {
+          table += '<td>' + messageFlowAlreadyInList[0].types + '</td>';
+        } else {
+          table += '<td>-</td>';
+        }
+      }
+      table += '</tr>';
+    }
+    table += '</tabel>';
     $('#simpleDisclosureReportModal').find('#report-table').html('');
     $('#simpleDisclosureReportModal').find('#report-table').html(table);
     $('#simpleDisclosureReportModal').find('#simpleDisclosureReportTitle').text('');
@@ -408,6 +677,7 @@ export class ValidationHandler {
     return true;
   }
 
+  // Return number of occurences of the substring in the string
   occurrences(string: string, subString: string) {
     string += "";
     subString += "";
@@ -504,6 +774,82 @@ export class ValidationHandler {
       }
     }
     return false;
+  }
+
+  // Find all data objects from the incoming path of input element (data object)
+  findIncomingPathDataObjects(incDataObjects: any, input: any, sourceInputId: String) {
+    if (!input) {
+      return;
+    }
+    if (input.id != sourceInputId) {
+      if (input.type === "bpmn:Task") {
+        let flag = false;
+        for (let element of input.incoming) {
+          if (element.type === "bpmn:DataInputAssociation") {
+            flag = true;
+            break;
+          }
+        }
+        if (!flag) {
+          return;
+        }
+      }
+      if (input.type === "bpmn:SequenceFlow") {
+        return;
+      }
+      if (input.type === "bpmn:DataObjectReference") {
+        incDataObjects.push(input.id);
+      }
+      if (input.sourceRef) {
+        if (incDataObjects.filter(item => item == input.sourceRef.id).length > 5) {
+          return;
+        }
+        this.findIncomingPathDataObjects(incDataObjects, input.sourceRef, sourceInputId);
+      }
+      if (input.incoming) {
+        if (incDataObjects.filter(item => item == input.incoming.id).length > 5) {
+          return;
+        }
+        this.findIncomingPathDataObjects(incDataObjects, input.incoming, sourceInputId);
+      }
+      if (input.source) {
+        if (incDataObjects.filter(item => item == input.source.id).length > 5) {
+          return;
+        }
+        this.findIncomingPathDataObjects(incDataObjects, input.source, sourceInputId);
+      }
+      if (input.type === "bpmn:StartEvent" || input.type === "bpmn:IntermediateCatchEvent") {
+          for (let element of input.incoming) {
+            this.findIncomingPathDataObjects(incDataObjects, element, sourceInputId);
+          }
+      }
+      for (let element of input) {
+        if (element.type === "bpmn:MessageFlow") {
+          this.findIncomingPathDataObjects(incDataObjects, element.source, sourceInputId);
+        }
+        if (element.sourceRef) {
+          if (element.type !== "bpmn:SequenceFlow") {
+            this.findIncomingPathDataObjects(incDataObjects, element.sourceRef, sourceInputId);
+          }
+        }
+        if (element.incoming) {
+          if (incDataObjects.filter(item => item == element.incoming.id).length > 5) {
+            return;
+          }
+          if (element.type !== "bpmn:SequenceFlow") {
+            this.findIncomingPathDataObjects(incDataObjects, element.incoming, sourceInputId);
+          }
+        }
+        if (element.source) {
+          if (incDataObjects.filter(item => item == element.source.id).length > 5) {
+            return;
+          }
+          if (element.type !== "bpmn:SequenceFlow") {
+            this.findIncomingPathDataObjects(incDataObjects, element.source, sourceInputId);
+          }
+        }
+      }
+    }
   }
 
   // Find all tasks from the incoming path of task
@@ -697,6 +1043,17 @@ export class ValidationHandler {
       }
     }
     return $.unique(incTasks);
+  }
+
+  // Return all data objects from the incoming path of element
+  getDataObjectsOfIncomingPathByInputElement(inputElement: any) {
+    let incDataObjectIds = [];
+    this.findIncomingPathDataObjects(incDataObjectIds, inputElement.incoming, inputElement.id);
+    let incDataObjects = [];
+    for (let id of $.unique(incDataObjectIds)) {
+      incDataObjects.push(this.registry.get(id));
+    }
+    return incDataObjects;
   }
 
   // Return all tasks from the outgoing path of task

@@ -91,8 +91,12 @@ export class SGXAttestationEnclave extends TaskStereotype {
       selectedSGXGroupId = this.getSGXGroup();
     }
 
-    this.highlightSGXAttestationGroupMembersAndTheirInputsOutputs(selectedGroupId);
-    this.highlightSGXComputationGroupMembersAndTheirInputsOutputs(selectedSGXGroupId);
+    if (selectedGroupId) {
+      this.highlightSGXAttestationGroupMembersAndTheirInputsOutputs(selectedGroupId);
+    }
+    if (selectedSGXGroupId) {
+      this.highlightSGXComputationGroupMembersAndTheirInputsOutputs(selectedSGXGroupId);
+    }
 
     for (let group of this.getModelSGXAttestationGroups()) {
       let sel = "";
@@ -653,7 +657,7 @@ export class SGXAttestationEnclave extends TaskStereotype {
     let inputIds = this.getTaskInputObjects().map(a => a.id);
     let outputIds = this.getTaskOutputObjects().map(a => a.id);
     if (inputIds.indexOf(dataObjectId) !== -1 || outputIds.indexOf(dataObjectId) !== -1) {
-      statuses.push("public");
+      statuses.push("public-io");
     }
     if (statuses.length > 0) {
       return statuses;

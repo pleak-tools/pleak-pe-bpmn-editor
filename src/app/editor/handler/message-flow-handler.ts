@@ -227,9 +227,11 @@ export class MessageFlowHandler {
     let objects = [];
     if (this.messageFlow.id && this.messageFlow.sourceRef.dataInputAssociations) {
       for (let inputAssociation of this.messageFlow.sourceRef.dataInputAssociations) {
-        for (let inputData of inputAssociation.sourceRef) {
-          if (inputData.$type === "bpmn:DataObjectReference") {
-            objects.push(this.registry.get(inputData.id));
+        if (inputAssociation && inputAssociation.sourceRef) {
+          for (let inputData of inputAssociation.sourceRef) {
+            if (inputData.$type === "bpmn:DataObjectReference") {
+              objects.push(this.registry.get(inputData.id));
+            }
           }
         }
       }

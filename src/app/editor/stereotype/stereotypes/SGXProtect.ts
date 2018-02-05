@@ -403,10 +403,10 @@ export class SGXProtect extends TaskStereotype {
           return this.getTaskHandlerByTaskId(this.task.id).getTaskStereotypeInstanceByName("SGXComputation").getDataObjectVisibilityStatus(dataObjectId);
         }
       }
-      statuses.push("public");
+      statuses.push("public-i");
     }
     if (outputIds.indexOf(dataObjectId) !== -1) {
-      statuses.push("private");
+      statuses.push("private-o");
     }
     if (statuses.length > 0) {
       return statuses;

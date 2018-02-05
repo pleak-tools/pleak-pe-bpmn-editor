@@ -1,0 +1,27 @@
+<div class="panel panel-default stereotype-options-panel" id="PETComputation-stereotype-options" style="display:none;">
+  <div class="panel-heading">
+    <h4>PETComputation options</h4>
+  </div>
+  <div class="panel-body">
+    <div class="form-group">
+      <label class="text-16" for="PETComputation-inputScript">Input script</label>
+      <textarea class="form-control stereotype-option" id="PETComputation-inputScript"></textarea>
+    </div>
+    <div class="form-group" id="PETComputation-inputObjects-form-group">
+      <label class="text-16" for="PETComputation-inputObjects">Input data objects</label>
+      <ul class="stereotype-option" id="PETComputation-inputObjects"></ul>
+      <span class="help-block" id="PETComputation-inputObjects-help">At least 1 input must be selected as encrypted</span>
+    </div>
+    <div class="form-group">
+      <label class="text-16" for="PETComputation-outputObjects">Output data</label>
+      <ul class="stereotype-option" id="PETComputation-outputObjects"></ul>
+    </div>
+    <div class="form-group" id="PETComputation-conditions-form-group">
+      <span class="help-block" id="PETComputation-conditions-help">This task does not meet all the requirements of this stereotype (at least 1 input and exactly 1 output are required).</span>
+    </div>
+  </div>
+  <div class="panel-footer">
+    <button class="btn btn-success" type="button" id="PETComputation-save-button">Save</button>
+    <button class="btn btn-default" type="button" id="PETComputation-remove-button">Remove</button>
+  </div>
+</div>

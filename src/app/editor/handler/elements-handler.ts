@@ -140,6 +140,7 @@ export class ElementsHandler {
 
   updateModelContentVariable(xml: String) {
     this.parent.updateModelContentVariable(xml);
+    this.validationHandler.hideSimpleDisclosureAnalysisMenuOnModelChange();
   }
 
   // Get taskHandler instance of task by task id
