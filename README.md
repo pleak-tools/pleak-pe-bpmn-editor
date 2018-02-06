@@ -11,7 +11,7 @@ To build an app you need: NodeJS with npm installed.
 
 To install all project dependencies execute `npm install`.
 
-Execute `npm run build` to build the project. The build artifacts will be stored in the `dist/` directory.
+Execute `npm run build` to build the project.
 
 ## Using
 

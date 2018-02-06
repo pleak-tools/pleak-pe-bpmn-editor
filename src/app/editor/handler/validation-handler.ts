@@ -413,7 +413,6 @@ export class ValidationHandler {
   createDataDependenciesAnalysisReportTable() {
     let uniqueDataObjectNames = this.getListOfModelUniqueDataObjectNames();
     let dependencies = this.getDataObjectsDependencies();
-    console.log(dependencies);
     let rows = uniqueDataObjectNames.length;
     let columns = uniqueDataObjectNames.length;
 
