@@ -338,10 +338,11 @@ export class ValidationHandler {
     let uniqueDataObjectsByName = [];
     for (let dataObjectHandler of dataObjectHandlers) {
       if (dataObjectHandler.dataObject.name) {
-        uniqueDataObjectsByName.push(dataObjectHandler.dataObject.name.trim());
+        if (uniqueDataObjectsByName.indexOf(dataObjectHandler.dataObject.name.trim()) === -1) {
+          uniqueDataObjectsByName.push(dataObjectHandler.dataObject.name.trim());
+        }
       }
     }
-    uniqueDataObjectsByName = $.unique(uniqueDataObjectsByName);
     return uniqueDataObjectsByName.sort();
   }
 
