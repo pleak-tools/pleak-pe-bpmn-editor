@@ -4,6 +4,7 @@ import { ElementsHandler } from "./elements-handler";
 import { ValidationHandler, ValidationErrorObject } from "./validation-handler";
 import { MessageFlowStereotype } from "../stereotype/message-flow-stereotype";
 import { SecureChannel } from "../stereotype/stereotypes/SecureChannel";
+import { CommunicationProtection } from "../stereotype/stereotypes/CommunicationProtection";
 
 declare let $: any;
 let is = (element, type) => element.$instanceOf(type);
@@ -39,7 +40,8 @@ export class MessageFlowHandler {
   tempStereotype: MessageFlowStereotype = null;
 
   supportedStereotypes: String[] = [
-    "SecureChannel"
+    "SecureChannel",
+    "CommunicationProtection"
   ];
 
   getMessageFlowId() {
@@ -148,6 +150,8 @@ export class MessageFlowHandler {
     if (name) {
       if (name == "SecureChannel") {
         st = new SecureChannel(this);
+      } else if (name == "CommunicationProtection") {
+        st = new CommunicationProtection(this);
       }
     }
     return st;

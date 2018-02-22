@@ -239,6 +239,7 @@ export class ValidationHandler {
         });
         if (dataObjectAlreadyAdded.length > 0) {
           dataObjectAlreadyAdded[0].visibleTo = $.unique(dataObjectAlreadyAdded[0].visibleTo.concat(visibleTo));
+          dataObjectAlreadyAdded[0].visibility = $.unique(dataObjectAlreadyAdded[0].visibility.concat(visibility));
         } else {
           uniqueDataObjectsByName.push({name: dataObjectHandler.dataObject.name.trim(), visibleTo: visibleTo, visibility: visibility});
         }
@@ -257,7 +258,7 @@ export class ValidationHandler {
       let connectedDataObjects = messageFlowOutputNames;
       let messageFlow = messageFlowHandler.messageFlow;
       let messageFlowType = "MF";
-      if (this.messageFlowHasStereotype(messageFlow, "SecureChannel")) {
+      if (this.messageFlowHasStereotype(messageFlow, "SecureChannel") || this.messageFlowHasStereotype(messageFlow, "CommunicationProtection")) {
         messageFlowType = "S";
       }
       for (let dObject of connectedDataObjects) {
