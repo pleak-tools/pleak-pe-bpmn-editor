@@ -194,6 +194,19 @@ export const SqlBPMNModdle = {
       ]
     },
     {
+      name: "SQLLocalSensitivityTask",
+      extends: [
+        "bpmn:Task"
+      ],
+      properties: [
+        {
+          "name": "sqlTaskInfo",
+          "isAttr": false,
+          "type": "String"
+        },
+      ]
+    },
+    {
       name: "SQLDataObjectReference",
       extends: [
         "bpmn:DataObjectReference"
@@ -241,6 +254,19 @@ export const SqlBPMNModdle = {
           "type": "String"
         }
       ]
-    }
+    },
+    {
+      name: "SQLLocalSensitivityDataObjectReference",
+      extends: [
+        "bpmn:DataObjectReference"
+      ],
+      properties: [
+        {
+          "name": "sqlDataObjectInfo",
+          "isAttr": false,
+          "type": "String"
+        }
+      ]
+    },
   ]
 };
