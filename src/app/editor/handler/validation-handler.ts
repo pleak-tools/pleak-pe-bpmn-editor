@@ -46,6 +46,7 @@ export class ValidationHandler {
   modelLanesAndPools: any[] = [];
 
   numberOfErrorsInModel: Number = 0;
+  errorChecks: any = {dataObjects: false, tasks: false, messageFlows: false};
 
   init() {
     // Import model from xml file
@@ -77,19 +78,51 @@ export class ValidationHandler {
     }
   }
 
+  checkTaskErrors(errors) {
+    $('.analysis-spinner').fadeIn();
+    for (let i = 0; i < this.taskHandlers.length; i++) {
+      let taskHandler = this.taskHandlers[i];
+      this.checkForErrorsInStereotypes(taskHandler.getAllTaskStereotypeInstances(), errors);
+      if (i == this.taskHandlers.length-1) {
+        this.errorChecks.tasks = true;
+        this.checkDataObjectErrors(errors);
+      }
+    }
+  }
+
+  checkDataObjectErrors(errors) {
+    for (let k = 0; k < this.dataObjectHandlers.length; k++) {
+      let dataObjectHandler = this.dataObjectHandlers[k];
+      this.checkForErrorsInStereotypes(dataObjectHandler.getAllDataObjectStereotypeInstances(), errors);
+      if (k == this.dataObjectHandlers.length-1) {
+        this.errorChecks.dataObjects = true;
+        this.checkMessageFlowErrors(errors);
+      }
+    }
+  }
+
+  checkMessageFlowErrors(errors) {
+    for (let j = 0; j < this.messageFlowHandlers.length; j++) {
+      let messageFlowHandler = this.messageFlowHandlers[j];
+      this.checkForErrorsInStereotypes(messageFlowHandler.getAllMessageFlowStereotypeInstances(), errors);
+      if (j == this.messageFlowHandlers.length-1) {
+        this.errorChecks.messageFlows = true;
+        this.showErrorsIfChecksFinished(errors);
+      }
+    }
+  }
+
   // Init validation checks for all stereotypes
   checkForStereotypeErrorsAndShowErrorsList() {
     let errors: ValidationErrorObject[] = [];
-    for (let taskHandler of this.taskHandlers) {
-      this.checkForErrorsInStereotypes(taskHandler.getAllTaskStereotypeInstances(), errors);
+    this.errorChecks = {dataObjects: false, tasks: false, messageFlows: false};
+    this.checkTaskErrors(errors);
+  }
+
+  showErrorsIfChecksFinished(errors) {
+    if (this.errorChecks.tasks && this.errorChecks.dataObjects && this.errorChecks.messageFlows) {
+      this.createErrorsList(errors);
     }
-    for (let messageFlowHandler of this.messageFlowHandlers) {
-      this.checkForErrorsInStereotypes(messageFlowHandler.getAllMessageFlowStereotypeInstances(), errors);
-    }
-    for (let dataObjectHandler of this.dataObjectHandlers) {
-      this.checkForErrorsInStereotypes(dataObjectHandler.getAllDataObjectStereotypeInstances(), errors);
-    }
-    this.createErrorsList(errors);
   }
 
   // Create validation errors list
@@ -123,18 +156,19 @@ export class ValidationHandler {
       }
       errors_list += '</ol>';
       $('#errors-list').html(errors_list);
+      $('.analysis-spinner').hide();
       $('#model-errors').show();
-    } else {
-      $('#errors-list').html('');
-      $('#model-errors').hide();
-      $('#model-correct').show();
     }
     if (areThereAnyErrorsOnModel) {
       $('#analysis').hide();
       $('#analysis').off('click', '#analyze-simple-disclosure');
       $('#analysis').off('click', '#analyze-dependencies');
-
+      this.setChangesInModelStatus(false);
     } else {
+      $('.analysis-spinner').hide();
+      $('#errors-list').html('');
+      $('#model-errors').hide();
+      $('#model-correct').show();
       $('#analysis').show();
       $('#analysis').off('click', '#analyze-simple-disclosure');
       $('#analysis').off('click', '#analyze-dependencies');
@@ -148,6 +182,7 @@ export class ValidationHandler {
         e.stopPropagation();
         this.createDataDependenciesAnalysisReportTable();
       });
+      this.setChangesInModelStatus(false);
     }
   }
 
@@ -875,7 +910,13 @@ export class ValidationHandler {
         this.findIncomingPathTasks(incTasks, input.incoming, sourceInputId, type);
       }
       if (input.$type === "bpmn:StartEvent" || input.$type === "bpmn:IntermediateCatchEvent") {
-        for (let el of input.$parent.$parent.rootElements) {
+        let rElements;
+        if (input.$parent.$parent.rootElements) {
+          rElements = input.$parent.$parent.rootElements;
+        } else if (input.$parent.$parent.$parent.rootElements) {
+          rElements = input.$parent.$parent.$parent.rootElements;
+        }
+        for (let el of rElements) {
           if (el.$type === "bpmn:Collaboration") {
             if (el.messageFlows) {
               for (let mF of el.messageFlows) {
@@ -919,7 +960,13 @@ export class ValidationHandler {
         this.findOutgoingPathTasks(incTasks, input.outgoing, sourceInputId, type);
       }
       if (input.$type === "bpmn:StartEvent" || input.$type === "bpmn:IntermediateCatchEvent") {
-        for (let el of input.$parent.$parent.rootElements) {
+        let rElements;
+        if (input.$parent.$parent.rootElements) {
+          rElements = input.$parent.$parent.rootElements;
+        } else if (input.$parent.$parent.$parent.rootElements) {
+          rElements = input.$parent.$parent.$parent.rootElements;
+        }
+        for (let el of rElements) {
           if (el.$type === "bpmn:Collaboration") {
             if (el.messageFlows) {
               for (let mF of el.messageFlows) {
@@ -959,7 +1006,13 @@ export class ValidationHandler {
       this.findIncomingPathExclusiveGateways(incGateways, input.incoming);
     }
     if (input.$type === "bpmn:StartEvent" || input.$type === "bpmn:IntermediateCatchEvent") {
-      for (let el of input.$parent.$parent.rootElements) {
+      let rElements;
+      if (input.$parent.$parent.rootElements) {
+        rElements = input.$parent.$parent.rootElements;
+      } else if (input.$parent.$parent.$parent.rootElements) {
+        rElements = input.$parent.$parent.$parent.rootElements;
+      }
+      for (let el of rElements) {
         if (el.$type === "bpmn:Collaboration") {
           if (el.messageFlows) {
             for (let mF of el.messageFlows) {
@@ -1006,7 +1059,13 @@ export class ValidationHandler {
       }
       if (input.$type === "bpmn:StartEvent" || input.$type === "bpmn:IntermediateCatchEvent") {
         incEvents.push(input);
-        for (let el of input.$parent.$parent.rootElements) {
+        let rElements;
+        if (input.$parent.$parent.rootElements) {
+          rElements = input.$parent.$parent.rootElements;
+        } else if (input.$parent.$parent.$parent.rootElements) {
+          rElements = input.$parent.$parent.$parent.rootElements;
+        }
+        for (let el of rElements) {
           if (el.$type === "bpmn:Collaboration") {
             if (el.messageFlows) {
               for (let mF of el.messageFlows) {
@@ -1032,7 +1091,13 @@ export class ValidationHandler {
   getTasksOfIncomingPathByInputElement(inputElement: any) {
     let incTasks = [];
     this.findIncomingPathTasks(incTasks, inputElement.incoming, inputElement.id, null);
-    for (let el of inputElement.$parent.$parent.rootElements) {
+    let rElements;
+    if (inputElement.$parent.$parent.rootElements) {
+      rElements = inputElement.$parent.$parent.rootElements;
+    } else if (inputElement.$parent.$parent.$parent.rootElements) {
+      rElements = inputElement.$parent.$parent.$parent.rootElements;
+    }
+    for (let el of rElements) {
       if (el.$type === "bpmn:Collaboration") {
         if (el.messageFlows) {
           for (let mF of el.messageFlows) {
@@ -1061,7 +1126,13 @@ export class ValidationHandler {
   getTasksOfOutgoingPathByInputElement(inputElement: any) {
     let outgTasks = [];
     this.findOutgoingPathTasks(outgTasks, inputElement.outgoing, inputElement.id, null);
-    for (let el of inputElement.$parent.$parent.rootElements) {
+    let rElements;
+    if (inputElement.$parent.$parent.rootElements) {
+      rElements = inputElement.$parent.$parent.rootElements;
+    } else if (inputElement.$parent.$parent.$parent.rootElements) {
+      rElements = inputElement.$parent.$parent.$parent.rootElements;
+    }
+    for (let el of rElements) {
       if (el.$type === "bpmn:Collaboration") {
         if (el.messageFlows) {
           for (let mF of el.messageFlows) {
@@ -1079,7 +1150,13 @@ export class ValidationHandler {
   getFirstTasksOfIncomingPathOfInputElement(input: any) {
     let incTasks = [];
     this.findIncomingPathTasks(incTasks, input.incoming, input.id, "first");
-    for (let el of input.$parent.$parent.rootElements) {
+    let rElements;
+    if (input.$parent.$parent.rootElements) {
+      rElements = input.$parent.$parent.rootElements;
+    } else if (input.$parent.$parent.$parent.rootElements) {
+      rElements = input.$parent.$parent.$parent.rootElements;
+    }
+    for (let el of rElements) {
       if (el.$type === "bpmn:Collaboration") {
         if (el.messageFlows) {
           for (let mF of el.messageFlows) {
@@ -1097,7 +1174,13 @@ export class ValidationHandler {
   getFirstTasksOfOutgoingPathOfStartEventElements(input: any) {
     let outgTasks = [];
     this.findOutgoingPathTasks(outgTasks, input.outgoing, input.id, "first");
-    for (let el of input.$parent.$parent.rootElements) {
+    let rElements;
+    if (input.$parent.$parent.rootElements) {
+      rElements = input.$parent.$parent.rootElements;
+    } else if (input.$parent.$parent.$parent.rootElements) {
+      rElements = input.$parent.$parent.$parent.rootElements;
+    }
+    for (let el of rElements) {
       if (el.$type === "bpmn:Collaboration") {
         if (el.messageFlows) {
           for (let mF of el.messageFlows) {
@@ -1115,7 +1198,13 @@ export class ValidationHandler {
   getExclusiveGatewaysOfIncomingPathOfInputElement(input: any) {
     let incTasks = [];
     this.findIncomingPathExclusiveGateways(incTasks, input.incoming);
-    for (let el of input.$parent.$parent.rootElements) {
+    let rElements;
+    if (input.$parent.$parent.rootElements) {
+      rElements = input.$parent.$parent.rootElements;
+    } else if (input.$parent.$parent.$parent.rootElements) {
+      rElements = input.$parent.$parent.$parent.rootElements;
+    }
+    for (let el of rElements) {
       if (el.$type === "bpmn:Collaboration") {
         if (el.messageFlows) {
           for (let mF of el.messageFlows) {
@@ -1256,6 +1345,11 @@ export class ValidationHandler {
       return true;
     }
     return false;
+  }
+
+  /* */
+  setChangesInModelStatus(status: boolean) {
+    this.elementsHandler.parent.setChangesInModelStatus(status);
   }
 
 }

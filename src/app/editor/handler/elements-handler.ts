@@ -43,6 +43,7 @@ export class ElementsHandler {
         if (typeof definitions !== 'undefined') {
           // Add stereotype labels to elements based on xml labels
           this.viewer.importDefinitions(definitions, () => this.createElementHandlerInstances(definitions));
+          $('#analyze-diagram').addClass('active');
         }
       });
       // Add click event listener to init and terminate stereotype processes
@@ -192,6 +193,12 @@ export class ElementsHandler {
   // Get all dataObjectHandler instances of the model
   getAllModelDataObjectHandlers() {
     return this.dataObjectHandlers;
+  }
+
+  initValidation() {
+    if (this.parent.getChangesInModelStatus()) {
+      this.checkForStereotypeErrorsAndShowErrorsList();
+    }
   }
 
 

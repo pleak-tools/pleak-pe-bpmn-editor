@@ -35,6 +35,7 @@ export class EditorComponent implements OnInit {
 
   private modelId: Number = Number.parseInt(window.location.pathname.split('/')[2]);
 
+  private changesInModel: boolean = true;
   private saveFailed: Boolean = false;
   private lastContent: String = '';
 
@@ -45,6 +46,14 @@ export class EditorComponent implements OnInit {
 
   isAuthenticated() {
     return this.authenticated;
+  }
+
+  getChangesInModelStatus() {
+    return this.changesInModel;
+  }
+
+  setChangesInModelStatus(status: boolean) {
+    this.changesInModel = status;
   }
 
   // Load model
@@ -90,60 +99,77 @@ export class EditorComponent implements OnInit {
       });
 
       let elementsHandler = new ElementsHandler(this.viewer, diagram, this, "private");
-
-      $('.buttons-container').on('click', '.buttons a', (e) => {
-        if (!$(e.target).is('.active')) {
-          e.preventDefault();
-          e.stopPropagation();
-        }
-      });
-
-      $('.buttons-container').on('click', '#save-diagram', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        this.save();
-      });
-
-      $('.buttons-container').on('click', '#analyze-diagram', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        elementsHandler.checkForStereotypeErrorsAndShowErrorsList();
-      });
-
-      $(window).on('keydown', (e) => {
-        if (e.ctrlKey || e.metaKey) {
-          switch (String.fromCharCode(e.which).toLowerCase()) {
-            case 's':
-              if ($('#save-diagram').is('.active')) {
-                event.preventDefault();
-                this.save();
-              }
-              break;
-          }
-        }
-      });
-
-      $(window).bind('beforeunload', (e) => {
-        if (this.file.content != this.lastContent) {
-          return 'Are you sure you want to close this tab? Unsaved progress will be lost.';
-        }
-      });
-
-      $(window).on('wheel', (event) => {
-        // Change the color of stereotype labels more visible when zooming out
-        let zoomLevel = this.viewer.get('canvas').zoom();
-        if (zoomLevel < 1.0) {
-          if ($('.stereotype-label-color').css("color") != "rgb(0, 0, 255)") {
-            $('.stereotype-label-color').css('color','blue');
-          }
-        } else {
-          if ($('.stereotype-label-color').css("color") != "rgb(0, 0, 139)") {
-            $('.stereotype-label-color').css('color','darkblue');
-          }
-        }
-      });
-
+      this.addEventHandlers(elementsHandler);
     }
+  }
+
+  addEventHandlers(elementsHandler) {
+
+    this.removeEventHandlers();
+
+    $('.buttons-container').on('click', '.buttons a', (e) => {
+      if (!$(e.target).is('.active')) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    });
+
+    $('.buttons-container').on('click', '#save-diagram', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      this.save();
+    });
+
+    $('.buttons-container').on('click', '#analyze-diagram', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if ($(e.target).is('.active')) {
+        elementsHandler.initValidation();
+      }
+    });
+
+    $(window).on('keydown', (e) => {
+      if (e.ctrlKey || e.metaKey) {
+        switch (String.fromCharCode(e.which).toLowerCase()) {
+          case 's':
+            if ($('#save-diagram').is('.active')) {
+              e.preventDefault();
+              this.save();
+            }
+            break;
+        }
+      }
+    });
+
+    $(window).bind('beforeunload', (e) => {
+      if (this.file.content != this.lastContent) {
+        return 'Are you sure you want to close this tab? Unsaved progress will be lost.';
+      }
+    });
+
+    $(window).on('wheel', (event) => {
+      // Change the color of stereotype labels more visible when zooming out
+      let zoomLevel = this.viewer.get('canvas').zoom();
+      if (zoomLevel < 1.0) {
+        if ($('.stereotype-label-color').css("color") != "rgb(0, 0, 255)") {
+          $('.stereotype-label-color').css('color','blue');
+        }
+      } else {
+        if ($('.stereotype-label-color').css("color") != "rgb(0, 0, 139)") {
+          $('.stereotype-label-color').css('color','darkblue');
+        }
+      }
+    });
+
+  }
+
+  removeEventHandlers() {
+    $('.buttons-container').off('click', '.buttons a');
+    $('.buttons-container').off('click', '#save-diagram');
+    $('.buttons-container').off('click', '#analyze-diagram');
+    $(window).off('keydown');
+    $(window).unbind('beforeunload');
+    $(window).off('wheel');
   }
 
   // Save model
@@ -177,6 +203,7 @@ export class EditorComponent implements OnInit {
                   self.lastContent = self.file.content;
                   self.fileId = data.id;
                   self.saveFailed = false;
+                  self.setChangesInModelStatus(true);
                 } else if (success.status === 401) {
                    self.saveFailed = true;
                    $('#loginModal').modal();
@@ -193,6 +220,7 @@ export class EditorComponent implements OnInit {
   updateModelContentVariable(xml: String) {
     if (xml) {
       this.file.content = xml;
+      this.setChangesInModelStatus(true);
       this.modelChanged();
     }
   }
