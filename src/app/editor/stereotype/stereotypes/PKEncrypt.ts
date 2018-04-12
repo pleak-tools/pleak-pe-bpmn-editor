@@ -167,7 +167,7 @@ export class PKEncrypt extends TaskStereotype {
         this.addUniqueErrorToErrorsList(existingErrors, "PKEncrypt error: input data and key must be different objects", [this.task.id], []);
       }
       if (!this.isKeyObjectOfTypePKPublic()) {
-        this.addUniqueErrorToErrorsList(existingErrors, "PKEncrypt error: key object must must have PKPublic stereotype", [this.task.id], [savedData.key]);
+        this.addUniqueErrorToErrorsList(existingErrors, "PKEncrypt error: key object must have PKPublic stereotype", [this.task.id], [savedData.key]);
       }
     }
     if (typeof savedData.key == 'undefined') {

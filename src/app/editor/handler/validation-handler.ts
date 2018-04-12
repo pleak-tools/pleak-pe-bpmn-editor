@@ -255,6 +255,12 @@ export class ValidationHandler {
     for (let laneOrPool of lanesAndPools) {
       if (this.registry.get(laneOrPool.id).businessObject.name) {
         lanesAndPoolsObjects.push({id: laneOrPool.id, name: this.registry.get(laneOrPool.id).businessObject.name.trim(), children: laneOrPool.children});
+      } else {
+        if (this.registry.get(laneOrPool.id).type === "bpmn:Lane") {
+          if (this.registry.get(laneOrPool.id).parent.businessObject.name) {
+            lanesAndPoolsObjects.push({id: laneOrPool.id, name: this.registry.get(laneOrPool.id).parent.businessObject.name.trim(), children: laneOrPool.children});
+          }
+        }
       }
     }
     lanesAndPoolsObjects = lanesAndPoolsObjects.sort(this.compareNames);

@@ -559,11 +559,13 @@ export class SGXComputation extends TaskStereotype {
           return this.getTaskHandlerByTaskId(this.task.id).getTaskStereotypeInstanceByName(savedData.inputScript.contents).getDataObjectVisibilityStatus(dataObjectId);
         }
       }
-      let outputType = JSON.parse(this.task.SGXComputation).outputTypes[0].type;
-      if (outputType == "private") {
-        statuses.push("private-o");
-      } else if (outputType == "public") {
-        statuses.push("public-o");
+      if (JSON.parse(this.task.SGXComputation).outputTypes && JSON.parse(this.task.SGXComputation).outputTypes[0]) {
+        let outputType = JSON.parse(this.task.SGXComputation).outputTypes[0].type;
+        if (outputType == "private") {
+          statuses.push("private-o");
+        } else if (outputType == "public") {
+          statuses.push("public-o");
+        }
       }
     }
     if (statuses.length > 0) {
