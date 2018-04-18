@@ -102,7 +102,7 @@ export class AddSSReconstruction extends TaskStereotype {
 
   areInputsFromTaskWithStereotypeAccepted(taskId: String) {
     // Accepted:
-    // SSSharing
+    // AddSSharing
     // AddSSComputation
     // FunSSComputation
     if (taskId) {

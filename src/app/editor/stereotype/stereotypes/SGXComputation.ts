@@ -734,6 +734,9 @@ export class SGXComputation extends TaskStereotype {
     if (savedData.inputScript.type == "stereotype" && !this.taskHasStereotype(this.task, savedData.inputScript.contents)) {
       this.addUniqueErrorToErrorsList(existingErrors, "SGXComputation error: inputScript stereotype is missing", [this.task.id], []);
     }
+    if (typeof savedData.groupId == 'undefined') {
+      this.addUniqueErrorToErrorsList(existingErrors, "SGXComputation error: groupId is undefined", [this.task.id], []);
+    }
     if (typeof savedData.inputScript == 'undefined') {
       this.addUniqueErrorToErrorsList(existingErrors, "SGXComputation error: inputScript is undefined", [this.task.id], []);
     }
@@ -741,7 +744,7 @@ export class SGXComputation extends TaskStereotype {
       this.addUniqueErrorToErrorsList(existingErrors, "SGXComputation error: input types are undefined", [this.task.id], []);
     }
     if (typeof savedData.outputTypes == 'undefined') {
-      this.addUniqueErrorToErrorsList(existingErrors, "SGXComputation error: outputType is undefined", [this.task.id], []);
+      this.addUniqueErrorToErrorsList(existingErrors, "SGXComputation error: output type is undefined", [this.task.id], []);
     }
   }
 

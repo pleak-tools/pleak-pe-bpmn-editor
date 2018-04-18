@@ -312,7 +312,7 @@ export class PETComputation extends TaskStereotype {
       this.addUniqueErrorToErrorsList(existingErrors, "PETComputation error: input types are undefined", [this.task.id], []);
     }
     if (typeof savedData.outputTypes == 'undefined') {
-      this.addUniqueErrorToErrorsList(existingErrors, "PETComputation error: outputType is undefined", [this.task.id], []);
+      this.addUniqueErrorToErrorsList(existingErrors, "PETComputation error: output type is undefined", [this.task.id], []);
     }
   }
 

@@ -799,7 +799,7 @@ export class AddSSComputation extends TaskStereotype {
         }
       }
       if (!this.haveGroupTasksSameNumberOfInputsAndOutputs()) {
-        this.addUniqueErrorToErrorsList(existingErrors, "AddSSComputation error: each group task must have same number of inputs and outputs", groupTasksIds, []);
+        this.addUniqueErrorToErrorsList(existingErrors, "AddSSComputation error: each group task must have the same number of inputs and outputs", groupTasksIds, []);
       }
     }
     if (typeof savedData.groupId == 'undefined') {

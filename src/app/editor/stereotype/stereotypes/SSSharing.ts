@@ -134,11 +134,11 @@ export class SSSharing extends TaskStereotype {
     if (!this.areInputsAndOutputsNumbersCorrect()) {
       this.addUniqueErrorToErrorsList(existingErrors, "SSSharing error: exactly 1 input and at least 2 outputs are required", [this.task.id], []);
     } else {
-      if (!this.isInteger(treshold) || treshold < 1 || treshold > numberOfOutputs) {
-        this.addUniqueErrorToErrorsList(existingErrors, "SSSharing error: treshold must be an integer bigger than 1 and equal to or smaller than the number of outputs (1 < treshold <= number of outputs)", [this.task.id], []);
+      if (!this.isInteger(treshold) || treshold <= 1 || treshold > numberOfOutputs) {
+        this.addUniqueErrorToErrorsList(existingErrors, "SSSharing error: treshold must be an integer greater than 1 and equal to or less than the number of outputs (1 < treshold <= number of outputs)", [this.task.id], []);
       }
       if (!this.isInteger(computationParties) || computationParties < treshold || computationParties > numberOfOutputs) {
-        this.addUniqueErrorToErrorsList(existingErrors, "SSSharing error: computation parties must be an integer bigger than or equal to treshold and smaller than or equal to the number of outputs (treshold <= computation parties <= number of outputs)", [this.task.id], []);
+        this.addUniqueErrorToErrorsList(existingErrors, "SSSharing error: computation parties must be an integer greater than or equal to treshold and less than or equal to the number of outputs (treshold <= computation parties <= number of outputs)", [this.task.id], []);
       }
     }
     if (typeof savedData.treshold == 'undefined') {

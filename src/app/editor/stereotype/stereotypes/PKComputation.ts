@@ -285,7 +285,7 @@ export class PKComputation extends TaskStereotype {
       this.addUniqueErrorToErrorsList(existingErrors, "PKComputation error: inputScript is undefined", [this.task.id], []);
     }
     if (typeof savedData.inputTypes == 'undefined') {
-      this.addUniqueErrorToErrorsList(existingErrors, "PKComputation error: inputTypes is undefined", [this.task.id], []);
+      this.addUniqueErrorToErrorsList(existingErrors, "PKComputation error: input types are undefined", [this.task.id], []);
     }
   }
 

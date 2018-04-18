@@ -597,13 +597,17 @@ export class FunSSComputation extends TaskStereotype {
     }
     if (!this.taskHasInputElement(savedData.shareOfFunction)) {
       this.addUniqueErrorToErrorsList(existingErrors, "FunSSComputation error: shareOfFunction object is missing", [this.task.id], []);
+    } else {
+      if (savedData.evaluationPoint == savedData.shareOfFunction) {
+        this.addUniqueErrorToErrorsList(existingErrors, "FunSSComputation error: evaluation point and function share must be different objects", [this.task.id], []);
+      }
     }
     // If group has not enough or too many members
     if (groupTasks.length < 2) {
       this.addUniqueErrorToErrorsList(existingErrors, "FunSSComputation error: group must have exactly 2 members", groupTasksIds, []);
     } else {
       if (!this.haveGroupTasksSameNumberOfInputsAndOutputs()) {
-        this.addUniqueErrorToErrorsList(existingErrors, "FunSSComputation error: both group tasks must have same number of inputs and outputs", groupTasksIds, []);
+        this.addUniqueErrorToErrorsList(existingErrors, "FunSSComputation error: both group tasks must have the same number of inputs and outputs", groupTasksIds, []);
       }
       if (!this.areGroupTasksOnDifferentLanes()) {
         this.addUniqueErrorToErrorsList(existingErrors, "FunSSComputation error: both group tasks must be on separate lane", groupTasksIds, []);

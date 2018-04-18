@@ -102,13 +102,18 @@ export class ValidationHandler {
   }
 
   checkMessageFlowErrors(errors) {
-    for (let j = 0; j < this.messageFlowHandlers.length; j++) {
-      let messageFlowHandler = this.messageFlowHandlers[j];
-      this.checkForErrorsInStereotypes(messageFlowHandler.getAllMessageFlowStereotypeInstances(), errors);
-      if (j == this.messageFlowHandlers.length-1) {
-        this.errorChecks.messageFlows = true;
-        this.showErrorsIfChecksFinished(errors);
+    if (this.messageFlowHandlers.length > 0) {
+      for (let j = 0; j < this.messageFlowHandlers.length; j++) {
+        let messageFlowHandler = this.messageFlowHandlers[j];
+        this.checkForErrorsInStereotypes(messageFlowHandler.getAllMessageFlowStereotypeInstances(), errors);
+        if (j == this.messageFlowHandlers.length-1) {
+          this.errorChecks.messageFlows = true;
+          this.showErrorsIfChecksFinished(errors);
+        }
       }
+    } else {
+      this.errorChecks.messageFlows = true;
+      this.showErrorsIfChecksFinished(errors);
     }
   }
 
@@ -128,6 +133,7 @@ export class ValidationHandler {
   // Create validation errors list
   createErrorsList(errors: ValidationErrorObject[]) {
     let areThereAnyErrorsOnModel = false;
+    let areThereAnyWarningsOnModel = false;
     // Empty previous errors list
     $('#errors-list').html('');
     $('#model-correct').hide();
@@ -145,6 +151,7 @@ export class ValidationHandler {
         }
         let color = "darkred";
         if (error.error.indexOf("warning") !== -1) {
+          areThereAnyWarningsOnModel = true;
           color = "orange";
         }
         errors_list += '<li class="error-list-element error-'+i+'" style="font-size:16px; color:' + color + '; cursor:pointer;">'+error.error+'</li>';
@@ -166,9 +173,11 @@ export class ValidationHandler {
       this.setChangesInModelStatus(false);
     } else {
       $('.analysis-spinner').hide();
-      $('#errors-list').html('');
-      $('#model-errors').hide();
-      $('#model-correct').show();
+      if (!areThereAnyWarningsOnModel) {
+        $('#errors-list').html('');
+        $('#model-errors').hide();
+        $('#model-correct').show();
+      }
       $('#analysis').show();
       $('#analysis').off('click', '#analyze-simple-disclosure');
       $('#analysis').off('click', '#analyze-dependencies');
@@ -1321,7 +1330,7 @@ export class ValidationHandler {
             let len = path1.length;
             if (path2.length < len) {
               len = path2.length;
-             }
+            }
             for (let i = 0; i < len; i ++) {
               if (path1[i] != path2[i]) {
                 let gateways1 = this.getExclusiveGatewaysOfIncomingPathOfInputElement(this.registry.get(path2[i]).businessObject);
