@@ -112,7 +112,7 @@ export class FunSSSharing extends TaskStereotype {
       this.addUniqueErrorToErrorsList(existingErrors, "FunSSSharing error: exactly 1 input and 2 outputs are required", [this.task.id], []);
     } else {
       if (!this.areOutputObjectsDifferent()) {
-        this.addUniqueErrorToErrorsList(existingErrors, "FunSSSharing error: output objects must have different names", [this.task.id], []);
+        this.addUniqueErrorToErrorsList(existingErrors, "FunSSSharing error: output objects must be different", [this.task.id], []);
       }
     }
   }

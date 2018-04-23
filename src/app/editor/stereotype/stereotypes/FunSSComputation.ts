@@ -499,22 +499,6 @@ export class FunSSComputation extends TaskStereotype {
     return true;
   }
 
-  haveGroupTasksSameNumberOfInputsAndOutputs() {
-    let groupTasks = this.getFunSSComputationGroupTasks(this.getGroup());
-    let numberOfFirstTaskInputs = this.getTaskInputObjectsByTaskId(groupTasks[0].id).length;
-    let numberOfFirstTaskOutputs = this.getTaskOutputObjectsByTaskId(groupTasks[0].id).length;
-    groupTasks.shift();
-    for (let task of groupTasks) {
-      let numberOfTaskInputs = this.getTaskInputObjectsByTaskId(task.id).length;
-      let numberOfTaskOutputs = this.getTaskOutputObjectsByTaskId(task.id).length;
-      // If not all group tasks have same number of inputs and outputs
-      if (numberOfFirstTaskInputs != numberOfTaskInputs || numberOfFirstTaskOutputs != numberOfTaskOutputs) {
-        return false;
-      }
-    }
-    return true;
-  }
-
   areGroupShareOfFunctionSharesDifferent() {
     if (JSON.parse(this.task.FunSSComputation).shareOfFunction && JSON.parse(this.registry.get(this.getGroupSecondElementId()).businessObject.FunSSComputation)) {
       let shareOfFunctionElementName = this.registry.get(JSON.parse(this.task.FunSSComputation).shareOfFunction).businessObject.name.trim();
@@ -606,9 +590,6 @@ export class FunSSComputation extends TaskStereotype {
     if (groupTasks.length < 2) {
       this.addUniqueErrorToErrorsList(existingErrors, "FunSSComputation error: group must have exactly 2 members", groupTasksIds, []);
     } else {
-      if (!this.haveGroupTasksSameNumberOfInputsAndOutputs()) {
-        this.addUniqueErrorToErrorsList(existingErrors, "FunSSComputation error: both group tasks must have the same number of inputs and outputs", groupTasksIds, []);
-      }
       if (!this.areGroupTasksOnDifferentLanes()) {
         this.addUniqueErrorToErrorsList(existingErrors, "FunSSComputation error: both group tasks must be on separate lane", groupTasksIds, []);
       } else {
