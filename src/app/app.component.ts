@@ -3,10 +3,9 @@ import { AuthService } from "../app/auth/auth.service";
 
 @Component({
   selector: 'app-root',
-  templateUrl: './app.component.html',
+  templateUrl: './app.component.html'
 })
 export class AppComponent implements OnInit{
-
   constructor(private authService: AuthService) {
     this.authService.authStatus.subscribe(status => {
       this.authenticated = status;
@@ -42,5 +41,4 @@ export class AppComponent implements OnInit{
       }
     });
   }
-
 }

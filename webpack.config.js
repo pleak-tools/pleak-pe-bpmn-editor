@@ -7,12 +7,11 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const rxPaths = require('rxjs/_esm5/path-mapping');
 const autoprefixer = require('autoprefixer');
 const postcssUrl = require('postcss-url');
-const cssnano = require('cssnano');
 const postcssImports = require('postcss-import');
 const configJson = require('./src/config.json');
 
 const { NoEmitOnErrorsPlugin, SourceMapDevToolPlugin, NamedModulesPlugin } = require('webpack');
-const { ScriptsWebpackPlugin, NamedLazyChunksWebpackPlugin, BaseHrefWebpackPlugin } = require('@angular/cli/plugins/webpack');
+const { ScriptsWebpackPlugin, NamedLazyChunksWebpackPlugin, BaseHrefWebpackPlugin, PostcssCliResources } = require('@angular/cli/plugins/webpack');
 const { CommonsChunkPlugin } = require('webpack').optimize;
 const { AngularCompilerPlugin } = require('@ngtools/webpack');
 
@@ -20,20 +19,12 @@ const nodeModules = path.join(process.cwd(), 'node_modules');
 const realNodeModules = fs.realpathSync(nodeModules);
 const genDirNodeModules = path.join(process.cwd(), 'src', '$$_gendir', 'node_modules');
 const entryPoints = ["inline","polyfills","sw-register","styles","scripts","vendor","main"];
-const minimizeCss = false;
-const baseHref = path.join(process.cwd(), "dist");
+const hashFormat = {"chunk":"","extract":"","file":".[hash:20]","script":""};
+const baseHref = "";
 const deployUrl = configJson.pe_bpmn_editor.folder + "/dist/";
 const projectRoot = process.cwd();
 const maximumInlineSize = 10;
 const postcssPlugins = function (loader) {
-        // safe settings based on: https://github.com/ben-eb/cssnano/issues/358#issuecomment-283696193
-        const importantCommentRe = /@preserve|@licen[cs]e|[@#]\s*source(?:Mapping)?URL|^!/i;
-        const minimizeOptions = {
-            autoprefixer: false,
-            safe: true,
-            mergeLonghand: false,
-            discardComments: { remove: (comment) => !importantCommentRe.test(comment) }
-        };
         return [
             postcssImports({
                 resolve: (url, context) => {
@@ -52,12 +43,15 @@ const postcssPlugins = function (loader) {
                                 loader.resolve(context, url, (err, result) => {
                                     if (err) {
                                         reject(err);
-                                        return;
                                     }
-                                    resolve(result);
+                                    else {
+                                        resolve(result);
+                                    }
                                 });
                             }
-                            resolve(result);
+                            else {
+                                resolve(result);
+                            }
                         });
                     });
                 },
@@ -114,8 +108,13 @@ const postcssPlugins = function (loader) {
                 },
                 { url: 'rebase' },
             ]),
+            PostcssCliResources({
+                deployUrl: loader.loaders[loader.loaderIndex].options.ident == 'extracted' ? '' : deployUrl,
+                loader,
+                filename: `[name]${hashFormat.file}.[ext]`,
+            }),
             autoprefixer({ grid: true }),
-        ].concat(minimizeCss ? [cssnano(minimizeOptions)] : []);
+        ];
     };
 
 
@@ -127,11 +126,11 @@ module.exports = {
       ".ts",
       ".js"
     ],
+    "symlinks": true,
     "modules": [
-      "./node_modules",
+      "./src",
       "./node_modules"
     ],
-    "symlinks": true,
     "alias": rxPaths(),
     "mainFields": [
       "browser",
@@ -141,7 +140,6 @@ module.exports = {
   },
   "resolveLoader": {
     "modules": [
-      "./node_modules",
       "./node_modules"
     ],
     "alias": rxPaths()
@@ -154,9 +152,9 @@ module.exports = {
       "./src/polyfills.ts"
     ],
     "styles": [
-      "./node_modules/diagram-js/assets/diagram-js.css",
-      "./node_modules/bpmn-js/assets/bpmn-font/css/bpmn.css",
-      "./node_modules/bpmn-js/assets/bpmn-font/css/bpmn-embedded.css",
+      "./node_modules/bpmn-js/dist/assets/diagram-js.css",
+      "./node_modules/bpmn-js/dist/assets/bpmn-font/css/bpmn.css",
+      "./node_modules/bpmn-js/dist/assets/bpmn-font/css/bpmn-embedded.css",
       "./node_modules/bootstrap/dist/css/bootstrap.min.css",
       "./node_modules/font-awesome/css/font-awesome.css",
       "./src/styles.less"
@@ -193,64 +191,54 @@ module.exports = {
       },
       {
         "exclude": [
-          path.join(process.cwd(), "node_modules/diagram-js/assets/diagram-js.css"),
-          path.join(process.cwd(), "node_modules/bpmn-js/assets/bpmn-font/css/bpmn.css"),
-          path.join(process.cwd(), "node_modules/bpmn-js/assets/bpmn-font/css/bpmn-embedded.css"),
+          path.join(process.cwd(), "node_modules/bpmn-js/dist/assets/diagram-js.css"),
+          path.join(process.cwd(), "node_modules/bpmn-js/dist/assets/bpmn-font/css/bpmn.css"),
+          path.join(process.cwd(), "node_modules/bpmn-js/dist/assets/bpmn-font/css/bpmn-embedded.css"),
           path.join(process.cwd(), "node_modules/bootstrap/dist/css/bootstrap.min.css"),
           path.join(process.cwd(), "node_modules/font-awesome/css/font-awesome.css"),
           path.join(process.cwd(), "src/styles.less")
         ],
         "test": /\.css$/,
         "use": [
-          "exports-loader?module.exports.toString()",
           {
-            "loader": "css-loader",
-            "options": {
-              "sourceMap": false,
-              "import": false
-            }
+            "loader": "raw-loader"
           },
           {
             "loader": "postcss-loader",
             "options": {
-              "ident": "postcss",
+              "ident": "embedded",
               "plugins": postcssPlugins,
-              "sourceMap": false
+              "sourceMap": true
             }
           }
         ]
       },
       {
         "exclude": [
-          path.join(process.cwd(), "node_modules/diagram-js/assets/diagram-js.css"),
-          path.join(process.cwd(), "node_modules/bpmn-js/assets/bpmn-font/css/bpmn.css"),
-          path.join(process.cwd(), "node_modules/bpmn-js/assets/bpmn-font/css/bpmn-embedded.css"),
+          path.join(process.cwd(), "node_modules/bpmn-js/dist/assets/diagram-js.css"),
+          path.join(process.cwd(), "node_modules/bpmn-js/dist/assets/bpmn-font/css/bpmn.css"),
+          path.join(process.cwd(), "node_modules/bpmn-js/dist/assets/bpmn-font/css/bpmn-embedded.css"),
           path.join(process.cwd(), "node_modules/bootstrap/dist/css/bootstrap.min.css"),
           path.join(process.cwd(), "node_modules/font-awesome/css/font-awesome.css"),
           path.join(process.cwd(), "src/styles.less")
         ],
         "test": /\.scss$|\.sass$/,
         "use": [
-          "exports-loader?module.exports.toString()",
           {
-            "loader": "css-loader",
-            "options": {
-              "sourceMap": false,
-              "import": false
-            }
+            "loader": "raw-loader"
           },
           {
             "loader": "postcss-loader",
             "options": {
-              "ident": "postcss",
+              "ident": "embedded",
               "plugins": postcssPlugins,
-              "sourceMap": false
+              "sourceMap": true
             }
           },
           {
             "loader": "sass-loader",
             "options": {
-              "sourceMap": false,
+              "sourceMap": true,
               "precision": 8,
               "includePaths": []
             }
@@ -259,70 +247,60 @@ module.exports = {
       },
       {
         "exclude": [
-          path.join(process.cwd(), "node_modules/diagram-js/assets/diagram-js.css"),
-          path.join(process.cwd(), "node_modules/bpmn-js/assets/bpmn-font/css/bpmn.css"),
-          path.join(process.cwd(), "node_modules/bpmn-js/assets/bpmn-font/css/bpmn-embedded.css"),
+          path.join(process.cwd(), "node_modules/bpmn-js/dist/assets/diagram-js.css"),
+          path.join(process.cwd(), "node_modules/bpmn-js/dist/assets/bpmn-font/css/bpmn.css"),
+          path.join(process.cwd(), "node_modules/bpmn-js/dist/assets/bpmn-font/css/bpmn-embedded.css"),
           path.join(process.cwd(), "node_modules/bootstrap/dist/css/bootstrap.min.css"),
           path.join(process.cwd(), "node_modules/font-awesome/css/font-awesome.css"),
           path.join(process.cwd(), "src/styles.less")
         ],
         "test": /\.less$/,
         "use": [
-          "exports-loader?module.exports.toString()",
           {
-            "loader": "css-loader",
-            "options": {
-              "sourceMap": false,
-              "import": false
-            }
+            "loader": "raw-loader"
           },
           {
             "loader": "postcss-loader",
             "options": {
-              "ident": "postcss",
+              "ident": "embedded",
               "plugins": postcssPlugins,
-              "sourceMap": false
+              "sourceMap": true
             }
           },
           {
             "loader": "less-loader",
             "options": {
-              "sourceMap": false
+              "sourceMap": true
             }
           }
         ]
       },
       {
         "exclude": [
-          path.join(process.cwd(), "node_modules/diagram-js/assets/diagram-js.css"),
-          path.join(process.cwd(), "node_modules/bpmn-js/assets/bpmn-font/css/bpmn.css"),
-          path.join(process.cwd(), "node_modules/bpmn-js/assets/bpmn-font/css/bpmn-embedded.css"),
+          path.join(process.cwd(), "node_modules/bpmn-js/dist/assets/diagram-js.css"),
+          path.join(process.cwd(), "node_modules/bpmn-js/dist/assets/bpmn-font/css/bpmn.css"),
+          path.join(process.cwd(), "node_modules/bpmn-js/dist/assets/bpmn-font/css/bpmn-embedded.css"),
           path.join(process.cwd(), "node_modules/bootstrap/dist/css/bootstrap.min.css"),
           path.join(process.cwd(), "node_modules/font-awesome/css/font-awesome.css"),
           path.join(process.cwd(), "src/styles.less")
         ],
         "test": /\.styl$/,
         "use": [
-          "exports-loader?module.exports.toString()",
           {
-            "loader": "css-loader",
-            "options": {
-              "sourceMap": false,
-              "import": false
-            }
+            "loader": "raw-loader"
           },
           {
             "loader": "postcss-loader",
             "options": {
-              "ident": "postcss",
+              "ident": "embedded",
               "plugins": postcssPlugins,
-              "sourceMap": false
+              "sourceMap": true
             }
           },
           {
             "loader": "stylus-loader",
             "options": {
-              "sourceMap": false,
+              "sourceMap": true,
               "paths": []
             }
           }
@@ -330,9 +308,9 @@ module.exports = {
       },
       {
         "include": [
-          path.join(process.cwd(), "node_modules/diagram-js/assets/diagram-js.css"),
-          path.join(process.cwd(), "node_modules/bpmn-js/assets/bpmn-font/css/bpmn.css"),
-          path.join(process.cwd(), "node_modules/bpmn-js/assets/bpmn-font/css/bpmn-embedded.css"),
+          path.join(process.cwd(), "node_modules/bpmn-js/dist/assets/diagram-js.css"),
+          path.join(process.cwd(), "node_modules/bpmn-js/dist/assets/bpmn-font/css/bpmn.css"),
+          path.join(process.cwd(), "node_modules/bpmn-js/dist/assets/bpmn-font/css/bpmn-embedded.css"),
           path.join(process.cwd(), "node_modules/bootstrap/dist/css/bootstrap.min.css"),
           path.join(process.cwd(), "node_modules/font-awesome/css/font-awesome.css"),
           path.join(process.cwd(), "src/styles.less")
@@ -341,27 +319,23 @@ module.exports = {
         "use": [
           "style-loader",
           {
-            "loader": "css-loader",
-            "options": {
-              "sourceMap": false,
-              "import": false
-            }
+            "loader": "raw-loader"
           },
           {
             "loader": "postcss-loader",
             "options": {
-              "ident": "postcss",
+              "ident": "embedded",
               "plugins": postcssPlugins,
-              "sourceMap": false
+              "sourceMap": true
             }
           }
         ]
       },
       {
         "include": [
-          path.join(process.cwd(), "node_modules/diagram-js/assets/diagram-js.css"),
-          path.join(process.cwd(), "node_modules/bpmn-js/assets/bpmn-font/css/bpmn.css"),
-          path.join(process.cwd(), "node_modules/bpmn-js/assets/bpmn-font/css/bpmn-embedded.css"),
+          path.join(process.cwd(), "node_modules/bpmn-js/dist/assets/diagram-js.css"),
+          path.join(process.cwd(), "node_modules/bpmn-js/dist/assets/bpmn-font/css/bpmn.css"),
+          path.join(process.cwd(), "node_modules/bpmn-js/dist/assets/bpmn-font/css/bpmn-embedded.css"),
           path.join(process.cwd(), "node_modules/bootstrap/dist/css/bootstrap.min.css"),
           path.join(process.cwd(), "node_modules/font-awesome/css/font-awesome.css"),
           path.join(process.cwd(), "src/styles.less")
@@ -370,24 +344,20 @@ module.exports = {
         "use": [
           "style-loader",
           {
-            "loader": "css-loader",
-            "options": {
-              "sourceMap": false,
-              "import": false
-            }
+            "loader": "raw-loader"
           },
           {
             "loader": "postcss-loader",
             "options": {
-              "ident": "postcss",
+              "ident": "embedded",
               "plugins": postcssPlugins,
-              "sourceMap": false
+              "sourceMap": true
             }
           },
           {
             "loader": "sass-loader",
             "options": {
-              "sourceMap": false,
+              "sourceMap": true,
               "precision": 8,
               "includePaths": []
             }
@@ -396,9 +366,9 @@ module.exports = {
       },
       {
         "include": [
-          path.join(process.cwd(), "node_modules/diagram-js/assets/diagram-js.css"),
-          path.join(process.cwd(), "node_modules/bpmn-js/assets/bpmn-font/css/bpmn.css"),
-          path.join(process.cwd(), "node_modules/bpmn-js/assets/bpmn-font/css/bpmn-embedded.css"),
+          path.join(process.cwd(), "node_modules/bpmn-js/dist/assets/diagram-js.css"),
+          path.join(process.cwd(), "node_modules/bpmn-js/dist/assets/bpmn-font/css/bpmn.css"),
+          path.join(process.cwd(), "node_modules/bpmn-js/dist/assets/bpmn-font/css/bpmn-embedded.css"),
           path.join(process.cwd(), "node_modules/bootstrap/dist/css/bootstrap.min.css"),
           path.join(process.cwd(), "node_modules/font-awesome/css/font-awesome.css"),
           path.join(process.cwd(), "src/styles.less")
@@ -407,33 +377,29 @@ module.exports = {
         "use": [
           "style-loader",
           {
-            "loader": "css-loader",
-            "options": {
-              "sourceMap": false,
-              "import": false
-            }
+            "loader": "raw-loader"
           },
           {
             "loader": "postcss-loader",
             "options": {
-              "ident": "postcss",
+              "ident": "embedded",
               "plugins": postcssPlugins,
-              "sourceMap": false
+              "sourceMap": true
             }
           },
           {
             "loader": "less-loader",
             "options": {
-              "sourceMap": false
+              "sourceMap": true
             }
           }
         ]
       },
       {
         "include": [
-          path.join(process.cwd(), "node_modules/diagram-js/assets/diagram-js.css"),
-          path.join(process.cwd(), "node_modules/bpmn-js/assets/bpmn-font/css/bpmn.css"),
-          path.join(process.cwd(), "node_modules/bpmn-js/assets/bpmn-font/css/bpmn-embedded.css"),
+          path.join(process.cwd(), "node_modules/bpmn-js/dist/assets/diagram-js.css"),
+          path.join(process.cwd(), "node_modules/bpmn-js/dist/assets/bpmn-font/css/bpmn.css"),
+          path.join(process.cwd(), "node_modules/bpmn-js/dist/assets/bpmn-font/css/bpmn-embedded.css"),
           path.join(process.cwd(), "node_modules/bootstrap/dist/css/bootstrap.min.css"),
           path.join(process.cwd(), "node_modules/font-awesome/css/font-awesome.css"),
           path.join(process.cwd(), "src/styles.less")
@@ -442,24 +408,20 @@ module.exports = {
         "use": [
           "style-loader",
           {
-            "loader": "css-loader",
-            "options": {
-              "sourceMap": false,
-              "import": false
-            }
+            "loader": "raw-loader"
           },
           {
             "loader": "postcss-loader",
             "options": {
-              "ident": "postcss",
+              "ident": "embedded",
               "plugins": postcssPlugins,
-              "sourceMap": false
+              "sourceMap": true
             }
           },
           {
             "loader": "stylus-loader",
             "options": {
-              "sourceMap": false,
+              "sourceMap": true,
               "paths": []
             }
           }
@@ -488,7 +450,7 @@ module.exports = {
         "context": "src",
         "to": "",
         "from": {
-          "glob": "src/assets/**/*",
+          "glob": "assets/**/*",
           "dot": true
         }
       },
@@ -496,7 +458,7 @@ module.exports = {
         "context": "src",
         "to": "",
         "from": {
-          "glob": "src/favicon.ico",
+          "glob": "favicon.ico",
           "dot": true
         }
       }
@@ -532,11 +494,11 @@ module.exports = {
       "xhtml": true,
       "chunksSortMode": function sort(left, right) {
         let leftIndex = entryPoints.indexOf(left.names[0]);
-        let rightindex = entryPoints.indexOf(right.names[0]);
-        if (leftIndex > rightindex) {
+        let rightIndex = entryPoints.indexOf(right.names[0]);
+        if (leftIndex > rightIndex) {
             return 1;
         }
-        else if (leftIndex < rightindex) {
+        else if (leftIndex < rightIndex) {
             return -1;
         }
         else {

@@ -116,7 +116,7 @@ export class SGXComputation extends TaskStereotype {
     for (let group of this.getModelSGXComputationGroups()) {
       let sel = "";
       if (selectedGroupId !== null) {
-        if (group.trim() == selectedGroupId.trim()) {
+        if (group == selectedGroupId) {
           sel = "selected";
         }
       }
@@ -409,7 +409,7 @@ export class SGXComputation extends TaskStereotype {
       let groupId = this.SGXComputationGroupsTasks[i].groupId;
       let taskId = this.SGXComputationGroupsTasks[i].taskId;
 
-      if (groupId.trim() == group.trim()) {
+      if (groupId == group) {
         this.canvas.addMarker(taskId, 'highlight-group');
 
         let groupInputsOutputs = this.getSGXComputationGroupInputOutputObjects(groupId);
@@ -594,9 +594,9 @@ export class SGXComputation extends TaskStereotype {
     if (taskId) {
       let task = this.registry.get(taskId).businessObject;
       if (task) {
-        if (this.taskHasStereotype(task, "SGXComputation") && JSON.parse(task.SGXComputation).groupId.trim() == this.getGroup().trim()) {
+        if (this.taskHasStereotype(task, "SGXComputation") && JSON.parse(task.SGXComputation).groupId == this.getGroup()) {
           return true;
-        } else if (this.taskHasStereotype(task, "SGXProtect") && JSON.parse(task.SGXProtect).groupId.trim() == this.getGroup().trim()) {
+        } else if (this.taskHasStereotype(task, "SGXProtect") && JSON.parse(task.SGXProtect).groupId == this.getGroup()) {
           return true;
         }
       }

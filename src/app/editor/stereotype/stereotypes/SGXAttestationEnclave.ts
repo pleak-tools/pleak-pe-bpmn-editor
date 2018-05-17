@@ -116,7 +116,7 @@ export class SGXAttestationEnclave extends TaskStereotype {
     for (let SGXgroup of this.getModelSGXComputationGroups()) {
       let sel = "";
       if (selectedSGXGroupId !== null) {
-        if (SGXgroup.trim() == selectedSGXGroupId.trim() && selectedSGXGroupId != "") {
+        if (SGXgroup == selectedSGXGroupId && selectedSGXGroupId != "") {
           sel = "selected";
         }
       }
