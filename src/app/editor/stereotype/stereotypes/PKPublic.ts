@@ -323,6 +323,19 @@ export class PKPublic extends DataObjectStereotype {
     return true;
   }
 
+  getGroupPKPublicDataObjectsIds() {
+    let PKPublicDataObjects = [];
+    let dataObjects = this.getPKPublicAndPKPrivateGroupObjects(this.getGroup());
+    if (dataObjects.length > 0) {
+      for (let dataObject of dataObjects) {
+        if (dataObject.businessObject.PKPublic) {
+          PKPublicDataObjects.push(dataObject);
+        }
+      }
+    }
+    return PKPublicDataObjects.map(a => a.id);
+  }
+
   checkForErrors(existingErrors: ValidationErrorObject[]) {
     this.init();
     this.loadAllPKPublicAndPKPrivateGroupsDataObjects();
@@ -330,7 +343,7 @@ export class PKPublic extends DataObjectStereotype {
     let savedData = JSON.parse(this.dataObject.PKPublic);
 
     if (!this.doesPairHaveKeysOfBothTypes()) {
-      this.addUniqueErrorToErrorsList(existingErrors, "PKPublic error: PKPrivate key is missing from the pair", [this.dataObject.id], []);
+      this.addUniqueErrorToErrorsList(existingErrors, "PKPublic error: PKPrivate key is missing from the pair", this.getGroupPKPublicDataObjectsIds(), []);
     }
     if (typeof savedData.groupId == 'undefined') {
       this.addUniqueErrorToErrorsList(existingErrors, "PKPublic error: groupId is undefined", [this.dataObject.id], []);
