@@ -261,13 +261,22 @@ export class ValidationHandler {
   getListOfModelLanesAndPoolsObjects() {
     let lanesAndPools = this.getModelLanesAndPools();
     let lanesAndPoolsObjects = [];
+    let index = 1;
+    let index2 = 1;
     for (let laneOrPool of lanesAndPools) {
       if (this.registry.get(laneOrPool.id).businessObject.name) {
         lanesAndPoolsObjects.push({id: laneOrPool.id, name: this.registry.get(laneOrPool.id).businessObject.name.trim(), children: laneOrPool.children});
       } else {
+        if (this.registry.get(laneOrPool.id).businessObject && this.registry.get(laneOrPool.id).type === "bpmn:Participant") {
+          lanesAndPoolsObjects.push({id: laneOrPool.id, name: "Unnamed pool " + index, children: laneOrPool.children});
+          index++;
+        }
         if (this.registry.get(laneOrPool.id).type === "bpmn:Lane") {
           if (this.registry.get(laneOrPool.id).parent.businessObject.name) {
             lanesAndPoolsObjects.push({id: laneOrPool.id, name: this.registry.get(laneOrPool.id).parent.businessObject.name.trim(), children: laneOrPool.children});
+          } else if (this.registry.get(laneOrPool.id).parent.businessObject)  {
+            lanesAndPoolsObjects.push({id: laneOrPool.id, name: "Unnamed lane " + index2, children: laneOrPool.children});
+            index2++;
           }
         }
       }
