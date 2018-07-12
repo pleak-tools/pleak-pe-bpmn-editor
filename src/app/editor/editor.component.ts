@@ -1,6 +1,6 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { Http } from '@angular/http';
-import { AuthService } from "app/auth/auth.service";
+import { AuthService } from "../auth/auth.service";
 import { SqlBPMNModdle } from "./bpmn-labels-extension";
 import NavigatedViewer from 'bpmn-js/lib/NavigatedViewer';
 
@@ -20,9 +20,17 @@ let config = require('../../config.json');
 export class EditorComponent implements OnInit {
 
   constructor(public http: Http, private authService: AuthService) {
+    let pathname = window.location.pathname.split('/');
+    if (pathname[2] === 'viewer') {
+      this.modelId = pathname[3];
+       this.viewerType = 'public';
+    } else {
+      this.modelId = pathname[2];
+      this.viewerType = 'private';
+    }
     this.authService.authStatus.subscribe(status => {
       this.authenticated = status;
-      if (!status || !this.file) {
+      if (typeof(status) === "boolean") {
         this.getModel();
       }
     });
@@ -33,7 +41,8 @@ export class EditorComponent implements OnInit {
 
   private viewer: NavigatedViewer;
 
-  private modelId: Number = Number.parseInt(window.location.pathname.split('/')[2]);
+  private modelId;
+  private viewerType;
 
   private changesInModel: boolean = true;
   private saveFailed: Boolean = false;
@@ -62,14 +71,18 @@ export class EditorComponent implements OnInit {
     $('#canvas').html('');
     $('.buttons-container').off('click', '#save-diagram');
     self.viewer = null;
-    this.http.get(config.backend.host + '/rest/directories/files/' + self.modelId, this.authService.loadRequestOptions()).subscribe(
+    this.http.get(config.backend.host + '/rest/directories/files/' + (this.viewerType == 'public' ? 'public/' : '') + this.modelId, this.authService.loadRequestOptions()).subscribe(
       success => {
         self.file = JSON.parse((<any>success)._body);
         self.fileId = self.file.id;
         if (self.file.content.length === 0) {
           console.log("File can't be found or opened!");
         }
-        self.openDiagram(self.file.content);
+        if (this.viewerType === 'public' && this.isAuthenticated()) {
+          self.getPermissions();
+        } else {
+          self.openDiagram(self.file.content);
+        }
         self.lastContent = self.file.content;
         document.title = 'Pleak PE-BPMN editor - ' + self.file.title;
         $('#fileName').text(this.file.title);
@@ -84,6 +97,22 @@ export class EditorComponent implements OnInit {
     );
   }
 
+  getPermissions() {
+    let self = this;
+    this.http.get(config.backend.host + '/rest/directories/files/' + self.fileId, self.authService.loadRequestOptions()).subscribe(
+      success => {
+        let response = JSON.parse((<any>success)._body);
+        self.file.permissions = response.permissions;
+        self.file.user = response.user;
+        self.file.md5Hash = response.md5Hash;
+      },
+      () => {},
+      () => {
+        self.openDiagram(self.file.content);
+      }
+    );
+  }
+
   // Load diagram and add editor
   openDiagram(diagram: String) {
     let self = this;
@@ -91,16 +120,30 @@ export class EditorComponent implements OnInit {
       this.viewer = new NavigatedViewer({
         container: '#canvas',
         keyboard: {
-          bindTo: document 
+          bindTo: document
         },
         moddleExtensions: {
           sqlExt: SqlBPMNModdle
         }
       });
 
-      let elementsHandler = new ElementsHandler(this.viewer, diagram, this, "private");
+      let elementsHandler = new ElementsHandler(this.viewer, diagram, this, this.canEdit());
       this.addEventHandlers(elementsHandler);
     }
+  }
+
+  canEdit() {
+    let file = this.file;
+
+    if (!file || !this.isAuthenticated()) { return false; }
+    if ((this.authService.user && file.user) ? file.user.email === this.authService.user.email : false) { return true; }
+    for (let pIx = 0; pIx < file.permissions.length; pIx++) {
+      if (file.permissions[pIx].action.title === 'edit' &&
+      this.authService.user ? file.permissions[pIx].user.email === this.authService.user.email : false) {
+        return true;
+      }
+    }
+    return false;
   }
 
   addEventHandlers(elementsHandler) {

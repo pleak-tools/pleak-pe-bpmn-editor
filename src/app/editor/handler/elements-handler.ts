@@ -12,13 +12,13 @@ let is = (element, type) => element.$instanceOf(type);
 
 export class ElementsHandler {
 
-  constructor(viewer: Viewer, diagram: String, parent: any, parentType: String) {
+  constructor(viewer: Viewer, diagram: String, parent: any, canEdit: Boolean) {
     this.viewer = viewer;
     this.eventBus = this.viewer.get('eventBus');
     this.canvas = this.viewer.get('canvas');
     this.diagram = diagram;
     this.parent = parent;
-    this.parentType = parentType;
+    this.canEdit = canEdit;
     this.init();
   }
 
@@ -27,7 +27,7 @@ export class ElementsHandler {
   canvas: any;
   diagram: String;
   parent: any;
-  parentType: String;
+  canEdit: Boolean;
 
   validationHandler: ValidationHandler;
 
@@ -43,6 +43,7 @@ export class ElementsHandler {
         if (typeof definitions !== 'undefined') {
           // Add stereotype labels to elements based on xml labels
           this.viewer.importDefinitions(definitions, () => this.createElementHandlerInstances(definitions));
+          $('#stereotype-options').html('');
           $('#analyze-diagram').addClass('active');
         }
       });
@@ -84,11 +85,11 @@ export class ElementsHandler {
           });
         }
         if (toBeEditedelementHandler.length > 0) {
-          if (this.parentType === "public" && is(e.element.businessObject, 'bpmn:Task')) {
+          if (!this.canEdit && is(e.element.businessObject, 'bpmn:Task')) {
             toBeEditedelementHandler[0].initPublicStereotypeView();
-          } else if (this.parentType === "public" && is(e.element.businessObject, 'bpmn:DataObjectReference')) {
+          } else if (!this.canEdit && is(e.element.businessObject, 'bpmn:DataObjectReference')) {
             toBeEditedelementHandler[0].initPublicStereotypeView();
-          } else if (this.parentType === "public" && is(e.element.businessObject, 'bpmn:MessageFlow')) {
+          } else if (!this.canEdit && is(e.element.businessObject, 'bpmn:MessageFlow')) {
             // Currently do nothing
           } else {
             toBeEditedelementHandler[0].initStereotypeEditProcess();

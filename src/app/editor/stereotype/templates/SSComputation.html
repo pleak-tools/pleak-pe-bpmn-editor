@@ -4,24 +4,24 @@
   </div>
   <div class="panel-body">
     <h3 class="stereotype-option" id="SSComputation-taskName"></h3>
-    <div class="form-group" id="SSComputation-groupSelect-form-group">
+    <div class="form-group" id="SSComputation-groupSelect-form-group" data-readonly="disabled">
       <label class="text-16" for="SSComputation-groupSelect">Group ID</label>
       <select class="form-control stereotype-option" id="SSComputation-groupSelect">
       </select>
       <span id="SSComputation-groupSelect-help" class="help-block">Select group.</span>
     </div>
-    <div class="form-group" id="SSComputation-newGroup-form-group">
+    <div class="form-group" id="SSComputation-newGroup-form-group" data-readonly="hidden">
       <label class="text-16" for="SSComputation-newGroup">Add new group</label>
       <input class="form-control stereotype-option" type="text" id="SSComputation-newGroup"/>
       <span class="help-block" id="SSComputation-newGroup-help">Insert group name.</span>
       <br>
       <button class="btn btn-success pull-right" type="button" id="SSComputation-add-button">Add</button>
     </div>
-    <div class="form-group">
+    <div class="form-group" data-readonly="disabled">
       <label class="text-16" for="SSComputation-inputScript">Input script</label>
       <textarea class="form-control stereotype-option" id="SSComputation-inputScript"></textarea>
     </div>
-    <div class="form-group" id="SSComputation-inputs-form-group">
+    <div class="form-group" id="SSComputation-inputs-form-group" data-readonly="disabled">
       <label class="text-16" for="SSComputation-inputObjects" id="SSComputation-inputObjects-title">Input data objects</label>
       <br>
       <span class="stereotype-option" id="SSComputation-inputObjects"></span>

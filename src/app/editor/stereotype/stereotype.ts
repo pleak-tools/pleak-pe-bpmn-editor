@@ -57,9 +57,11 @@ export class Stereotype {
   loadStereotypeTemplateAndInitStereotypeSettings() {
     if ($('#stereotype-options').has('#' + this.getTitle() + '-stereotype-options').length) {
       this.initStereotypeSettings();
+      this.markReadonlyFields();
     } else {
       $('#stereotype-options').prepend($('<div>').load(config.frontend.host + '/' + config.pe_bpmn_editor.folder + '/src/app/editor/stereotype/templates/' + this.getTitle() + '.html', () => {
         this.initStereotypeSettings();
+        this.markReadonlyFields();
       }));
     }
   }
@@ -69,10 +71,12 @@ export class Stereotype {
     if ($('#stereotype-options').has('#' + this.getTitle() + '-stereotype-options').length) {
       this.initStereotypeSettings();
       this.bringSettingsPanelToTopAndHighlight();
+      this.markReadonlyFields();
     } else {
       $('#stereotype-options').prepend($('<div>').load(config.frontend.host + '/' + config.pe_bpmn_editor.folder + '/src/app/editor/stereotype/templates/' + this.getTitle() + '.html', () => {
         this.initStereotypeSettings();
         this.bringSettingsPanelToTopAndHighlight();
+        this.markReadonlyFields();
       }));
     }
   }
@@ -84,6 +88,19 @@ export class Stereotype {
   initStereotypeSettings() {
     this.settingsPanelContainer = $('#' + this.getTitle() + '-stereotype-options');
     this.initSaveAndRemoveButtons();
+  }
+
+  markReadonlyFields() {
+    if (!this.elementHandler.elementsHandler.canEdit) {
+      this.settingsPanelContainer.find('[data-readonly]').each(function () {
+        const type = $(this).data('readonly');
+        if (type === 'hidden') {
+          $(this).remove();
+        } else if (type === 'disabled') {
+          $(this).find(':input').attr('disabled', 'disabled');
+        }
+      });
+    }
   }
 
   // Activated by elementHandler on click events (or manually)
@@ -114,7 +131,7 @@ export class Stereotype {
     this.terminateStereotypeEditProcess();
     this.setNewModelContentVariableContent();
   }
-  
+
   removeStereotype() {
     this.terminateStereotypeEditProcess();
     this.removeStereotypeFromElement();
@@ -123,12 +140,17 @@ export class Stereotype {
 
   initSaveAndRemoveButtons() {
     this.terminateSaveAndRemoveButtons();
-    this.settingsPanelContainer.one('click', '#' + this.getTitle() + '-save-button', (e) => {
-      this.saveStereotypeSettings();
-    });
-    this.settingsPanelContainer.one('click', '#' + this.getTitle() + '-remove-button', (e) => {
-      this.removeStereotype();
-    });
+    if (this.elementHandler.elementsHandler.canEdit) {
+      this.settingsPanelContainer.one('click', '#' + this.getTitle() + '-save-button', (e) => {
+        this.saveStereotypeSettings();
+      });
+      this.settingsPanelContainer.one('click', '#' + this.getTitle() + '-remove-button', (e) => {
+        this.removeStereotype();
+      });
+    } else {
+      this.settingsPanelContainer.find('#' + this.getTitle() + '-save-button').remove();
+      this.settingsPanelContainer.find('#' + this.getTitle() + '-remove-button').remove();
+    }
   }
 
   terminateSaveAndRemoveButtons() {

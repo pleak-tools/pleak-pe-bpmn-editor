@@ -5,14 +5,21 @@
         <h4 class="editor-title">Pleak PE-BPMN editor</h4>
       </div>
       <div class="col-xs-8 buttons-container">
-        <ul class="buttons" *ngIf="isAuthenticated()">
+        <ul class="buttons">
           <li>
-            <a id="save-diagram"title="save BPMN diagram" href="#">
+            <a id="change-editor" title="Change analyzer" data-toggle="modal" data-target="#changeAnalyzerModal" class="active">
+              <span class="glyphicon glyphicon-blackboard"></span> Change analyzer
+            </a>
+          </li>
+        </ul>
+        <ul class="buttons" *ngIf="canEdit()">
+          <li>
+            <a id="save-diagram" title="save BPMN diagram" href="#">
               <span class="glyphicon glyphicon-floppy-disk"></span> Save diagram
             </a>
           </li>
         </ul>
-        <ul class="buttons" *ngIf="isAuthenticated()">
+        <ul class="buttons">
           <li>
             <a class="" id="analyze-diagram" title="validate BPMN diagram" href="#">
               <span class="glyphicon glyphicon-check"></span> Validate
@@ -42,24 +49,24 @@
     </div>
     <div class="row">
       <div class="col-xs-12">
-        <span class="text-16" id="fileName" *ngIf="isAuthenticated()"></span>
+        <span class="text-16" id="fileName"></span>
       </div>
     </div>
   </div>
 </div>
 <div id="canvas"></div>
 <div id="sidebar">
-  <div id="stereotype-options" *ngIf="isAuthenticated()">
+  <div id="stereotype-options">
   </div>
   <div class="analysis-spinner" style="display:none">
     <div class="double-bounce1-2"></div>
     <div class="double-bounce2-2"></div>
   </div>
-  <div id="model-errors" *ngIf="isAuthenticated()" style="padding:10px; background-color:white; display:none">
+  <div id="model-errors" style="padding:10px; background-color:white; display:none">
     <h3>Errors in model</h3>
     <div id="errors-list" style="text-align:left;"></div>
   </div>
-  <div id="model-correct" *ngIf="isAuthenticated()" style="padding:10px; background-color:white; display:none; color: forestgreen">
+  <div id="model-correct" style="padding:10px; background-color:white; display:none; color: forestgreen">
     <h3><i class="fa fa-check-square-o" aria-hidden="true"></i> Passed validation!</h3>
   </div>
   <div id="analysis" style="margin-top:10px; padding:10px; background-color:white; display:none">
@@ -127,6 +134,45 @@
           <div class="pull-right">
             <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
           </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="changeAnalyzerModal" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <form>
+        <div class="modal-header">
+          <h4>Change analyzer</h4>
+        </div>
+        <div class="modal-body text-center">
+          <ul class="buttons">
+            <li>
+              <a class="active" href="/sql-privacy-editor/{{viewerType == 'public' ? 'viewer/' : ''}}{{modelId}}">
+                <span class="glyphicon glyphicon-transfer"></span> SQL Analyzer
+              </a>
+            </li>
+          </ul>
+          <br>
+          <br>
+          <ul class="buttons">
+            <li>
+              <a class="active" href="/sql-derivative-sensitivity-editor/{{viewerType == 'public' ? 'viewer/' : ''}}{{modelId}}">
+                <span class="glyphicon glyphicon-transfer"></span> SQL DS Analyzer
+              </a>
+            </li>
+          </ul>
+          <br>
+          <br>
+          <ul class="buttons">
+            <li>
+              <a>
+                <span class="glyphicon glyphicon-transfer"></span> PE-BPMN Analyzer
+              </a>
+            </li>
+          </ul>
         </div>
       </form>
     </div>

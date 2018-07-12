@@ -3,7 +3,7 @@
     <h4>DifferentialPrivacy options</h4>
   </div>
   <div class="panel-body">
-    <div class="form-group">
+    <div class="form-group" data-readonly="disabled">
       <label class="text-16" for="DifferentialPrivacy-inputScript">Input script</label>
       <textarea class="form-control stereotype-option" id="DifferentialPrivacy-inputScript"></textarea>
     </div>
@@ -15,12 +15,12 @@
       <label class="text-16" for="DifferentialPrivacy-outputObjects">Output data objects</label>
       <ul class="stereotype-option" id="DifferentialPrivacy-outputObjects"></ul>
     </div>
-    <div class="form-group" id="DifferentialPrivacy-epsilon-form-group">
+    <div class="form-group" id="DifferentialPrivacy-epsilon-form-group" data-readonly="disabled">
       <label class="text-16" for="DifferentialPrivacy-epsilon">Epsilon pairs</label>
       <div id="DifferentialPrivacy-epsilon-pairs" class="form-group"></div>
       <span class="help-block" id="DifferentialPrivacy-epsilon-conditions-help">Epsilon values cannot be empty.</span>
     </div>
-    <div class="form-group">
+    <div class="form-group" data-readonly="disabled">
       <label class="text-16" for="DifferentialPrivacy-delta">Delta</label>
       <input class="form-control stereotype-option" type="number" id="DifferentialPrivacy-delta" value="0"/>
     </div>
