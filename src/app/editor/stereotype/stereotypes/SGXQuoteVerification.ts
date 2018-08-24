@@ -103,7 +103,12 @@ export class SGXQuoteVerification extends TaskStereotype {
   }
   
   removeStereotype() {
-    super.removeStereotype();
+    if (confirm('Are you sure you wish to remove the stereotype?')) {
+      super.removeStereotype();
+    } else {
+      this.initSaveAndRemoveButtons();
+      return false;
+    }
   }
 
   /** Simple disclosure analysis functions */

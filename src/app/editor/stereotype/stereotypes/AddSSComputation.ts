@@ -262,29 +262,34 @@ export class AddSSComputation extends TaskStereotype {
   }
 
   removeStereotype() {
-    let group = this.getGroup();
-    let inputScript = this.getAddSSComputationGroupInputScript(group);
-    if (this.getAddSSComputationGroupTasks(group).length > 1 && JSON.parse(this.task.AddSSComputation).inputs) {
-      let inputs = [];
-      let savedInputs = this.getAddSSComputationGroupInputs(group);
-      let taskInputs = this.getTaskInputObjects();
-      for (let sInput of savedInputs) {
-        let newInputId = sInput.id;
-        let newInputInputs = sInput.inputs;
-        for (let tInput of taskInputs) {
-          newInputInputs = newInputInputs.filter(function( obj ) {
-            return obj.id !== tInput.id;
-          });
+    if (confirm('Are you sure you wish to remove the stereotype?')) {
+      let group = this.getGroup();
+      let inputScript = this.getAddSSComputationGroupInputScript(group);
+      if (this.getAddSSComputationGroupTasks(group).length > 1 && JSON.parse(this.task.AddSSComputation).inputs) {
+        let inputs = [];
+        let savedInputs = this.getAddSSComputationGroupInputs(group);
+        let taskInputs = this.getTaskInputObjects();
+        for (let sInput of savedInputs) {
+          let newInputId = sInput.id;
+          let newInputInputs = sInput.inputs;
+          for (let tInput of taskInputs) {
+            newInputInputs = newInputInputs.filter(function( obj ) {
+              return obj.id !== tInput.id;
+            });
+          }
+          inputs.push({id: newInputId, inputs: newInputInputs});
         }
-        inputs.push({id: newInputId, inputs: newInputInputs});
+        for (let task of this.getAddSSComputationGroupTasks(group)) {
+          task.businessObject.AddSSComputation = JSON.stringify({groupId: group, inputScript: inputScript, inputs: inputs});
+          this.getTaskHandlerByTaskId(task.id).getTaskStereotypeInstanceByName("AddSSComputation").loadAllAddSSComputationGroupsTasks();
+        }
       }
-      for (let task of this.getAddSSComputationGroupTasks(group)) {
-        task.businessObject.AddSSComputation = JSON.stringify({groupId: group, inputScript: inputScript, inputs: inputs});
-        this.getTaskHandlerByTaskId(task.id).getTaskStereotypeInstanceByName("AddSSComputation").loadAllAddSSComputationGroupsTasks();
-      }
+      this.loadAllAddSSComputationGroupsTasks();
+      super.removeStereotype();
+    } else {
+      this.initSaveAndRemoveButtons();
+      return false;
     }
-    this.loadAllAddSSComputationGroupsTasks();
-    super.removeStereotype();
   }
 
   /** AddSSComputation class specific functions */

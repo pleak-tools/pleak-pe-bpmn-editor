@@ -208,7 +208,12 @@ export class GCEvaluate extends TaskStereotype {
   }
 
   removeStereotype() {
-    super.removeStereotype();
+    if (confirm('Are you sure you wish to remove the stereotype?')) {
+      super.removeStereotype();
+    } else {
+      this.initSaveAndRemoveButtons();
+      return false;
+    }
   }
 
   /** GCEvaluate class specific functions */

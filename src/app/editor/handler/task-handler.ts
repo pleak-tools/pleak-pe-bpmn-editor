@@ -670,6 +670,7 @@ export class TaskHandler {
     if (this.getTaskStereotypeInstanceByName(name)) {
       this.overlays.remove({id: this.getTaskStereotypeInstanceByName(name).getLabel()});
       this.stereotypes = this.stereotypes.filter(obj => obj.getTitle() !== name);
+      this.canvas.removeMarker(this.task.id, 'selected');
       delete this.task[(<any>name)];
     }
   }

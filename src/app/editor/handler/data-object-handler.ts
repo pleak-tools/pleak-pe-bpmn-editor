@@ -340,6 +340,7 @@ export class DataObjectHandler {
     if (this.getDataObjectStereotypeInstanceByName(name)) {
       this.overlays.remove({id: this.getDataObjectStereotypeInstanceByName(name).getLabel()});
       this.stereotypes = this.stereotypes.filter(obj => obj.getTitle() !== name);
+      this.canvas.removeMarker(this.dataObject.id, 'selected');
       delete this.dataObject[(<any>name)];
     }
   }

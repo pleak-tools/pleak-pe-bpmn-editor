@@ -37,6 +37,7 @@ export class MessageFlowHandler {
 
   stereotypes: MessageFlowStereotype[] = [];
   stereotypeSelector: String = null;
+  stereotypeSelectorHidden: Boolean = false;
   tempStereotype: MessageFlowStereotype = null;
 
   supportedStereotypes: String[] = [
@@ -77,11 +78,23 @@ export class MessageFlowHandler {
     this.beingEdited = true;
   }
 
+  // Start stereotype public view for the viewer
+  initPublicStereotypeView() {
+    for (let sType of this.stereotypes) {
+      sType.initStereotypePublicView();
+    }
+    this.initElementStereotypeSettings();
+    this.beingEdited = false;
+    this.stereotypeSelectorHidden = true;
+    this.stereotypeSelector = null;
+  }
+
   // End messageFlow editing (stereotype adding) process
   terminateStereotypeEditProcess() {
     this.terminateMessageFlowStereotypeSelector();
     this.terminateMessageFlowStereotypeSettings();
     this.beingEdited = false;
+    this.stereotypeSelectorHidden = false;
   }
 
   // Init settings panels for all already added stereotypes
@@ -104,24 +117,45 @@ export class MessageFlowHandler {
 
   // Show stereotype selector next to messageFlow element on the model
   initMessageFlowStereotypeSelector() {
-    let overlayHtml =
-      `<div class="stereotype-editor" id="` + this.messageFlow.id + `-stereotype-selector" style="background:white; padding:10px; border-radius:2px">
-        <span><b>Select type:</b></span>`;
-    for (let stereotype of this.supportedStereotypes) {
-      let disabled = "";
-      if (this.messageFlow[(<any>stereotype)] != null) {
-        disabled = `disabled style="opacity:0.5"`;
-      }
-      overlayHtml += `<button id="` + this.messageFlow.id + `-` + stereotype + `-button" ` + disabled + `>` + stereotype + `</button><br>`;
-    }
-    overlayHtml += `</div>`;
+    let overlayHtml = `
+    <div class="panel panel-default stereotype-editor" id="` + this.messageFlow.id + `-stereotype-selector">
+      <div class="stereotype-editor-close-link" style="float: right; color: darkgray; cursor: pointer">X</div>
+      <div class="stereotype-selector-main-menu">
+        <div style="margin-bottom:10px;">
+          <b>Stereotypes menu</b>
+        </div>
+        <table class="table table-hover stereotypes-table">
+          <tbody>
+            <tr>
+              <td class="link-row" id="SecureChannel-button">SecureChannel</td>
+            </tr>
+            <tr>
+            <td class="link-row" id="CommunicationProtection-button">CommunicationProtection</td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    `;
 
     overlayHtml = $(overlayHtml);
 
+    $(overlayHtml).on('click', '.stereotype-editor-close-link', (e) => {
+      this.terminateMessageFlowStereotypeSelector();
+      this.beingEdited = false;
+      this.stereotypeSelectorHidden = true;
+    });
+
+    // Stereotype links
     for (let stereotype of this.supportedStereotypes) {
-      $(overlayHtml).on('click', '#' + this.messageFlow.id+'-' + stereotype + '-button', (e) => {
+      $(overlayHtml).on('click', '#' + stereotype + '-button', (e) => {
         this.addStereotypeByName(stereotype);
       });
+
+      if (this.messageFlow[(<any>stereotype)] != null) {
+        $(overlayHtml).find('#' + stereotype + '-button').addClass('disabled-link');
+      }
+
     }
 
     let stOverlay = this.overlays.add(this.registry.get(this.messageFlow.id), {
@@ -190,6 +224,7 @@ export class MessageFlowHandler {
     if (this.getMessageFlowStereotypeInstanceByName(name)) {
       this.overlays.remove({id: this.getMessageFlowStereotypeInstanceByName(name).getLabel()});
       this.stereotypes = this.stereotypes.filter(obj => obj.getTitle() !== name);
+      this.canvas.removeMarker(this.messageFlow.id, 'selected');
       delete this.messageFlow[(<any>name)];
     }
   }

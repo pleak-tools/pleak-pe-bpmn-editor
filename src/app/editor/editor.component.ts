@@ -45,7 +45,6 @@ export class EditorComponent implements OnInit {
   private viewerType;
 
   private changesInModel: boolean = true;
-  private saveFailed: Boolean = false;
   private lastContent: String = '';
 
   private fileId: Number = null;
@@ -92,7 +91,6 @@ export class EditorComponent implements OnInit {
         self.fileId = null;
         self.file = null;
         self.lastContent = '';
-        self.saveFailed = false;
       }
     );
   }
@@ -245,10 +243,8 @@ export class EditorComponent implements OnInit {
                   self.file.md5Hash = data.md5Hash;
                   self.lastContent = self.file.content;
                   self.fileId = data.id;
-                  self.saveFailed = false;
                   self.setChangesInModelStatus(true);
                 } else if (success.status === 401) {
-                   self.saveFailed = true;
                    $('#loginModal').modal();
                 }
               },
@@ -263,8 +259,10 @@ export class EditorComponent implements OnInit {
   updateModelContentVariable(xml: String) {
     if (xml) {
       this.file.content = xml;
-      this.setChangesInModelStatus(true);
-      this.modelChanged();
+      if (this.file.content != this.lastContent) {
+        this.setChangesInModelStatus(true);
+        this.modelChanged();
+      }
     }
   }
 

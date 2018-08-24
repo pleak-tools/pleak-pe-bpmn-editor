@@ -57,7 +57,7 @@ export class ElementsHandler {
           beingEditedElementHandler[0].terminateStereotypeEditProcess();
         }
         let beingEditedMessageFlowHandler = this.messageFlowHandlers.filter(function( obj ) {
-          return obj.messageFlow != e.element.businessObject && obj.beingEdited && obj.stereotypeSelector != null;
+          return obj.messageFlow != e.element.businessObject && (obj.beingEdited && obj.stereotypeSelector != null || obj.stereotypeSelectorHidden);
         });
         if (beingEditedMessageFlowHandler.length > 0) {
           beingEditedMessageFlowHandler[0].terminateStereotypeEditProcess();
@@ -85,12 +85,8 @@ export class ElementsHandler {
           });
         }
         if (toBeEditedelementHandler.length > 0) {
-          if (!this.canEdit && is(e.element.businessObject, 'bpmn:Task')) {
+          if (!this.canEdit && (is(e.element.businessObject, 'bpmn:Task') || is(e.element.businessObject, 'bpmn:DataObjectReference') || is(e.element.businessObject, 'bpmn:MessageFlow'))) {
             toBeEditedelementHandler[0].initPublicStereotypeView();
-          } else if (!this.canEdit && is(e.element.businessObject, 'bpmn:DataObjectReference')) {
-            toBeEditedelementHandler[0].initPublicStereotypeView();
-          } else if (!this.canEdit && is(e.element.businessObject, 'bpmn:MessageFlow')) {
-            // Currently do nothing
           } else {
             toBeEditedelementHandler[0].initStereotypeEditProcess();
           }

@@ -169,7 +169,12 @@ export class SGXProtect extends TaskStereotype {
   }
 
   removeStereotype() {
-    super.removeStereotype();
+    if (confirm('Are you sure you wish to remove the stereotype?')) {
+      super.removeStereotype();
+    } else {
+      this.initSaveAndRemoveButtons();
+      return false;
+    }
   }
 
   /** SGXProtect class specific functions */

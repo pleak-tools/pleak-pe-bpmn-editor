@@ -16,6 +16,10 @@ export class CommunicationProtection extends MessageFlowStereotype {
     return super.getTitle();
   }
 
+  initStereotypePublicView() {
+    super.initStereotypePublicView();
+  }
+
   initStereotypeSettings() {
     super.initStereotypeSettings();
     this.settingsPanelContainer.show();
@@ -48,7 +52,12 @@ export class CommunicationProtection extends MessageFlowStereotype {
   }
   
   removeStereotype() {
-    super.removeStereotype();
+    if (confirm('Are you sure you wish to remove the stereotype?')) {
+      super.removeStereotype();
+    } else {
+      this.initSaveAndRemoveButtons();
+      return false;
+    }
   }
 
   /** Validation functions */
