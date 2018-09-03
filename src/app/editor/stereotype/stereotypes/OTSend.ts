@@ -22,6 +22,21 @@ export class OTSend extends TaskStereotype {
     return super.getTitle();
   }
 
+  getSavedStereotypeSettings() {
+    if (this.task.OTSend != null) {
+      return JSON.parse(this.task.OTSend);
+    } else {
+      return null;
+    }
+  }
+
+  // Returns an object with properties:
+  // groupId
+  getCurrentStereotypeSettings() {
+    let group = this.settingsPanelContainer.find('#OTSend-groupSelect').val();
+    return {groupId: group};
+  }
+
   getGroup() {
     return this.group;
   }
@@ -56,9 +71,9 @@ export class OTSend extends TaskStereotype {
         this.OTSendAndEvaluateGroupsTasks.push({groupId: this.selectedGroup, taskId: this.task.id});
       }
       selectedGroupId = this.selectedGroup;
-    } else if (this.task.OTSend != null) {
+    } else if (this.getSavedStereotypeSettings() != null) {
       selectedGroupId = this.getGroup();
-      selected = JSON.parse(this.task.OTSend);
+      selected = this.getSavedStereotypeSettings();
     } else {
       if (this.OTSendAndEvaluateGroupsTasks.length > 0) {
         selectedGroupId = this.OTSendAndEvaluateGroupsTasks[0].groupId;
@@ -114,7 +129,6 @@ export class OTSend extends TaskStereotype {
       }
     }
   
-    this.settingsPanelContainer.find('#OTSend-taskName').text(this.task.name);
     this.settingsPanelContainer.find('#OTSend-groupSelect').html(groups);
     this.settingsPanelContainer.find('#OTSend-newGroup').html('');
     this.settingsPanelContainer.find('#OTSend-inputObject').html(inputObject);
@@ -133,9 +147,10 @@ export class OTSend extends TaskStereotype {
 
   saveStereotypeSettings() {
     let self = this;
-    let group = this.settingsPanelContainer.find('#OTSend-groupSelect').val();
-    if (group) {
-      if (this.areInputsAndOutputsNumbersCorrect()) {
+    if (this.areInputsAndOutputsNumbersCorrect()) {
+      let currentStereotypeSettings = this.getCurrentStereotypeSettings();
+      let group = currentStereotypeSettings.groupId;
+      if (group) {
         let tasks = this.getOTSendAndOTReceiveGroupTasks(group);
         let taskAlreadyInGroup = tasks.filter(( obj ) => {
           return obj.id == self.task.id;
@@ -153,7 +168,7 @@ export class OTSend extends TaskStereotype {
             }
           }
         }
-        if (this.task.OTSend == null) {
+        if (this.getSavedStereotypeSettings() == null) {
           this.addStereotypeToElement();
         }
         this.setGroup(group);
@@ -161,20 +176,20 @@ export class OTSend extends TaskStereotype {
         this.OTSendAndEvaluateGroupsTasks.push({groupId: group, taskId: this.task.id});
         for (let task of this.getOTSendAndOTReceiveGroupTasks(group)) {
           if (task.id == this.task.id) {
-            task.businessObject.OTSend = JSON.stringify({groupId: group});
+            task.businessObject.OTSend = JSON.stringify(currentStereotypeSettings);
           }
         }
         this.settingsPanelContainer.find('.form-group').removeClass('has-error');
         this.settingsPanelContainer.find('.help-block').hide();
-        super.saveStereotypeSettings();
+        return true;
       } else {
-        this.settingsPanelContainer.find('#OTSend-conditions-form-group').addClass('has-error');
-        this.settingsPanelContainer.find('#OTSend-conditions-help').show();
-        this.initSaveAndRemoveButtons();
+        this.settingsPanelContainer.find('#OTSend-groupSelect-form-group').addClass('has-error');
+        this.settingsPanelContainer.find('#OTSend-groupSelect-help').show();
       }
     } else {
-      this.settingsPanelContainer.find('#OTSend-groupSelect-form-group').addClass('has-error');
-      this.settingsPanelContainer.find('#OTSend-groupSelect-help').show();
+      this.settingsPanelContainer.find('#OTSend-conditions-form-group').addClass('has-error');
+      this.settingsPanelContainer.find('#OTSend-conditions-help').show();
+      this.initRemoveButton();
     }
   }
 
@@ -182,15 +197,15 @@ export class OTSend extends TaskStereotype {
     if (confirm('Are you sure you wish to remove the stereotype?')) {
       super.removeStereotype();
     } else {
-      this.initSaveAndRemoveButtons();
+      this.initRemoveButton();
       return false;
     }
   }
 
   /** OTSend class specific functions */
   init() {
-    if (this.task.OTSend != null) {
-      this.setGroup(JSON.parse(this.task.OTSend).groupId);
+    if (this.getSavedStereotypeSettings() != null) {
+      this.setGroup(this.getSavedStereotypeSettings().groupId);
     }
     this.addStereotypeToTheListOfGroupStereotypesOnModel(this.getTitle());
   }
@@ -508,7 +523,7 @@ export class OTSend extends TaskStereotype {
 
     let groupTasks = this.getOTSendAndOTReceiveGroupTasks(this.getGroup());
     let groupTasksIds = groupTasks.map(a => a.id);
-    let savedData = JSON.parse(this.task.OTSend);
+    let savedData = this.getSavedStereotypeSettings();
 
     if (!this.areInputsAndOutputsNumbersCorrect()) {
       this.addUniqueErrorToErrorsList(existingErrors, "OTSend error: exactly 1 input and no outputs are required", [this.task.id], []);

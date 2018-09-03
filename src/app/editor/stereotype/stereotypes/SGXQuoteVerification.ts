@@ -16,6 +16,25 @@ export class SGXQuoteVerification extends TaskStereotype {
     return super.getTitle();
   }
 
+  getSavedStereotypeSettings() {
+    if (this.task.SGXQuoteVerification != null) {
+      return JSON.parse(this.task.SGXQuoteVerification);
+    } else {
+      return null;
+    }
+  }
+
+  // Returns an object with properties:
+  // quote
+  // certificate
+  // revocationList
+  getCurrentStereotypeSettings() {
+    let quote = this.settingsPanelContainer.find('#SGXQuoteVerification-quoteSelect').val();
+    let certificate = this.settingsPanelContainer.find('#SGXQuoteVerification-certificateSelect').val();
+    let revocationList = this.settingsPanelContainer.find('#SGXQuoteVerification-revocationListSelect').val();
+    return {quote: quote, certificate: certificate, revocationList: revocationList};
+  }
+
   initStereotypePublicView() {
     super.initStereotypePublicView();
     this.highlightTaskInputAndOutputObjects();
@@ -33,8 +52,8 @@ export class SGXQuoteVerification extends TaskStereotype {
     let outputObject = "";
     let selected = null;
 
-    if (this.task.SGXQuoteVerification != null) {
-      selected = JSON.parse(this.task.SGXQuoteVerification);
+    if (this.getSavedStereotypeSettings() != null) {
+      selected = this.getSavedStereotypeSettings();
     }
 
     for (let inputObject of this.getTaskInputObjects()) {
@@ -76,29 +95,30 @@ export class SGXQuoteVerification extends TaskStereotype {
 
   saveStereotypeSettings() {
     if (this.areInputsAndOutputsNumbersCorrect()) {
-      let quote = this.settingsPanelContainer.find('#SGXQuoteVerification-quoteSelect').val();
-      let certificate = this.settingsPanelContainer.find('#SGXQuoteVerification-certificateSelect').val();
-      let revocationList = this.settingsPanelContainer.find('#SGXQuoteVerification-revocationListSelect').val();
+      let currentStereotypeSettings = this.getCurrentStereotypeSettings();
+      let quote = currentStereotypeSettings.quote;
+      let certificate = currentStereotypeSettings.certificate;
+      let revocationList = currentStereotypeSettings.revocationList;
       if ((quote == certificate && quote == revocationList) || (quote == certificate) || (quote == revocationList) || (certificate == revocationList)) {
         this.settingsPanelContainer.find('#SGXQuoteVerification-conditions-form-group').addClass('has-error');
         this.settingsPanelContainer.find('#SGXQuoteVerification-quote-form-group').addClass('has-error');
         this.settingsPanelContainer.find('#SGXQuoteVerification-certificate-form-group').addClass('has-error');
         this.settingsPanelContainer.find('#SGXQuoteVerification-revocationList-form-group').addClass('has-error');
         this.settingsPanelContainer.find('#SGXQuoteVerification-conditions-help2').show();
-        this.initSaveAndRemoveButtons();
+        this.initRemoveButton();
         return;
       }
-      if (this.task.SGXQuoteVerification == null) {
+      if (this.getSavedStereotypeSettings() == null) {
         this.addStereotypeToElement();
       }
-      this.task.SGXQuoteVerification = JSON.stringify({quote: quote, certificate: certificate, revocationList: revocationList});
+      this.task.SGXQuoteVerification = JSON.stringify(currentStereotypeSettings);
       this.settingsPanelContainer.find('.form-group').removeClass('has-error');
       this.settingsPanelContainer.find('.help-block').hide();
-      super.saveStereotypeSettings();
+      return true;
     } else {
       this.settingsPanelContainer.find('#SGXQuoteVerification-conditions-form-group').addClass('has-error');
       this.settingsPanelContainer.find('#SGXQuoteVerification-conditions-help').show();
-      this.initSaveAndRemoveButtons();
+      this.initRemoveButton();
     }
   }
   
@@ -106,7 +126,7 @@ export class SGXQuoteVerification extends TaskStereotype {
     if (confirm('Are you sure you wish to remove the stereotype?')) {
       super.removeStereotype();
     } else {
-      this.initSaveAndRemoveButtons();
+      this.initRemoveButton();
       return false;
     }
   }
@@ -141,7 +161,7 @@ export class SGXQuoteVerification extends TaskStereotype {
   }
 
   areInputObjectsDifferent() {
-    let savedData = JSON.parse(this.task.SGXQuoteVerification);
+    let savedData = this.getSavedStereotypeSettings();
     if ((savedData.quote == savedData.certificate && savedData.quote == savedData.revocationList) || (savedData.quote == savedData.certificate) || (savedData.quote == savedData.revocationList) || (savedData.certificate == savedData.revocationList)) {
       return false;
     }
@@ -149,7 +169,7 @@ export class SGXQuoteVerification extends TaskStereotype {
   }
 
   checkForErrors(existingErrors: ValidationErrorObject[]) {
-    let savedData = JSON.parse(this.task.SGXQuoteVerification);
+    let savedData = this.getSavedStereotypeSettings();
     if (!this.areInputsAndOutputsNumbersCorrect()) {
       this.addUniqueErrorToErrorsList(existingErrors, "SGXQuoteVerification error: exactly 3 inputs and 1 output are required", [this.task.id], []);
     }

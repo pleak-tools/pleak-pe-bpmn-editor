@@ -16,6 +16,30 @@ export class DifferentialPrivacy extends TaskStereotype {
     return super.getTitle();
   }
 
+  getSavedStereotypeSettings() {
+    if (this.task.DifferentialPrivacy != null) {
+      return JSON.parse(this.task.DifferentialPrivacy);
+    } else {
+      return null;
+    }
+  }
+
+  // Returns an object with properties:
+  // inputScript
+  // delta
+  // epsilons
+  getCurrentStereotypeSettings() {
+    let inputScript = this.settingsPanelContainer.find('#DifferentialPrivacy-inputScript').val();
+    let delta = this.settingsPanelContainer.find('#DifferentialPrivacy-delta').val();
+    let epsilons = $("input[name='epsilons\\[\\]']").map(function() {
+      let input = $(this).data('input');
+      let output = $(this).data('output');
+      let epsilon = $(this).val();
+      return {input: input, output: output, epsilon: epsilon};
+    }).get();
+    return {inputScript: inputScript, delta: delta, epsilons: epsilons};
+  }
+
   initStereotypePublicView() {
     super.initStereotypePublicView();
     this.highlightTaskInputAndOutputObjects();
@@ -33,10 +57,11 @@ export class DifferentialPrivacy extends TaskStereotype {
     let inputObjects = "";
     let outputObjects = "";
 
-    if (this.task.DifferentialPrivacy != null) {
-      inputScript = JSON.parse(this.task.DifferentialPrivacy).inputScript;
-      delta = JSON.parse(this.task.DifferentialPrivacy).delta;
-      epsilons = JSON.parse(this.task.DifferentialPrivacy).epsilons;
+    let savedStereotypeSettings = this.getSavedStereotypeSettings();
+    if (this.getSavedStereotypeSettings() != null) {
+      inputScript = savedStereotypeSettings.inputScript;
+      delta = savedStereotypeSettings.delta;
+      epsilons = savedStereotypeSettings.epsilons;
     }
 
     for (let inputObject of this.getTaskInputObjects()) {
@@ -80,8 +105,6 @@ export class DifferentialPrivacy extends TaskStereotype {
 
   saveStereotypeSettings() {
     if (this.areInputsAndOutputsNumbersCorrect()) {
-      let inputScript = this.settingsPanelContainer.find('#DifferentialPrivacy-inputScript').val();
-      let delta = this.settingsPanelContainer.find('#DifferentialPrivacy-delta').val();
       let epsilons = $("input[name='epsilons\\[\\]']").map(function() {
         let input = $(this).data('input');
         let output = $(this).data('output');
@@ -98,20 +121,20 @@ export class DifferentialPrivacy extends TaskStereotype {
       if (flag) {
         this.settingsPanelContainer.find('#DifferentialPrivacy-epsilon-form-group').addClass('has-error');
         this.settingsPanelContainer.find('#DifferentialPrivacy-epsilon-conditions-help').show();
-        this.initSaveAndRemoveButtons();
+        this.initRemoveButton();
         return;
       }
-      if (this.task.DifferentialPrivacy == null) {
+      if (this.getSavedStereotypeSettings() == null) {
         this.addStereotypeToElement();
       }
-      this.task.DifferentialPrivacy = JSON.stringify({inputScript: inputScript, delta: delta, epsilons: epsilons});
+      this.task.DifferentialPrivacy = JSON.stringify(this.getCurrentStereotypeSettings());
       this.settingsPanelContainer.find('.form-group').removeClass('has-error');
       this.settingsPanelContainer.find('.help-block').hide();
-      super.saveStereotypeSettings();
+      return true;
     } else {
       this.settingsPanelContainer.find('#DifferentialPrivacy-conditions-form-group').addClass('has-error');
       this.settingsPanelContainer.find('#DifferentialPrivacy-conditions-help').show();
-      this.initSaveAndRemoveButtons();
+      this.initRemoveButton();
     }
   }
   
@@ -119,7 +142,7 @@ export class DifferentialPrivacy extends TaskStereotype {
     if (confirm('Are you sure you wish to remove the stereotype?')) {
       super.removeStereotype();
     } else {
-      this.initSaveAndRemoveButtons();
+      this.initRemoveButton();
       return false;
     }
   }
@@ -154,7 +177,7 @@ export class DifferentialPrivacy extends TaskStereotype {
   }
 
   areEpsilonValuesCorrect() {
-    let savedData = JSON.parse(this.task.DifferentialPrivacy);
+    let savedData = this.getSavedStereotypeSettings();
     for (let i = 0; i < savedData.epsilons.length; i++) {
       if (savedData.epsilons[i].epsilon.length == 0) {
         return false;
@@ -166,7 +189,7 @@ export class DifferentialPrivacy extends TaskStereotype {
   checkForErrors(existingErrors: ValidationErrorObject[]) {
     let numberOfOutputs = this.getTaskOutputObjects().length;
     let numberOfInputs = this.getTaskInputObjects().length;
-    let savedData = JSON.parse(this.task.DifferentialPrivacy);
+    let savedData = this.getSavedStereotypeSettings();
     if (!this.areInputsAndOutputsNumbersCorrect()) {
       this.addUniqueErrorToErrorsList(existingErrors, "DifferentialPrivacy error: at least 1 input and exactly 1 output are required", [this.task.id], []);
     } else {

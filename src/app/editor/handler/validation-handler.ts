@@ -136,7 +136,7 @@ export class ValidationHandler {
     let areThereAnyWarningsOnModel = false;
     // Empty previous errors list
     $('#errors-list').html('');
-    $('#model-correct').hide();
+    $('#model-correct').addClass('hidden');
     this.removeAllErrorHighlights();
     this.removeErrorsListClickHandlers();
     this.numberOfErrorsInModel = 0;
@@ -164,10 +164,10 @@ export class ValidationHandler {
       errors_list += '</ol>';
       $('#errors-list').html(errors_list);
       $('.analysis-spinner').hide();
-      $('#model-errors').show();
+      $('#model-errors').removeClass('hidden');
     }
     if (areThereAnyErrorsOnModel) {
-      $('#analysis').hide();
+      $('#analysis').addClass('hidden');
       $('#analysis').off('click', '#analyze-simple-disclosure');
       $('#analysis').off('click', '#analyze-dependencies');
       this.setChangesInModelStatus(false);
@@ -175,10 +175,10 @@ export class ValidationHandler {
       $('.analysis-spinner').hide();
       if (!areThereAnyWarningsOnModel) {
         $('#errors-list').html('');
-        $('#model-errors').hide();
-        $('#model-correct').show();
+        $('#model-errors').addClass('hidden');
+        $('#model-correct').removeClass('hidden');
       }
-      $('#analysis').show();
+      $('#analysis').removeClass('hidden');
       $('#analysis').off('click', '#analyze-simple-disclosure');
       $('#analysis').off('click', '#analyze-dependencies');
       $('#analysis').on('click', '#analyze-simple-disclosure', (e) => {
@@ -197,8 +197,8 @@ export class ValidationHandler {
 
   // Hide simple disclosure menu (button) on model change, as the analysis report might have been changed
   hideSimpleDisclosureAnalysisMenuOnModelChange() {
-    $('#model-correct').hide();
-    $('#analysis').hide();
+    $('#model-correct').addClass('hidden');
+    $('#analysis').addClass('hidden');
   }
 
   // Remove click handler of valiation error list links

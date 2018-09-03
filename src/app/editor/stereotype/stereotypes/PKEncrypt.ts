@@ -16,6 +16,23 @@ export class PKEncrypt extends TaskStereotype {
     return super.getTitle();
   }
 
+  getSavedStereotypeSettings() {
+    if (this.task.PKEncrypt != null) {
+      return JSON.parse(this.task.PKEncrypt);
+    } else {
+      return null;
+    }
+  }
+
+  // Returns an object with properties:
+  // key
+  // inputData
+  getCurrentStereotypeSettings() {
+    let key = this.settingsPanelContainer.find('#PKEncrypt-keySelect').val();
+    let inputData = this.settingsPanelContainer.find('#PKEncrypt-inputDataSelect').val();
+    return {key: key, inputData: inputData};
+  }
+
   initStereotypePublicView() {
     super.initStereotypePublicView();
     this.highlightTaskInputAndOutputObjects();
@@ -32,8 +49,8 @@ export class PKEncrypt extends TaskStereotype {
     let outputObject = "";
     let selected = null;
 
-    if (this.task.PKEncrypt != null) {
-      selected = JSON.parse(this.task.PKEncrypt);
+    if (this.getSavedStereotypeSettings() != null) {
+      selected = this.getSavedStereotypeSettings();
     }
 
     for (let inputObject of this.getTaskInputObjects()) {
@@ -69,34 +86,35 @@ export class PKEncrypt extends TaskStereotype {
 
   saveStereotypeSettings() {
     if (this.areInputsAndOutputsNumbersCorrect()) {
-      let key = this.settingsPanelContainer.find('#PKEncrypt-keySelect').val();
-      let inputData = this.settingsPanelContainer.find('#PKEncrypt-inputDataSelect').val();
+      let currentStereotypeSettings = this.getCurrentStereotypeSettings();
+      let key = currentStereotypeSettings.key;
+      let inputData = currentStereotypeSettings.inputData;
       if (key == inputData) {
         this.settingsPanelContainer.find('#PKEncrypt-conditions-form-group').addClass('has-error');
         this.settingsPanelContainer.find('#PKEncrypt-key-form-group').addClass('has-error');
         this.settingsPanelContainer.find('#PKEncrypt-inputData-form-group').addClass('has-error');
         this.settingsPanelContainer.find('#PKEncrypt-conditions-help2').show();
-        this.initSaveAndRemoveButtons();
+        this.initRemoveButton();
         return;
       }
       if (!this.registry.get(key) || !this.registry.get(key).businessObject.PKPublic) {
         this.settingsPanelContainer.find('#PKEncrypt-conditions-form-group').addClass('has-error');
         this.settingsPanelContainer.find('#PKEncrypt-key-form-group').addClass('has-error');
         this.settingsPanelContainer.find('#PKEncrypt-conditions-help3').show();
-        this.initSaveAndRemoveButtons();
+        this.initRemoveButton();
         return;
       }
-      if (this.task.PKEncrypt == null) {
+      if (this.getSavedStereotypeSettings() == null) {
         this.addStereotypeToElement();
       }
-      this.task.PKEncrypt = JSON.stringify({key: key, inputData: inputData});
+      this.task.PKEncrypt = JSON.stringify(currentStereotypeSettings);
       this.settingsPanelContainer.find('.form-group').removeClass('has-error');
       this.settingsPanelContainer.find('.help-block').hide();
-      super.saveStereotypeSettings();
+      return true;
     } else {
       this.settingsPanelContainer.find('#PKEncrypt-conditions-form-group').addClass('has-error');
       this.settingsPanelContainer.find('#PKEncrypt-conditions-help').show();
-      this.initSaveAndRemoveButtons();
+      this.initRemoveButton();
     }
   }
   
@@ -104,7 +122,7 @@ export class PKEncrypt extends TaskStereotype {
     if (confirm('Are you sure you wish to remove the stereotype?')) {
       super.removeStereotype();
     } else {
-      this.initSaveAndRemoveButtons();
+      this.initRemoveButton();
       return false;
     }
   }
@@ -148,7 +166,7 @@ export class PKEncrypt extends TaskStereotype {
   }
 
   isKeyObjectOfTypePKPublic() {
-    let savedData = JSON.parse(this.task.PKEncrypt);
+    let savedData = this.getSavedStereotypeSettings();
     if (savedData.key) {
       if (!this.registry.get(savedData.key) || !this.registry.get(savedData.key).businessObject.PKPublic) {
         return false;
@@ -158,7 +176,7 @@ export class PKEncrypt extends TaskStereotype {
   }
 
   checkForErrors(existingErrors: ValidationErrorObject[]) {
-    let savedData = JSON.parse(this.task.PKEncrypt);
+    let savedData = this.getSavedStereotypeSettings();
     if (!this.areInputsAndOutputsNumbersCorrect()) {
       this.addUniqueErrorToErrorsList(existingErrors, "PKEncrypt error: exactly 2 inputs and 1 output are required", [this.task.id], []);
     }

@@ -21,6 +21,25 @@ export class FunSSComputation extends TaskStereotype {
     return super.getTitle();
   }
 
+  getSavedStereotypeSettings() {
+    if (this.task.FunSSComputation != null) {
+      return JSON.parse(this.task.FunSSComputation);
+    } else {
+      return null;
+    }
+  }
+
+  // Returns an object with properties:
+  // groupId
+  // evaluationPoint
+  // shareOfFunction
+  getCurrentStereotypeSettings() {
+    let group = this.settingsPanelContainer.find('#FunSSComputation-groupSelect').val();
+    let evaluationPoint = this.settingsPanelContainer.find('#FunSSComputation-evaluationPointSelect').val();
+    let shareOfFunction = this.settingsPanelContainer.find('#FunSSComputation-shareOfFunctionSelect').val();
+    return {groupId: group, evaluationPoint: evaluationPoint, shareOfFunction: shareOfFunction};
+  }
+
   getGroup() {
     return this.group;
   }
@@ -49,8 +68,8 @@ export class FunSSComputation extends TaskStereotype {
     let outputObject = "";
     let selected = null;
 
-    if (this.task.FunSSComputation != null) {
-      selected = JSON.parse(this.task.FunSSComputation);
+    if (this.getSavedStereotypeSettings() != null) {
+      selected = this.getSavedStereotypeSettings();
     }
 
     this.loadAllFunSSComputationGroupsTasks();
@@ -61,7 +80,7 @@ export class FunSSComputation extends TaskStereotype {
         this.FunSSComputationGroupsTasks.push({groupId: this.selectedGroup, taskId: this.task.id});
       }
       selectedGroupId = this.selectedGroup;
-    } else if (this.task.FunSSComputation != null) {
+    } else if (this.getSavedStereotypeSettings() != null) {
       selectedGroupId = this.getGroup();
     } else {
       if (this.FunSSComputationGroupsTasks.length > 0) {
@@ -143,7 +162,6 @@ export class FunSSComputation extends TaskStereotype {
       }
     }
   
-    this.settingsPanelContainer.find('#FunSSComputation-taskName').text(this.task.name);
     this.settingsPanelContainer.find('#FunSSComputation-groupSelect').html(groups);
     this.settingsPanelContainer.find('#FunSSComputation-evaluationPointSelect').html(evaluationPointValues);
     this.settingsPanelContainer.find('#FunSSComputation-shareOfFunctionSelect').html(shareOfFunctionValues);
@@ -165,11 +183,12 @@ export class FunSSComputation extends TaskStereotype {
 
   saveStereotypeSettings() {
     let self = this;
-    let group = this.settingsPanelContainer.find('#FunSSComputation-groupSelect').val();
-    let evaluationPoint = this.settingsPanelContainer.find('#FunSSComputation-evaluationPointSelect').val();
-    let shareOfFunction = this.settingsPanelContainer.find('#FunSSComputation-shareOfFunctionSelect').val();
     if (this.areInputsAndOutputsNumbersCorrect()) {
+      let currentStereotypeSettings = this.getCurrentStereotypeSettings();
+      let group = currentStereotypeSettings.groupId;
       if (group) {
+        let evaluationPoint = currentStereotypeSettings.evaluationPoint;
+        let shareOfFunction = currentStereotypeSettings.shareOfFunction;
         let tasks = this.getFunSSComputationGroupTasks(group);
         let taskAlreadyInGroup = tasks.filter(( obj ) => {
           return obj.id == self.task.id;
@@ -184,10 +203,10 @@ export class FunSSComputation extends TaskStereotype {
           this.settingsPanelContainer.find('#FunSSComputation-evaluationPoint-form-group').addClass('has-error');
           this.settingsPanelContainer.find('#FunSSComputation-shareOfFunction-form-group').addClass('has-error');
           this.settingsPanelContainer.find('#FunSSComputation-conditions-help2').show();
-          this.initSaveAndRemoveButtons();
+          this.initRemoveButton();
           return;
         }
-        if (this.task.FunSSComputation == null) {
+        if (this.getSavedStereotypeSettings() == null) {
           this.addStereotypeToElement();
         }
         this.setGroup(group);
@@ -195,12 +214,12 @@ export class FunSSComputation extends TaskStereotype {
         this.FunSSComputationGroupsTasks.push({groupId: group, taskId: this.task.id});
         for (let task of this.getFunSSComputationGroupTasks(group)) {
           if (task.id == this.task.id) {
-            task.businessObject.FunSSComputation = JSON.stringify({groupId: group, evaluationPoint: evaluationPoint, shareOfFunction: shareOfFunction});
+            task.businessObject.FunSSComputation = JSON.stringify(currentStereotypeSettings);
           }
         }
         this.settingsPanelContainer.find('.form-group').removeClass('has-error');
         this.settingsPanelContainer.find('.help-block').hide();
-        super.saveStereotypeSettings();
+        return true;
       } else {
         this.settingsPanelContainer.find('#FunSSComputation-groupSelect-form-group').addClass('has-error');
         this.settingsPanelContainer.find('#FunSSComputation-groupSelect-help').show();
@@ -208,7 +227,7 @@ export class FunSSComputation extends TaskStereotype {
     } else {
       this.settingsPanelContainer.find('#FunSSComputation-conditions-form-group').addClass('has-error');
       this.settingsPanelContainer.find('#FunSSComputation-conditions-help').show();
-      this.initSaveAndRemoveButtons();
+      this.initRemoveButton();
     }
   }
 
@@ -216,15 +235,15 @@ export class FunSSComputation extends TaskStereotype {
     if (confirm('Are you sure you wish to remove the stereotype?')) {
       super.removeStereotype();
     } else {
-      this.initSaveAndRemoveButtons();
+      this.initRemoveButton();
       return false;
     }
   }
 
   /** FunSSComputation class specific functions */
   init() {
-    if (this.task.FunSSComputation != null) {
-      this.setGroup(JSON.parse(this.task.FunSSComputation).groupId);
+    if (this.getSavedStereotypeSettings() != null) {
+      this.setGroup(this.getSavedStereotypeSettings().groupId);
     }
     this.addStereotypeToTheListOfGroupStereotypesOnModel(this.getTitle());
   }
@@ -441,7 +460,7 @@ export class FunSSComputation extends TaskStereotype {
     let inputIds = this.getTaskInputObjects().map(a => a.id);
     let outputIds = this.getTaskOutputObjects().map(a => a.id);
     if (inputIds.indexOf(dataObjectId) !== -1) {
-      let savedData = JSON.parse(this.task.FunSSComputation);
+      let savedData = this.getSavedStereotypeSettings();
       if (savedData.evaluationPoint == dataObjectId) {
         statuses.push("public-i");
       } else if (savedData.shareOfFunction == dataObjectId) {
@@ -505,8 +524,8 @@ export class FunSSComputation extends TaskStereotype {
   }
 
   areGroupShareOfFunctionSharesDifferent() {
-    if (JSON.parse(this.task.FunSSComputation).shareOfFunction && JSON.parse(this.registry.get(this.getGroupSecondElementId()).businessObject.FunSSComputation)) {
-      let shareOfFunctionElementName = this.registry.get(JSON.parse(this.task.FunSSComputation).shareOfFunction).businessObject.name.trim();
+    if (this.getSavedStereotypeSettings().shareOfFunction && JSON.parse(this.registry.get(this.getGroupSecondElementId()).businessObject.FunSSComputation)) {
+      let shareOfFunctionElementName = this.registry.get(this.getSavedStereotypeSettings().shareOfFunction).businessObject.name.trim();
       let secondGroupTaskShareOfFunctionElementName = this.registry.get(JSON.parse(this.registry.get(this.getGroupSecondElementId()).businessObject.FunSSComputation).shareOfFunction).businessObject.name.trim();
       if (shareOfFunctionElementName == secondGroupTaskShareOfFunctionElementName) {
         return false;
@@ -517,12 +536,12 @@ export class FunSSComputation extends TaskStereotype {
   }
 
   areGroupShareOfFunctionSharesFromSameOrigin() {
-    if (JSON.parse(this.task.FunSSComputation).shareOfFunction && JSON.parse(this.registry.get(this.getGroupSecondElementId()).businessObject.FunSSComputation)) {
-      let shareOfFunctionElementName = this.registry.get(JSON.parse(this.task.FunSSComputation).shareOfFunction).businessObject.name.trim();
+    if (this.getSavedStereotypeSettings().shareOfFunction && JSON.parse(this.registry.get(this.getGroupSecondElementId()).businessObject.FunSSComputation)) {
+      let shareOfFunctionElementName = this.registry.get(this.getSavedStereotypeSettings().shareOfFunction).businessObject.name.trim();
       let secondGroupTaskShareOfFunctionElementName = this.registry.get(JSON.parse(this.registry.get(this.getGroupSecondElementId()).businessObject.FunSSComputation).shareOfFunction).businessObject.name.trim();
       let flag = false;
       for (let incTask of this.getTasksOfIncomingPath()) {
-        if (this.isOneOfInputObjectsInTaskStereotypeOutputs(incTask, [this.registry.get(JSON.parse(this.task.FunSSComputation).shareOfFunction), this.registry.get(JSON.parse(this.registry.get(this.getGroupSecondElementId()).businessObject.FunSSComputation).shareOfFunction)]) && this.areInputsFromTaskWithStereotypeAccepted(incTask)) {
+        if (this.isOneOfInputObjectsInTaskStereotypeOutputs(incTask, [this.registry.get(this.getSavedStereotypeSettings().shareOfFunction), this.registry.get(JSON.parse(this.registry.get(this.getGroupSecondElementId()).businessObject.FunSSComputation).shareOfFunction)]) && this.areInputsFromTaskWithStereotypeAccepted(incTask)) {
           let outputElementsNames = this.getTaskOutputObjectsBasedOnTaskStereotype(incTask).map(a => a.businessObject.name.trim());
           if (outputElementsNames.indexOf(shareOfFunctionElementName) !== -1 && outputElementsNames.indexOf(secondGroupTaskShareOfFunctionElementName) !== -1) {
             flag = true;
@@ -537,12 +556,12 @@ export class FunSSComputation extends TaskStereotype {
   }
 
   areEvaluationPointsSameForBothGroupTasks() {
-    if (JSON.parse(this.task.FunSSComputation).evaluationPoint &&
-    this.registry.get(JSON.parse(this.task.FunSSComputation).evaluationPoint) &&
+    if (this.getSavedStereotypeSettings().evaluationPoint &&
+    this.registry.get(this.getSavedStereotypeSettings().evaluationPoint) &&
     this.registry.get(this.getGroupSecondElementId()).businessObject.FunSSComputation &&
     JSON.parse(this.registry.get(this.getGroupSecondElementId()).businessObject.FunSSComputation).evaluationPoint &&
     this.registry.get(JSON.parse(this.registry.get(this.getGroupSecondElementId()).businessObject.FunSSComputation).evaluationPoint)) {
-      let evaluationPointElementName = this.registry.get(JSON.parse(this.task.FunSSComputation).evaluationPoint).businessObject.name.trim();
+      let evaluationPointElementName = this.registry.get(this.getSavedStereotypeSettings().evaluationPoint).businessObject.name.trim();
       let secondGroupTaskEvaluationPointElementName = this.registry.get(JSON.parse(this.registry.get(this.getGroupSecondElementId()).businessObject.FunSSComputation).evaluationPoint).businessObject.name.trim();
       if (evaluationPointElementName != secondGroupTaskEvaluationPointElementName) {
         return false;
@@ -576,7 +595,7 @@ export class FunSSComputation extends TaskStereotype {
 
     let groupTasks = this.getFunSSComputationGroupTasks(this.getGroup());
     let groupTasksIds = groupTasks.map(a => a.id);
-    let savedData = JSON.parse(this.task.FunSSComputation);
+    let savedData = this.getSavedStereotypeSettings();
 
     if (!this.areInputsAndOutputsNumbersCorrect()) {
       this.addUniqueErrorToErrorsList(existingErrors, "FunSSComputation error: exactly 2 inputs and 1 output are required", [this.task.id], []);

@@ -16,6 +16,19 @@ export class CommunicationProtection extends MessageFlowStereotype {
     return super.getTitle();
   }
 
+  getSavedStereotypeSettings() {
+    if (this.messageFlow.CommunicationProtection != null) {
+      return JSON.parse(this.messageFlow.CommunicationProtection);
+    } else {
+      return null;
+    }
+  }
+
+  // Returns an empty object
+  getCurrentStereotypeSettings() {
+    return {};
+  }
+
   initStereotypePublicView() {
     super.initStereotypePublicView();
   }
@@ -44,18 +57,18 @@ export class CommunicationProtection extends MessageFlowStereotype {
   }
 
   saveStereotypeSettings() {
-    if (this.messageFlow.CommunicationProtection == null) {
+    if (this.getSavedStereotypeSettings() == null) {
       this.addStereotypeToElement();
     }
-    this.messageFlow.CommunicationProtection = JSON.stringify({});
-    super.saveStereotypeSettings();
+    this.messageFlow.CommunicationProtection = JSON.stringify(this.getCurrentStereotypeSettings());
+    return true;
   }
   
   removeStereotype() {
     if (confirm('Are you sure you wish to remove the stereotype?')) {
       super.removeStereotype();
     } else {
-      this.initSaveAndRemoveButtons();
+      this.initRemoveButton();
       return false;
     }
   }

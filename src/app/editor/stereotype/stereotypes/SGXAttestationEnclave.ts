@@ -28,6 +28,23 @@ export class SGXAttestationEnclave extends TaskStereotype {
     return super.getTitle();
   }
 
+  getSavedStereotypeSettings() {
+    if (this.task.SGXAttestationEnclave != null) {
+      return JSON.parse(this.task.SGXAttestationEnclave);
+    } else {
+      return null;
+    }
+  }
+
+  // Returns an object with properties:
+  // groupId
+  // SGXgroupId
+  getCurrentStereotypeSettings() {
+    let group = this.settingsPanelContainer.find('#SGXAttestationEnclave-groupSelect').val();
+    let SGXGroup = this.settingsPanelContainer.find('#SGXAttestationEnclave-SGXComputation-groupSelect').val();
+    return {groupId: group, SGXgroupId: SGXGroup}
+  }
+
   getGroup() {
     return this.group;
   }
@@ -74,7 +91,7 @@ export class SGXAttestationEnclave extends TaskStereotype {
         this.SGXAttestationEnclaveAndEvaluateGroupsTasks.push({groupId: this.selectedGroup, taskId: this.task.id});
       }
       selectedGroupId = this.selectedGroup;
-    } else if (this.task.SGXAttestationEnclave != null) {
+    } else if (this.getSavedStereotypeSettings() != null) {
       selectedGroupId = this.getGroup();
     } else {
       if (this.SGXAttestationEnclaveAndEvaluateGroupsTasks.length > 0) {
@@ -87,7 +104,7 @@ export class SGXAttestationEnclave extends TaskStereotype {
         this.SGXComputationGroupsTasks.push({groupId: this.selectedSGXGroup, taskId: this.task.id});
       }
       selectedSGXGroupId = this.selectedSGXGroup;
-    } else if (this.task.SGXAttestationEnclave != null) {
+    } else if (this.getSavedStereotypeSettings() != null) {
       selectedSGXGroupId = this.getSGXGroup();
     }
 
@@ -194,7 +211,6 @@ export class SGXAttestationEnclave extends TaskStereotype {
       }
     }
   
-    this.settingsPanelContainer.find('#SGXAttestationEnclave-taskName').text(this.task.name);
     this.settingsPanelContainer.find('#SGXAttestationEnclave-groupSelect').html(groups);
     this.settingsPanelContainer.find('#SGXAttestationEnclave-SGXComputation-groupSelect').html(SGXgroups);
     this.settingsPanelContainer.find('#SGXAttestationEnclave-newGroup').html('');
@@ -219,12 +235,13 @@ export class SGXAttestationEnclave extends TaskStereotype {
 
   saveStereotypeSettings() {
     let self = this;
-    let group = this.settingsPanelContainer.find('#SGXAttestationEnclave-groupSelect').val();
-    let SGXGroup = this.settingsPanelContainer.find('#SGXAttestationEnclave-SGXComputation-groupSelect').val();
+    let currentStereotypeSettings = this.getCurrentStereotypeSettings();
     this.settingsPanelContainer.find('.form-group').removeClass('has-error');
     this.settingsPanelContainer.find('.help-block').hide();
-    if (group) {
-      if (this.areInputsAndOutputsNumbersCorrect()) {
+    if (this.areInputsAndOutputsNumbersCorrect()) {
+      let group = currentStereotypeSettings.groupId;
+      let SGXGroup = currentStereotypeSettings.SGXgroupId;
+      if (group) {
         let tasks = this.getSGXAttestationGroupTasks(group);
         let taskAlreadyInGroup = tasks.filter(( obj ) => {
           return obj.id == self.task.id;
@@ -242,7 +259,7 @@ export class SGXAttestationEnclave extends TaskStereotype {
             }
           }
         }
-        if (this.task.SGXAttestationEnclave == null) {
+        if (this.getSavedStereotypeSettings() == null) {
           this.addStereotypeToElement();
         }
         this.setGroup(group);
@@ -255,20 +272,20 @@ export class SGXAttestationEnclave extends TaskStereotype {
         }
         for (let task of this.getSGXAttestationGroupTasks(group)) {
           if (task.id == this.task.id) {
-            task.businessObject.SGXAttestationEnclave = JSON.stringify({groupId: group, SGXgroupId: SGXGroup});
+            task.businessObject.SGXAttestationEnclave = JSON.stringify(currentStereotypeSettings);
           }
         }
         this.settingsPanelContainer.find('.form-group').removeClass('has-error');
         this.settingsPanelContainer.find('.help-block').hide();
-        super.saveStereotypeSettings();
+        return true;
       } else {
-        this.settingsPanelContainer.find('#SGXAttestationEnclave-conditions-form-group').addClass('has-error');
-        this.settingsPanelContainer.find('#SGXAttestationEnclave-conditions-help').show();
-        this.initSaveAndRemoveButtons();
+        this.settingsPanelContainer.find('#SGXAttestationEnclave-groupSelect-form-group').addClass('has-error');
+        this.settingsPanelContainer.find('#SGXAttestationEnclave-groupSelect-help').show();
       }
     } else {
-      this.settingsPanelContainer.find('#SGXAttestationEnclave-groupSelect-form-group').addClass('has-error');
-      this.settingsPanelContainer.find('#SGXAttestationEnclave-groupSelect-help').show();
+      this.settingsPanelContainer.find('#SGXAttestationEnclave-conditions-form-group').addClass('has-error');
+      this.settingsPanelContainer.find('#SGXAttestationEnclave-conditions-help').show();
+      this.initRemoveButton();
     }
   }
 
@@ -276,16 +293,16 @@ export class SGXAttestationEnclave extends TaskStereotype {
     if (confirm('Are you sure you wish to remove the stereotype?')) {
       super.removeStereotype();
     } else {
-      this.initSaveAndRemoveButtons();
+      this.initRemoveButton();
       return false;
     }
   }
 
   /** SGXAttestationEnclave class specific functions */
   init() {
-    if (this.task.SGXAttestationEnclave != null) {
-      this.setGroup(JSON.parse(this.task.SGXAttestationEnclave).groupId);
-      this.setSGXGroup(JSON.parse(this.task.SGXAttestationEnclave).SGXgroupId);
+    if (this.getSavedStereotypeSettings() != null) {
+      this.setGroup(this.getSavedStereotypeSettings().groupId);
+      this.setSGXGroup(this.getSavedStereotypeSettings().SGXgroupId);
     }
     this.addStereotypeToTheListOfGroupStereotypesOnModel(this.getTitle());
   }
@@ -725,7 +742,7 @@ export class SGXAttestationEnclave extends TaskStereotype {
 
     let groupTasks = this.getSGXAttestationGroupTasks(this.getGroup());
     let groupTasksIds = groupTasks.map(a => a.id);
-    let savedData = JSON.parse(this.task.SGXAttestationEnclave);
+    let savedData = this.getSavedStereotypeSettings();
 
     if (!this.areInputsAndOutputsNumbersCorrect()) {
       this.addUniqueErrorToErrorsList(existingErrors, "SGXAttestationEnclave error: no outputs are required", [this.task.id], []);

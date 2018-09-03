@@ -16,6 +16,19 @@ export class OpenConfidentiality extends TaskStereotype {
     return super.getTitle();
   }
 
+  getSavedStereotypeSettings() {
+    if (this.task.OpenConfidentiality != null) {
+      return JSON.parse(this.task.OpenConfidentiality);
+    } else {
+      return null;
+    }
+  }
+
+  // Returns an empty object
+  getCurrentStereotypeSettings() {
+    return {};
+  }
+
   initStereotypePublicView() {
     super.initStereotypePublicView();
     this.highlightTaskInputAndOutputObjects();
@@ -53,20 +66,20 @@ export class OpenConfidentiality extends TaskStereotype {
       if (!this.areInputAndOutputObjectsDifferent()) {
         this.settingsPanelContainer.find('#OpenConfidentiality-conditions-form-group').addClass('has-error');
         this.settingsPanelContainer.find('#OpenConfidentiality-conditions-help2').show();
-        this.initSaveAndRemoveButtons();
+        this.initRemoveButton();
         return;
       }
-      if (this.task.OpenConfidentiality == null) {
+      if (this.getSavedStereotypeSettings() == null) {
         this.addStereotypeToElement();
       }
-      this.task.OpenConfidentiality = JSON.stringify({});
+      this.task.OpenConfidentiality = JSON.stringify(this.getCurrentStereotypeSettings());
       this.settingsPanelContainer.find('.form-group').removeClass('has-error');
       this.settingsPanelContainer.find('.help-block').hide();
-      super.saveStereotypeSettings();
+      return true;
     } else {
       this.settingsPanelContainer.find('#OpenConfidentiality-conditions-form-group').addClass('has-error');
       this.settingsPanelContainer.find('#OpenConfidentiality-conditions-help').show();
-      this.initSaveAndRemoveButtons();
+      this.initRemoveButton();
     }
   }
   
@@ -74,7 +87,7 @@ export class OpenConfidentiality extends TaskStereotype {
     if (confirm('Are you sure you wish to remove the stereotype?')) {
       super.removeStereotype();
     } else {
-      this.initSaveAndRemoveButtons();
+      this.initRemoveButton();
       return false;
     }
   }

@@ -16,6 +16,19 @@ export class ProtectConfidentiality extends TaskStereotype {
     return super.getTitle();
   }
 
+  getSavedStereotypeSettings() {
+    if (this.task.ProtectConfidentiality != null) {
+      return JSON.parse(this.task.ProtectConfidentiality);
+    } else {
+      return null;
+    }
+  }
+
+  // Returns an empty object
+  getCurrentStereotypeSettings() {
+    return {};
+  }
+
   initStereotypePublicView() {
     super.initStereotypePublicView();
     this.highlightTaskInputAndOutputObjects();
@@ -53,20 +66,20 @@ export class ProtectConfidentiality extends TaskStereotype {
       if (!this.areInputAndOutputObjectsDifferent()) {
         this.settingsPanelContainer.find('#ProtectConfidentiality-conditions-form-group').addClass('has-error');
         this.settingsPanelContainer.find('#ProtectConfidentiality-conditions-help2').show();
-        this.initSaveAndRemoveButtons();
+        this.initRemoveButton();
         return;
       }
-      if (this.task.ProtectConfidentiality == null) {
+      if (this.getSavedStereotypeSettings() == null) {
         this.addStereotypeToElement();
       }
-      this.task.ProtectConfidentiality = JSON.stringify({});
+      this.task.ProtectConfidentiality = JSON.stringify(this.getCurrentStereotypeSettings());
       this.settingsPanelContainer.find('.form-group').removeClass('has-error');
       this.settingsPanelContainer.find('.help-block').hide();
-      super.saveStereotypeSettings();
+      return true;
     } else {
       this.settingsPanelContainer.find('#ProtectConfidentiality-conditions-form-group').addClass('has-error');
       this.settingsPanelContainer.find('#ProtectConfidentiality-conditions-help').show();
-      this.initSaveAndRemoveButtons();
+      this.initRemoveButton();
     }
   }
   
@@ -74,7 +87,7 @@ export class ProtectConfidentiality extends TaskStereotype {
     if (confirm('Are you sure you wish to remove the stereotype?')) {
       super.removeStereotype();
     } else {
-      this.initSaveAndRemoveButtons();
+      this.initRemoveButton();
       return false;
     }
   }

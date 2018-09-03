@@ -16,6 +16,27 @@ export class PKComputation extends TaskStereotype {
     return super.getTitle();
   }
 
+  getSavedStereotypeSettings() {
+    if (this.task.PKComputation != null) {
+      return JSON.parse(this.task.PKComputation);
+    } else {
+      return null;
+    }
+  }
+
+  // Returns an object with properties:
+  // inputScript
+  // inputTypes
+  getCurrentStereotypeSettings() {
+    let inputScript = this.settingsPanelContainer.find('#PKComputation-inputScript').val();
+    let inputTypes = [];
+    for (let inputObject of this.getTaskInputObjects()) {
+      let type = $('#PKComputation-input-type-select-'+inputObject.id).val();
+      inputTypes.push({id: inputObject.id, type: type});
+    }
+    return {inputScript: inputScript, inputTypes: inputTypes};
+  }
+
   initStereotypePublicView() {
     super.initStereotypePublicView();
     this.highlightTaskInputAndOutputObjects();
@@ -33,8 +54,8 @@ export class PKComputation extends TaskStereotype {
     let selected = null;
     let inputTypes = null;
 
-    if (this.task.PKComputation != null) {
-      selected = JSON.parse(this.task.PKComputation);
+    if (this.getSavedStereotypeSettings() != null) {
+      selected = this.getSavedStereotypeSettings();
       inputScript = selected.inputScript;
       if (selected.inputTypes) {
         inputTypes = selected.inputTypes
@@ -82,33 +103,30 @@ export class PKComputation extends TaskStereotype {
 
   saveStereotypeSettings() {
     if (this.areInputsAndOutputsNumbersCorrect()) {
-      let inputScript = this.settingsPanelContainer.find('#PKComputation-inputScript').val();
-      let inputTypes = [];
       let flag = false;
       for (let inputObject of this.getTaskInputObjects()) {
         let type = $('#PKComputation-input-type-select-'+inputObject.id).val();
         if (type == "encrypted") {
           flag = true;
         }
-        inputTypes.push({id: inputObject.id, type: type});
       }
       if (!flag) {
         this.settingsPanelContainer.find('#PKComputation-inputObjects-form-group').addClass('has-error');
         this.settingsPanelContainer.find('#PKComputation-inputObjects-help').show();
-        this.initSaveAndRemoveButtons();
+        this.initRemoveButton();
         return;
       }
-      if (this.task.PKComputation == null) {
+      if (this.getSavedStereotypeSettings() == null) {
         this.addStereotypeToElement();
       }
-      this.task.PKComputation = JSON.stringify({inputScript: inputScript, inputTypes: inputTypes});
+      this.task.PKComputation = JSON.stringify(this.getCurrentStereotypeSettings());
       this.settingsPanelContainer.find('.form-group').removeClass('has-error');
       this.settingsPanelContainer.find('.help-block').hide();
-      super.saveStereotypeSettings();
+      return true;
     } else {
       this.settingsPanelContainer.find('#PKComputation-conditions-form-group').addClass('has-error');
       this.settingsPanelContainer.find('#PKComputation-conditions-help').show();
-      this.initSaveAndRemoveButtons();
+      this.initRemoveButton();
     }
   }
   
@@ -116,7 +134,7 @@ export class PKComputation extends TaskStereotype {
     if (confirm('Are you sure you wish to remove the stereotype?')) {
       super.removeStereotype();
     } else {
-      this.initSaveAndRemoveButtons();
+      this.initRemoveButton();
       return false;
     }
   }
@@ -174,7 +192,7 @@ export class PKComputation extends TaskStereotype {
   }
 
   isThereAtLeastOneEncryptedInput() {
-    let savedData = JSON.parse(this.task.PKComputation);
+    let savedData = this.getSavedStereotypeSettings();
     if (savedData.inputTypes) {
       for (let inputType of savedData.inputTypes) {
         if (inputType.type == "encrypted") {
@@ -188,7 +206,7 @@ export class PKComputation extends TaskStereotype {
   getTaskEncryptedInputs() {
     let encryptedInputObjects = [];
     let inputObjects = this.getTaskInputObjects();
-    let savedData = JSON.parse(this.task.PKComputation);
+    let savedData = this.getSavedStereotypeSettings();
     if (savedData.inputTypes && inputObjects.length > 0) {
       for (let inputObject of inputObjects) {
         let matchingInputs = savedData.inputTypes.filter(function( obj ) {
@@ -271,7 +289,7 @@ export class PKComputation extends TaskStereotype {
   }
 
   checkForErrors(existingErrors: ValidationErrorObject[]) {
-    let savedData = JSON.parse(this.task.PKComputation);
+    let savedData = this.getSavedStereotypeSettings();
     if (!this.areInputsAndOutputsNumbersCorrect()) {
       this.addUniqueErrorToErrorsList(existingErrors, "PKComputation error: at least 1 input and exactly 1 output are required", [this.task.id], []);
     } else {

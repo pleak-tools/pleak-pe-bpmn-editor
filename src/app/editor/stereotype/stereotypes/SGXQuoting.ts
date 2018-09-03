@@ -16,6 +16,23 @@ export class SGXQuoting extends TaskStereotype {
     return super.getTitle();
   }
 
+  getSavedStereotypeSettings() {
+    if (this.task.SGXQuoting != null) {
+      return JSON.parse(this.task.SGXQuoting);
+    } else {
+      return null;
+    }
+  }
+
+  // Returns an object with properties:
+  // challenge
+  // measurement
+  getCurrentStereotypeSettings() {
+    let challenge = this.settingsPanelContainer.find('#SGXQuoting-challengeSelect').val();
+    let measurement = this.settingsPanelContainer.find('#SGXQuoting-measurementSelect').val();
+    return {challenge: challenge, measurement: measurement};
+  }
+
   initStereotypePublicView() {
     super.initStereotypePublicView();
     this.highlightTaskInputAndOutputObjects();
@@ -32,8 +49,8 @@ export class SGXQuoting extends TaskStereotype {
     let outputObject = "";
     let selected = null;
 
-    if (this.task.SGXQuoting != null) {
-      selected = JSON.parse(this.task.SGXQuoting);
+    if (this.getSavedStereotypeSettings() != null) {
+      selected = this.getSavedStereotypeSettings();
     }
 
     for (let inputObject of this.getTaskInputObjects()) {
@@ -69,27 +86,28 @@ export class SGXQuoting extends TaskStereotype {
 
   saveStereotypeSettings() {
     if (this.areInputsAndOutputsNumbersCorrect()) {
-      let challenge = this.settingsPanelContainer.find('#SGXQuoting-challengeSelect').val();
-      let measurement = this.settingsPanelContainer.find('#SGXQuoting-measurementSelect').val();
+      let currentStereotypeSettings = this.getCurrentStereotypeSettings();
+      let challenge = currentStereotypeSettings.challenge;
+      let measurement = currentStereotypeSettings.measurement;
       if (challenge == measurement) {
         this.settingsPanelContainer.find('#SGXQuoting-conditions-form-group').addClass('has-error');
         this.settingsPanelContainer.find('#SGXQuoting-challenge-form-group').addClass('has-error');
         this.settingsPanelContainer.find('#SGXQuoting-measurement-form-group').addClass('has-error');
         this.settingsPanelContainer.find('#SGXQuoting-conditions-help2').show();
-        this.initSaveAndRemoveButtons();
+        this.initRemoveButton();
         return;
       }
-      if (this.task.SGXQuoting == null) {
+      if (this.getSavedStereotypeSettings() == null) {
         this.addStereotypeToElement();
       }
-      this.task.SGXQuoting = JSON.stringify({challenge: challenge, measurement: measurement});
+      this.task.SGXQuoting = JSON.stringify(currentStereotypeSettings);
       this.settingsPanelContainer.find('.form-group').removeClass('has-error');
       this.settingsPanelContainer.find('.help-block').hide();
-      super.saveStereotypeSettings();
+      return true;
     } else {
       this.settingsPanelContainer.find('#SGXQuoting-conditions-form-group').addClass('has-error');
       this.settingsPanelContainer.find('#SGXQuoting-conditions-help').show();
-      this.initSaveAndRemoveButtons();
+      this.initRemoveButton();
     }
   }
   
@@ -97,7 +115,7 @@ export class SGXQuoting extends TaskStereotype {
     if (confirm('Are you sure you wish to remove the stereotype?')) {
       super.removeStereotype();
     } else {
-      this.initSaveAndRemoveButtons();
+      this.initRemoveButton();
       return false;
     }
   }
@@ -132,7 +150,7 @@ export class SGXQuoting extends TaskStereotype {
   }
 
   checkForErrors(existingErrors: ValidationErrorObject[]) {
-    let savedData = JSON.parse(this.task.SGXQuoting);
+    let savedData = this.getSavedStereotypeSettings();
     if (!this.areInputsAndOutputsNumbersCorrect()) {
       this.addUniqueErrorToErrorsList(existingErrors, "SGXQuoting error: exactly 2 inputs and 1 output are required", [this.task.id], []);
     }

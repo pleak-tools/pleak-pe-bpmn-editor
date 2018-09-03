@@ -16,6 +16,33 @@ export class PETComputation extends TaskStereotype {
     return super.getTitle();
   }
 
+  getSavedStereotypeSettings() {
+    if (this.task.PETComputation != null) {
+      return JSON.parse(this.task.PETComputation);
+    } else {
+      return null;
+    }
+  }
+
+  // Returns an object with properties:
+  // inputScript
+  // inputTypes
+  // outputTypes
+  getCurrentStereotypeSettings() {
+    let inputScript = this.settingsPanelContainer.find('#PETComputation-inputScript').val();
+    let inputTypes = [];
+    let outputTypes = [];
+    for (let inputObject of this.getTaskInputObjects()) {
+      let type = $('#PETComputation-input-type-select-'+inputObject.id).val();
+      inputTypes.push({id: inputObject.id, type: type});
+    }
+    for (let outputObject of this.getTaskOutputObjects()) {
+      let type = $('#PETComputation-output-type-select-'+outputObject.id).val();
+      outputTypes.push({id: outputObject.id, type: type});
+    }
+    return {inputScript: inputScript, inputTypes: inputTypes, outputTypes: outputTypes};
+  }
+
   initStereotypePublicView() {
     super.initStereotypePublicView();
     this.highlightTaskInputAndOutputObjects();
@@ -34,8 +61,8 @@ export class PETComputation extends TaskStereotype {
     let inputTypes = null;
     let outputTypes = null;
 
-    if (this.task.PETComputation != null) {
-      selected = JSON.parse(this.task.PETComputation);
+    if (this.getSavedStereotypeSettings() != null) {
+      selected = this.getSavedStereotypeSettings();
       inputScript = selected.inputScript;
       if (selected.inputTypes) {
         inputTypes = selected.inputTypes
@@ -116,28 +143,17 @@ export class PETComputation extends TaskStereotype {
 
   saveStereotypeSettings() {
     if (this.areInputsAndOutputsNumbersCorrect()) {
-      let inputScript = this.settingsPanelContainer.find('#PETComputation-inputScript').val();
-      let inputTypes = [];
-      let outputTypes = [];
-      for (let inputObject of this.getTaskInputObjects()) {
-        let type = $('#PETComputation-input-type-select-'+inputObject.id).val();
-        inputTypes.push({id: inputObject.id, type: type});
-      }
-      for (let outputObject of this.getTaskOutputObjects()) {
-        let type = $('#PETComputation-output-type-select-'+outputObject.id).val();
-        outputTypes.push({id: outputObject.id, type: type});
-      }
-      if (this.task.PETComputation == null) {
+      if (this.getSavedStereotypeSettings() == null) {
         this.addStereotypeToElement();
       }
-      this.task.PETComputation = JSON.stringify({inputScript: inputScript, inputTypes: inputTypes, outputTypes: outputTypes});
+      this.task.PETComputation = JSON.stringify(this.getCurrentStereotypeSettings());
       this.settingsPanelContainer.find('.form-group').removeClass('has-error');
       this.settingsPanelContainer.find('.help-block').hide();
-      super.saveStereotypeSettings();
+      return true;
     } else {
       this.settingsPanelContainer.find('#PETComputation-conditions-form-group').addClass('has-error');
       this.settingsPanelContainer.find('#PETComputation-conditions-help').show();
-      this.initSaveAndRemoveButtons();
+      this.initRemoveButton();
     }
   }
   
@@ -145,7 +161,7 @@ export class PETComputation extends TaskStereotype {
     if (confirm('Are you sure you wish to remove the stereotype?')) {
       super.removeStereotype();
     } else {
-      this.initSaveAndRemoveButtons();
+      this.initRemoveButton();
       return false;
     }
   }
@@ -210,7 +226,7 @@ export class PETComputation extends TaskStereotype {
   getTaskPrivateInputs() {
     let privateInputObjects = [];
     let inputObjects = this.getTaskInputObjects();
-    let savedData = JSON.parse(this.task.PETComputation);
+    let savedData = this.getSavedStereotypeSettings();
     if (savedData.inputTypes && inputObjects.length > 0) {
       for (let inputObject of inputObjects) {
         let matchingInputs = savedData.inputTypes.filter(function( obj ) {
@@ -229,7 +245,7 @@ export class PETComputation extends TaskStereotype {
   getTaskPrivateOutputs() {
     let privateOutputObjects = [];
     let outputObjects = this.getTaskOutputObjects();
-    let savedData = JSON.parse(this.task.PETComputation);
+    let savedData = this.getSavedStereotypeSettings();
     if (savedData.outputTypes && outputObjects.length > 0) {
       for (let outputObject of outputObjects) {
         let matchingOutputs = savedData.outputTypes.filter(function( obj ) {
@@ -302,7 +318,7 @@ export class PETComputation extends TaskStereotype {
   }
 
   checkForErrors(existingErrors: ValidationErrorObject[]) {
-    let savedData = JSON.parse(this.task.PETComputation);
+    let savedData = this.getSavedStereotypeSettings();
     if (!this.areInputsAndOutputsNumbersCorrect()) {
       this.addUniqueErrorToErrorsList(existingErrors, "PETComputation error: at least 1 input and exactly 1 output are required", [this.task.id], []);
     } else {

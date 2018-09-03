@@ -109,6 +109,10 @@ export class TaskHandler {
     return this.task.id;
   }
 
+  getName() {
+    return this.task.name;
+  }
+
   init() {
     // Add stereotype instances to the task (based on xml of the model)
     for (let sType of this.supportedStereotypes) {
@@ -160,6 +164,8 @@ export class TaskHandler {
       this.initTaskStereotypeSelector();
     }
     this.initElementStereotypeSettings();
+    this.initStereotypeSettingsPanel();
+    this.canvas.addMarker(this.task.id, 'selected');
     this.beingEdited = true;
   }
 
@@ -178,6 +184,8 @@ export class TaskHandler {
   terminateStereotypeEditProcess() {
     this.terminateTaskStereotypeSelector();
     this.terminateTaskStereotypeSettings();
+    this.terminateStereotypeSettingsPanel();
+    this.canvas.removeMarker(this.task.id, 'selected');
     this.beingEdited = false;
     this.stereotypeSelectorHidden = false;
   }
@@ -185,6 +193,7 @@ export class TaskHandler {
   // Init settings panels for all already added stereotypes
   initElementStereotypeSettings() {
     for (let sType of this.stereotypes) {
+      sType.isTempStereotype = false;
       sType.loadStereotypeTemplateAndInitStereotypeSettings();
     }
   }
@@ -198,6 +207,31 @@ export class TaskHandler {
       this.tempStereotype.terminateStereotypeSettings();
       this.tempStereotype = null;
     }
+  }
+
+  areThereUnsavedTaskChanges() {
+    if (this.tempStereotype == null) {
+      for (let stereotype of this.stereotypes) {
+        if (stereotype.areThereUnsavedChanges()) {
+          return true;
+        }
+      }
+      return false;
+    } else {
+      return true;
+    }
+  }
+
+  checkForUnsavedChanges() {
+    if (this.areThereUnsavedTaskChanges()) {
+      if (confirm('Are you sure you wish to revert unsaved stereotype settings?')) {
+        this.terminateStereotypeEditProcess();
+      } else {
+        this.canvas.addMarker(this.task.id, 'selected');
+        return false;
+      }
+    }
+    this.terminateStereotypeEditProcess();
   }
 
   // Show stereotype selector next to task element on the model
@@ -646,6 +680,7 @@ export class TaskHandler {
   addStereotypeByName(name: String) {
     if (this.tempStereotype == null) {
       let st = this.createStereotypeByName(name);
+      st.isTempStereotype = true;
       st.loadStereotypeTemplateAndInitStereotypeSettingsWithHighlight();
       this.tempStereotype = st;
     } else {
@@ -653,10 +688,12 @@ export class TaskHandler {
         this.tempStereotype.terminateStereotypeSettings();
         this.initElementStereotypeSettings();
         let st = this.createStereotypeByName(name);
+        st.isTempStereotype = true;
         st.loadStereotypeTemplateAndInitStereotypeSettingsWithHighlight();
         this.tempStereotype = st;
       }
     }
+    this.initStereotypeSettingsPanel();
   }
 
   // Add new stereotype to the task (save)
@@ -822,6 +859,14 @@ export class TaskHandler {
 
   updateModelContentVariable(xml: String) {
     this.elementsHandler.updateModelContentVariable(xml);
+  }
+
+  initStereotypeSettingsPanel() {
+    this.elementsHandler.initStereotypeSettingsPanel(this);
+  }
+
+  terminateStereotypeSettingsPanel() {
+    this.elementsHandler.terminateStereotypeSettingsPanel();
   }
 
   /** Wrappers to access validationHandler functions*/

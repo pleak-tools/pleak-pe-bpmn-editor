@@ -21,6 +21,49 @@ export class AddSSComputation extends TaskStereotype {
     return super.getTitle();
   }
 
+  getSavedStereotypeSettings() {
+    if (this.task.AddSSComputation != null) {
+      return JSON.parse(this.task.AddSSComputation);
+    } else {
+      return null;
+    }
+  }
+
+  // Returns an object with properties:
+  // groupId
+  // inputScript
+  // inputs
+  getCurrentStereotypeSettings() {
+    let group = this.settingsPanelContainer.find('#AddSSComputation-groupSelect').val();
+    let inputScript = this.settingsPanelContainer.find('#AddSSComputation-inputScript').val();
+    let inputObjects = this.getTaskInputObjects();
+    let inputs = [];
+    if (this.getAddSSComputationGroupTasks(group).length <= 1) {
+      for (let i = 0; i < inputObjects.length; i++) {
+        inputs.push({id: i, inputs: [{id: inputObjects[i].id}]});
+      }
+    } else {
+      let savedInputs = this.getAddSSComputationGroupInputs(group);
+      let taskInputs = this.getTaskInputObjects();
+      for (let sInput of savedInputs) {
+        let selectedInput = $('#AddSSComputation-inputSelect-'+sInput.id).val();
+        if (this.taskHasInputElement(selectedInput)) {
+          let newInputId = sInput.id;
+          let newInputInputs = sInput.inputs;
+          for (let tInput of taskInputs) {
+            newInputInputs = newInputInputs.filter(function( obj ) {
+              return obj.id !== tInput.id;
+            });
+          }
+          newInputInputs.push({id: selectedInput})
+          newInputInputs = newInputInputs.sort(this.compareIds);
+          inputs.push({id: newInputId, inputs: newInputInputs});
+        }
+      }
+    }
+    return {groupId: group, inputScript: inputScript, inputs: inputs};
+  }
+
   getGroup() {
     return this.group;
   }
@@ -58,7 +101,7 @@ export class AddSSComputation extends TaskStereotype {
         this.AddSSComputationGroupsTasks.push({groupId: this.selectedGroup, taskId: this.task.id});
       }
       selectedGroupId = this.selectedGroup;
-    } else if (this.task.AddSSComputation != null) {
+    } else if (this.getSavedStereotypeSettings() != null) {
       selectedGroupId = this.getGroup();
     } else {
       if (this.AddSSComputationGroupsTasks.length > 0) {
@@ -90,26 +133,27 @@ export class AddSSComputation extends TaskStereotype {
     }
 
     let taskInputs = this.getTaskInputObjects();
-
-    // if (selectedGroupId != this.getGroup()) {
-    //   selectedGroupId = null;
-    // }
-
     if (this.getAddSSComputationGroupInputs(selectedGroupId) && this.getAddSSComputationGroupInputs(selectedGroupId).length > 0 && groupTasks && groupTasks.length >= 1) {
       let groupInputs = this.getAddSSComputationGroupInputs(selectedGroupId);
       let taskInputNamesStr = this.getTaskInputObjects().map(a => a.businessObject.name).sort().toString();
       let groupInputNames = [];
       for (let input of groupInputs) {
         for (let inp of input.inputs) {
-          groupInputNames.push(inp);
+          groupInputNames.push(this.registry.get(inp.id).businessObject.name);
         }
       }
-      let groupInputNamesStr = groupInputNames.map(a => a.name).sort().toString();
 
+      let groupInputNamesStr = groupInputNames.sort().toString();
       if (groupInputNamesStr != taskInputNamesStr) {
         for (let groupInput of groupInputs) {
           let groupInputInputs = groupInput.inputs;
           let inputNames = groupInput.inputs;
+
+          let inputNamesStr = [];
+          for (let input of inputNames) {
+            inputNamesStr.push(this.registry.get(input.id).businessObject.name);
+          }
+
           let inputSel = '';
           for (let taskInput of taskInputs) {
             inputNames = inputNames.filter(function( obj ) {
@@ -123,7 +167,7 @@ export class AddSSComputation extends TaskStereotype {
             }
             inputSel += '<option ' + selected + ' value="' + taskInput.id + '">' + taskInput.businessObject.name + '</option>';
           }
-          inputObjects += inputNames.map(a => a.name).sort().toString() + ': ' + '<select class="form-control stereotype-option" id="AddSSComputation-inputSelect-' + groupInput.id +'">' + inputSel + '</select>';
+          inputObjects += inputNamesStr.sort().toString() + ': ' + '<select class="form-control stereotype-option" id="AddSSComputation-inputSelect-' + groupInput.id +'">' + inputSel + '</select>';
         }
         this.settingsPanelContainer.find('#AddSSComputation-inputObjects-title').text("Choose corresponding inputs");
       } else {
@@ -172,7 +216,6 @@ export class AddSSComputation extends TaskStereotype {
       }
     }
   
-    this.settingsPanelContainer.find('#AddSSComputation-taskName').text(this.task.name);
     this.settingsPanelContainer.find('#AddSSComputation-groupSelect').html(groups);
     this.settingsPanelContainer.find('#AddSSComputation-inputScript').val(inputScript);
     this.settingsPanelContainer.find('#AddSSComputation-inputObjects').html(inputObjects);
@@ -192,37 +235,13 @@ export class AddSSComputation extends TaskStereotype {
   }
 
   saveStereotypeSettings() {
-    let group = this.settingsPanelContainer.find('#AddSSComputation-groupSelect').val();
-    let inputScript = this.settingsPanelContainer.find('#AddSSComputation-inputScript').val();
     if (this.areInputsAndOutputsNumbersCorrect()) {
+      let currentStereotypeSettings = this.getCurrentStereotypeSettings();
+      let group = currentStereotypeSettings.groupId;
       if (group) {
         this.setGroup(group);
         this.AddSSComputationGroupsTasks = $.grep(this.AddSSComputationGroupsTasks, (el, idx) => {return el.taskId == this.task.id}, true);
         this.AddSSComputationGroupsTasks.push({groupId: group, taskId: this.task.id});
-        let inputObjects = this.getTaskInputObjects();
-        let inputs = [];
-        if (this.getAddSSComputationGroupTasks(group).length <= 1) {
-          for (let i = 0; i < inputObjects.length; i++) {
-            inputs.push({id: i, inputs: [{id: inputObjects[i].id, name: inputObjects[i].businessObject.name}]});
-          }
-        } else {
-          let savedInputs = this.getAddSSComputationGroupInputs(group);
-          let taskInputs = this.getTaskInputObjects();
-          for (let sInput of savedInputs) {
-            let selectedInput = $('#AddSSComputation-inputSelect-'+sInput.id).val();
-            if (this.taskHasInputElement(selectedInput)) {
-              let newInputId = sInput.id;
-              let newInputInputs = sInput.inputs;
-              for (let tInput of taskInputs) {
-                newInputInputs = newInputInputs.filter(function( obj ) {
-                  return obj.id !== tInput.id;
-                });
-              }
-              newInputInputs.push({id: selectedInput, name: this.registry.get(selectedInput).businessObject.name})
-              inputs.push({id: newInputId, inputs: newInputInputs});
-            }
-          }
-        }
         // Check if all selected inputs are different
         if (this.getAddSSComputationGroupTasks(group).length > 1) {
           let savedInputs = this.getAddSSComputationGroupInputs(group);
@@ -236,20 +255,20 @@ export class AddSSComputation extends TaskStereotype {
           if (hasDuplicates) {
             this.settingsPanelContainer.find('#AddSSComputation-inputs-form-group').addClass('has-error');
             this.settingsPanelContainer.find('#AddSSComputation-inputs-help').show();
-            this.initSaveAndRemoveButtons();
+            this.initRemoveButton();
             return;
           }
 
         }
-        if (this.task.AddSSComputation == null) {
+        if (this.getSavedStereotypeSettings() == null) {
           this.addStereotypeToElement();
         }
         for (let task of this.getAddSSComputationGroupTasks(group)) {
-          task.businessObject.AddSSComputation = JSON.stringify({groupId: group, inputScript: inputScript, inputs: inputs});
+          task.businessObject.AddSSComputation = JSON.stringify(currentStereotypeSettings);
         }
         this.settingsPanelContainer.find('.form-group').removeClass('has-error');
         this.settingsPanelContainer.find('.help-block').hide();
-        super.saveStereotypeSettings();
+        return true;
       } else {
         this.settingsPanelContainer.find('#AddSSComputation-groupSelect-form-group').addClass('has-error');
         this.settingsPanelContainer.find('#AddSSComputation-groupSelect-help').show();
@@ -257,7 +276,7 @@ export class AddSSComputation extends TaskStereotype {
     } else {
       this.settingsPanelContainer.find('#AddSSComputation-conditions-form-group').addClass('has-error');
       this.settingsPanelContainer.find('#AddSSComputation-conditions-help').show();
-      this.initSaveAndRemoveButtons();
+      this.initRemoveButton();
     }
   }
 
@@ -265,7 +284,7 @@ export class AddSSComputation extends TaskStereotype {
     if (confirm('Are you sure you wish to remove the stereotype?')) {
       let group = this.getGroup();
       let inputScript = this.getAddSSComputationGroupInputScript(group);
-      if (this.getAddSSComputationGroupTasks(group).length > 1 && JSON.parse(this.task.AddSSComputation).inputs) {
+      if (this.getAddSSComputationGroupTasks(group).length > 1 && this.getSavedStereotypeSettings().inputs) {
         let inputs = [];
         let savedInputs = this.getAddSSComputationGroupInputs(group);
         let taskInputs = this.getTaskInputObjects();
@@ -277,6 +296,7 @@ export class AddSSComputation extends TaskStereotype {
               return obj.id !== tInput.id;
             });
           }
+          newInputInputs = newInputInputs.sort(this.compareIds);
           inputs.push({id: newInputId, inputs: newInputInputs});
         }
         for (let task of this.getAddSSComputationGroupTasks(group)) {
@@ -287,15 +307,15 @@ export class AddSSComputation extends TaskStereotype {
       this.loadAllAddSSComputationGroupsTasks();
       super.removeStereotype();
     } else {
-      this.initSaveAndRemoveButtons();
+      this.initRemoveButton();
       return false;
     }
   }
 
   /** AddSSComputation class specific functions */
   init() {
-    if (this.task.AddSSComputation != null) {
-      this.setGroup(JSON.parse(this.task.AddSSComputation).groupId);
+    if (this.getSavedStereotypeSettings() != null) {
+      this.setGroup(this.getSavedStereotypeSettings().groupId);
     }
     this.addStereotypeToTheListOfGroupStereotypesOnModel(this.getTitle());
   }
@@ -579,6 +599,14 @@ export class AddSSComputation extends TaskStereotype {
     return null;
   }
 
+  compareIds(a,b) {
+    if (a.id < b.id)
+      return -1;
+    if (a.id > b.id)
+      return 1;
+    return 0;
+  }
+
   /** Validation functions */
   areInputsAndOutputsNumbersCorrect() {
     // Must have:
@@ -762,7 +790,7 @@ export class AddSSComputation extends TaskStereotype {
 
     let groupTasks = this.getAddSSComputationGroupTasks(this.getGroup());
     let groupTasksIds = groupTasks.map(a => a.id);
-    let savedData = JSON.parse(this.task.AddSSComputation);
+    let savedData = this.getSavedStereotypeSettings();
 
     if (!this.areInputsAndOutputsNumbersCorrect()) {
       this.addUniqueErrorToErrorsList(existingErrors, "AddSSComputation error: at least 1 input and exactly 1 output are required", [this.task.id], []);

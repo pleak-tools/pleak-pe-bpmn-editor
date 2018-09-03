@@ -16,7 +16,6 @@ export class MessageFlowStereotype extends Stereotype {
   messageFlow: any;
   messageFlowHandler: MessageFlowHandler;
 
-
   /** Wrappers to access messageFlowHandler functions*/
   getMessageFlowHandlerByMessageFlowId(messageFlowId: String) {
     return this.messageFlowHandler.getMessageFlowHandlerByMessageFlowId(messageFlowId);

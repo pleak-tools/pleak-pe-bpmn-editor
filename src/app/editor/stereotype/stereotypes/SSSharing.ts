@@ -16,6 +16,23 @@ export class SSSharing extends TaskStereotype {
     return super.getTitle();
   }
 
+  getSavedStereotypeSettings() {
+    if (this.task.SSSharing != null) {
+      return JSON.parse(this.task.SSSharing);
+    } else {
+      return null;
+    }
+  }
+
+  // Returns an object with properties:
+  // treshold
+  // computationParties
+  getCurrentStereotypeSettings() {
+    let treshold = Number(this.settingsPanelContainer.find('#SSSharing-treshold').val());
+    let computationParties = Number(this.settingsPanelContainer.find('#SSSharing-computationParties').val());
+    return {treshold: treshold, computationParties: computationParties};
+  }
+
   initStereotypePublicView() {
     super.initStereotypePublicView();
     this.highlightTaskInputAndOutputObjects();
@@ -32,9 +49,9 @@ export class SSSharing extends TaskStereotype {
     let treshold;
     let computationParties;
 
-    if (this.task.SSSharing != null) {
-      treshold = JSON.parse(this.task.SSSharing).treshold;
-      computationParties = JSON.parse(this.task.SSSharing).computationParties;
+    if (this.getSavedStereotypeSettings() != null) {
+      treshold = this.getSavedStereotypeSettings().treshold;
+      computationParties = this.getSavedStereotypeSettings().computationParties;
     }
 
     for (let inputObject of this.getTaskInputObjects()) {
@@ -59,13 +76,14 @@ export class SSSharing extends TaskStereotype {
 
   saveStereotypeSettings() {
     if (this.areInputsAndOutputsNumbersCorrect()) {
+      let currentStereotypeSettings = this.getCurrentStereotypeSettings();
       let numberOfOutputs = this.getTaskOutputObjects().length;
-      let treshold = Number(this.settingsPanelContainer.find('#SSSharing-treshold').val());
-      let computationParties = Number(this.settingsPanelContainer.find('#SSSharing-computationParties').val());
+      let treshold = currentStereotypeSettings.treshold;
+      let computationParties = currentStereotypeSettings.computationParties;
       if (!this.isInteger(treshold) || treshold < 1 || treshold > numberOfOutputs) {
         this.settingsPanelContainer.find('#SSSharing-treshold-form-group').addClass('has-error');
         this.settingsPanelContainer.find('#SSSharing-treshold-help').show();
-        this.initSaveAndRemoveButtons();
+        this.initRemoveButton();
         return;
       }
       if (!this.isInteger(computationParties) || computationParties < treshold || computationParties > numberOfOutputs) {
@@ -73,20 +91,20 @@ export class SSSharing extends TaskStereotype {
         this.settingsPanelContainer.find('.help-block').hide();
         this.settingsPanelContainer.find('#SSSharing-computationParties-form-group').addClass('has-error');
         this.settingsPanelContainer.find('#SSSharing-computationParties-help').show();
-        this.initSaveAndRemoveButtons();
+        this.initRemoveButton();
         return;
       }
-      if (this.task.SSSharing == null) {
+      if (this.getSavedStereotypeSettings() == null) {
         this.addStereotypeToElement();
       }
-      this.task.SSSharing = JSON.stringify({treshold: treshold, computationParties: computationParties});
+      this.task.SSSharing = JSON.stringify(currentStereotypeSettings);
       this.settingsPanelContainer.find('.form-group').removeClass('has-error');
       this.settingsPanelContainer.find('.help-block').hide();
-      super.saveStereotypeSettings();
+      return true;
     } else {
       this.settingsPanelContainer.find('#SSSharing-conditions-form-group').addClass('has-error');
       this.settingsPanelContainer.find('#SSSharing-conditions-help').show();
-      this.initSaveAndRemoveButtons();
+      this.initRemoveButton();
     }
   }
   
@@ -94,7 +112,7 @@ export class SSSharing extends TaskStereotype {
     if (confirm('Are you sure you wish to remove the stereotype?')) {
       super.removeStereotype();
     } else {
-      this.initSaveAndRemoveButtons();
+      this.initRemoveButton();
       return false;
     }
   }
@@ -132,7 +150,7 @@ export class SSSharing extends TaskStereotype {
   }
 
   checkForErrors(existingErrors: ValidationErrorObject[]) {
-    let savedData = JSON.parse(this.task.SSSharing);
+    let savedData = this.getSavedStereotypeSettings();
     let treshold = Number(savedData.treshold);
     let computationParties = Number(savedData.computationParties);
     let numberOfOutputs = this.getTaskOutputObjects().length;

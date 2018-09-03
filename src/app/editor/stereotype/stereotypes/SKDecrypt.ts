@@ -16,6 +16,23 @@ export class SKDecrypt extends TaskStereotype {
     return super.getTitle();
   }
 
+  getSavedStereotypeSettings() {
+    if (this.task.SKDecrypt != null) {
+      return JSON.parse(this.task.SKDecrypt);
+    } else {
+      return null;
+    }
+  }
+
+  // Returns an object with properties:
+  // key
+  // ciphertext
+  getCurrentStereotypeSettings() {
+    let key = this.settingsPanelContainer.find('#SKDecrypt-keySelect').val();
+    let ciphertext = this.settingsPanelContainer.find('#SKDecrypt-ciphertextSelect').val();
+    return {key: key, ciphertext: ciphertext};
+  }
+
   initStereotypePublicView() {
     super.initStereotypePublicView();
     this.highlightTaskInputAndOutputObjects();
@@ -32,8 +49,8 @@ export class SKDecrypt extends TaskStereotype {
     let outputObject = "";
     let selected = null;
 
-    if (this.task.SKDecrypt != null) {
-      selected = JSON.parse(this.task.SKDecrypt);
+    if (this.getSavedStereotypeSettings() != null) {
+      selected = this.getSavedStereotypeSettings();
     }
 
     for (let inputObject of this.getTaskInputObjects()) {
@@ -68,27 +85,28 @@ export class SKDecrypt extends TaskStereotype {
 
   saveStereotypeSettings() {
     if (this.areInputsAndOutputsNumbersCorrect()) {
-      let key = this.settingsPanelContainer.find('#SKDecrypt-keySelect').val();
-      let ciphertext = this.settingsPanelContainer.find('#SKDecrypt-ciphertextSelect').val();
+      let currentStereotypeSettings = this.getCurrentStereotypeSettings();
+      let key = currentStereotypeSettings.key;
+      let ciphertext = currentStereotypeSettings.ciphertext;
       if (key == ciphertext) {
         this.settingsPanelContainer.find('#SKDecrypt-conditions-form-group').addClass('has-error');
         this.settingsPanelContainer.find('#SKDecrypt-key-form-group').addClass('has-error');
         this.settingsPanelContainer.find('#SKDecrypt-ciphertext-form-group').addClass('has-error');
         this.settingsPanelContainer.find('#SKDecrypt-conditions-help2').show();
-        this.initSaveAndRemoveButtons();
+        this.initRemoveButton();
         return;
       }
-      if (this.task.SKDecrypt == null) {
+      if (this.getSavedStereotypeSettings() == null) {
         this.addStereotypeToElement();
       }
-      this.task.SKDecrypt = JSON.stringify({key: key, ciphertext: ciphertext});
+      this.task.SKDecrypt = JSON.stringify(currentStereotypeSettings);
       this.settingsPanelContainer.find('.form-group').removeClass('has-error');
       this.settingsPanelContainer.find('.help-block').hide();
-      super.saveStereotypeSettings();
+      return true;
     } else {
       this.settingsPanelContainer.find('#SKDecrypt-conditions-form-group').addClass('has-error');
       this.settingsPanelContainer.find('#SKDecrypt-conditions-help').show();
-      this.initSaveAndRemoveButtons();
+      this.initRemoveButton();
     }
   }
   
@@ -96,7 +114,7 @@ export class SKDecrypt extends TaskStereotype {
     if (confirm('Are you sure you wish to remove the stereotype?')) {
       super.removeStereotype();
     } else {
-      this.initSaveAndRemoveButtons();
+      this.initRemoveButton();
       return false;
     }
   }
@@ -109,7 +127,7 @@ export class SKDecrypt extends TaskStereotype {
     let inputIds = this.getTaskInputObjects().map(a => a.id);
     let outputIds = this.getTaskOutputObjects().map(a => a.id);
     if (inputIds.indexOf(dataObjectId) !== -1) {
-      let savedData = JSON.parse(this.task.SKDecrypt);
+      let savedData = this.getSavedStereotypeSettings();
       if (savedData.key == dataObjectId) {
         statuses.push("public-i");
       } else if (savedData.ciphertext == dataObjectId) {
@@ -179,7 +197,7 @@ export class SKDecrypt extends TaskStereotype {
 
   getKeysFromIncomingPathOfTask(taskId: String) {
     let keys = [];
-    keys = keys.concat(this.getKeyForEncryptedInput(JSON.parse(this.task.SKDecrypt).ciphertext, taskId));
+    keys = keys.concat(this.getKeyForEncryptedInput(this.getSavedStereotypeSettings().ciphertext, taskId));
     return keys;
   }
 
@@ -188,7 +206,7 @@ export class SKDecrypt extends TaskStereotype {
   }
 
   getKeysWithDifferentNames() {
-    let currentTaskInputKey = this.registry.get(JSON.parse(this.task.SKDecrypt).key);
+    let currentTaskInputKey = this.registry.get(this.getSavedStereotypeSettings().key);
     let keys = this.getKeysForAllTaskEncryptedInputs();
     let notMatchingKeys = [];
     if (keys) {
@@ -219,7 +237,7 @@ export class SKDecrypt extends TaskStereotype {
   }
 
   checkForErrors(existingErrors: ValidationErrorObject[]) {
-    let savedData = JSON.parse(this.task.SKDecrypt);
+    let savedData = this.getSavedStereotypeSettings();
     if (!this.areInputsAndOutputsNumbersCorrect()) {
       this.addUniqueErrorToErrorsList(existingErrors, "SKDecrypt error: exactly 2 inputs and 1 output are required", [this.task.id], []);
     }

@@ -16,6 +16,19 @@ export class AddSSReconstruction extends TaskStereotype {
     return super.getTitle();
   }
 
+  getSavedStereotypeSettings() {
+    if (this.task.AddSSReconstruction != null) {
+      return JSON.parse(this.task.AddSSReconstruction);
+    } else {
+      return null;
+    }
+  }
+
+  // Returns an empty object
+  getCurrentStereotypeSettings() {
+    return {};
+  }
+
   initStereotypePublicView() {
     super.initStereotypePublicView();
     this.highlightTaskInputAndOutputObjects();
@@ -50,25 +63,25 @@ export class AddSSReconstruction extends TaskStereotype {
 
   saveStereotypeSettings() {
     if (this.areInputsAndOutputsNumbersCorrect()) {
-      if (this.task.AddSSReconstruction == null) {
+      if (this.getSavedStereotypeSettings() == null) {
         this.addStereotypeToElement();
       }
-      this.task.AddSSReconstruction = JSON.stringify({});
+      this.task.AddSSReconstruction = JSON.stringify(this.getCurrentStereotypeSettings());
       this.settingsPanelContainer.find('.form-group').removeClass('has-error');
       this.settingsPanelContainer.find('.help-block').hide();
-      super.saveStereotypeSettings();
+      return true;
     } else {
       this.settingsPanelContainer.find('#AddSSReconstruction-conditions-form-group').addClass('has-error');
       this.settingsPanelContainer.find('#AddSSReconstruction-conditions-help').show();
-      this.initSaveAndRemoveButtons();
+      this.initRemoveButton();
     }
   }
-  
+
   removeStereotype() {
     if (confirm('Are you sure you wish to remove the stereotype?')) {
       super.removeStereotype();
     } else {
-      this.initSaveAndRemoveButtons();
+      this.initRemoveButton();
       return false;
     }
   }

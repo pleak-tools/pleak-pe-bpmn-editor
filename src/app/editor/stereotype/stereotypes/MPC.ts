@@ -21,6 +21,23 @@ export class MPC extends TaskStereotype {
     return super.getTitle();
   }
 
+  getSavedStereotypeSettings() {
+    if (this.task.MPC != null) {
+      return JSON.parse(this.task.MPC);
+    } else {
+      return null;
+    }
+  }
+
+  // Returns an object with properties:
+  // groupId
+  // inputScript
+  getCurrentStereotypeSettings() {
+    let group = this.settingsPanelContainer.find('#MPC-groupSelect').val();
+    let inputScript = this.settingsPanelContainer.find('#MPC-inputScript').val();
+    return {groupId: group, inputScript: inputScript};
+  }
+
   getGroup() {
     return this.group;
   }
@@ -56,7 +73,7 @@ export class MPC extends TaskStereotype {
         this.MPCGroupsTasks.push({groupId: this.selectedGroup, taskId: this.task.id});
       }
       selectedGroupId = this.selectedGroup;
-    } else if (this.task.MPC != null) {
+    } else if (this.getSavedStereotypeSettings() != null) {
       selectedGroupId = this.getGroup();
     } else {
       if (this.MPCGroupsTasks.length > 0) {
@@ -119,7 +136,6 @@ export class MPC extends TaskStereotype {
       }
     }
   
-    this.settingsPanelContainer.find('#MPC-taskName').text(this.task.name);
     this.settingsPanelContainer.find('#MPC-groupSelect').html(groups);
     this.settingsPanelContainer.find('#MPC-inputScript').val(inputScript);
     this.settingsPanelContainer.find('#MPC-inputObjects').html(inputObjects);
@@ -139,21 +155,21 @@ export class MPC extends TaskStereotype {
   }
 
   saveStereotypeSettings() {
-    let group = this.settingsPanelContainer.find('#MPC-groupSelect').val();
-    let inputScript = this.settingsPanelContainer.find('#MPC-inputScript').val();
+    let currentStereotypeSettings = this.getCurrentStereotypeSettings();
+    let group = currentStereotypeSettings.groupId;
     if (group) {
-      if (this.task.MPC == null) {
+      if (this.getSavedStereotypeSettings() == null) {
         this.addStereotypeToElement();
       }
       this.setGroup(group);
       this.MPCGroupsTasks = $.grep(this.MPCGroupsTasks, (el, idx) => {return el.taskId == this.task.id}, true);
       this.MPCGroupsTasks.push({groupId: group, taskId: this.task.id});
       for (let task of this.getMPCGroupTasks(group)) {
-        task.businessObject.MPC = JSON.stringify({groupId: group, inputScript: inputScript});
+        task.businessObject.MPC = JSON.stringify(currentStereotypeSettings);
       }
       this.settingsPanelContainer.find('.form-group').removeClass('has-error');
       this.settingsPanelContainer.find('.help-block').hide();
-      super.saveStereotypeSettings();
+      return true;
     } else {
       this.settingsPanelContainer.find('#MPC-groupSelect-form-group').addClass('has-error');
       this.settingsPanelContainer.find('#MPC-groupSelect-help').show();
@@ -164,15 +180,15 @@ export class MPC extends TaskStereotype {
     if (confirm('Are you sure you wish to remove the stereotype?')) {
       super.removeStereotype();
     } else {
-      this.initSaveAndRemoveButtons();
+      this.initRemoveButton();
       return false;
     }
   }
 
   /** MPC class specific functions */
   init() {
-    if (this.task.MPC != null) {
-      this.setGroup(JSON.parse(this.task.MPC).groupId);
+    if (this.getSavedStereotypeSettings() != null) {
+      this.setGroup(this.getSavedStereotypeSettings().groupId);
     }
     this.addStereotypeToTheListOfGroupStereotypesOnModel(this.getTitle());
   }
@@ -462,7 +478,7 @@ export class MPC extends TaskStereotype {
 
     let groupTasks = this.getMPCGroupTasks(this.getGroup());
     let groupTasksIds = groupTasks.map(a => a.id);
-    let savedData = JSON.parse(this.task.MPC);
+    let savedData = this.getSavedStereotypeSettings();
 
     // If group has no inputs or outputs
     if (this.getNumberOfMPCGroupInputs() == 0 || this.getNumberOfMPCGroupOutputs() == 0) {

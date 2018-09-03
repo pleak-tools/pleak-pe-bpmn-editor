@@ -16,6 +16,19 @@ export class FunSSSharing extends TaskStereotype {
     return super.getTitle();
   }
 
+  getSavedStereotypeSettings() {
+    if (this.task.FunSSSharing != null) {
+      return JSON.parse(this.task.FunSSSharing);
+    } else {
+      return null;
+    }
+  }
+
+  // Returns an empty object
+  getCurrentStereotypeSettings() {
+    return {};
+  }
+
   initStereotypePublicView() {
     super.initStereotypePublicView();
     this.highlightTaskInputAndOutputObjects();
@@ -50,17 +63,17 @@ export class FunSSSharing extends TaskStereotype {
 
   saveStereotypeSettings() {
     if (this.areInputsAndOutputsNumbersCorrect()) {
-      if (this.task.FunSSSharing == null) {
+      if (this.getSavedStereotypeSettings() == null) {
         this.addStereotypeToElement();
       }
-      this.task.FunSSSharing = JSON.stringify({});
+      this.task.FunSSSharing = JSON.stringify(this.getCurrentStereotypeSettings());
       this.settingsPanelContainer.find('.form-group').removeClass('has-error');
       this.settingsPanelContainer.find('.help-block').hide();
-      super.saveStereotypeSettings();
+      return true;
     } else {
       this.settingsPanelContainer.find('#FunSSSharing-conditions-form-group').addClass('has-error');
       this.settingsPanelContainer.find('#FunSSSharing-conditions-help').show();
-      this.initSaveAndRemoveButtons();
+      this.initRemoveButton();
     }
   }
   
@@ -68,7 +81,7 @@ export class FunSSSharing extends TaskStereotype {
     if (confirm('Are you sure you wish to remove the stereotype?')) {
       super.removeStereotype();
     } else {
-      this.initSaveAndRemoveButtons();
+      this.initRemoveButton();
       return false;
     }
   }

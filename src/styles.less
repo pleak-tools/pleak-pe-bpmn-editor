@@ -195,3 +195,62 @@ html, body, #canvas, #canvas > div {
   font-weight: normal;
   cursor: pointer;
 }
+
+// Stereotype settings sidebar
+
+#stereotype-options-sidebar {
+  margin-bottom: 75px;
+
+  .blue-panel-heading {
+    background-color: aliceblue;
+    color: deepskyblue;
+  }
+
+  .blue-panel-footer {
+    background-color: aliceblue;
+  }
+
+  #stereotype-options {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+}
+
+.stereotype-options-panel > .panel-heading {
+  padding-top: 1px;
+  padding-bottom: 1px;
+}
+
+#model-errors {
+  padding: 10px;
+  background-color: white;
+
+  #errors-list {
+    text-align: left;
+  }
+}
+
+#model-correct {
+  padding: 10px;
+  background-color: white;
+  color: forestgreen;
+}
+
+#analysis {
+  margin-top: 10px;
+  padding: 10px;
+  background-color: white;
+}
+
+// Analysis results
+
+#dataDependenciesAnalysisReportModal, #simpleDisclosureReportModal {
+  .modal-dialog {
+    width: 90%;
+  }
+  .modal-body {
+    #report-table {
+      overflow-x: auto;
+    }
+  }
+}

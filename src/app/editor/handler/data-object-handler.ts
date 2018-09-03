@@ -54,6 +54,10 @@ export class DataObjectHandler {
     return this.dataObject.id;
   }
 
+  getName() {
+    return this.dataObject.name;
+  }
+
   getDataObjectParentLaneOrPool() {
     return this.parentLaneOrPool;
   }
@@ -192,6 +196,8 @@ export class DataObjectHandler {
       this.initDataObjectStereotypeSelector();
     }
     this.initElementStereotypeSettings();
+    this.initStereotypeSettingsPanel();
+    this.canvas.addMarker(this.dataObject.id, 'selected');
     this.beingEdited = true;
   }
 
@@ -210,6 +216,8 @@ export class DataObjectHandler {
   terminateStereotypeEditProcess() {
     this.terminateDataObjectStereotypeSelector();
     this.terminateDataObjectStereotypeSettings();
+    this.terminateStereotypeSettingsPanel();
+    this.canvas.removeMarker(this.dataObject.id, 'selected');
     this.beingEdited = false;
     this.stereotypeSelectorHidden = false;
   }
@@ -217,6 +225,7 @@ export class DataObjectHandler {
   // Init settings panels for all already added stereotypes
   initElementStereotypeSettings() {
     for (let sType of this.stereotypes) {
+      sType.isTempStereotype = false;
       sType.loadStereotypeTemplateAndInitStereotypeSettings();
     }
   }
@@ -230,6 +239,31 @@ export class DataObjectHandler {
       this.tempStereotype.terminateStereotypeSettings();
       this.tempStereotype = null;
     }
+  }
+
+  areThereUnsavedDataObjectChanges() {
+    if (this.tempStereotype == null) {
+      for (let stereotype of this.stereotypes) {
+        if (stereotype.areThereUnsavedChanges()) {
+          return true;
+        }
+      }
+      return false;
+    } else {
+      return true;
+    }
+  }
+
+  checkForUnsavedChanges() {
+    if (this.areThereUnsavedDataObjectChanges()) {
+      if (confirm('Are you sure you wish to revert unsaved stereotype settings?')) {
+        this.terminateStereotypeEditProcess();
+      } else {
+        this.canvas.addMarker(this.dataObject.id, 'selected');
+        return false;
+      }
+    }
+    this.terminateStereotypeEditProcess();
   }
 
   // Show stereotype selector next to dataObject element on the model
@@ -316,6 +350,7 @@ export class DataObjectHandler {
   addStereotypeByName(name: String) {
     if (this.tempStereotype == null) {
       let st = this.createStereotypeByName(name);
+      st.isTempStereotype = true;
       st.loadStereotypeTemplateAndInitStereotypeSettingsWithHighlight();
       this.tempStereotype = st;
     } else {
@@ -323,6 +358,7 @@ export class DataObjectHandler {
         this.tempStereotype.terminateStereotypeSettings();
         this.initElementStereotypeSettings();
         let st = this.createStereotypeByName(name);
+        st.isTempStereotype = true;
         st.loadStereotypeTemplateAndInitStereotypeSettingsWithHighlight();
         this.tempStereotype = st;
       }
@@ -395,6 +431,14 @@ export class DataObjectHandler {
 
   updateModelContentVariable(xml: String) {
     this.elementsHandler.updateModelContentVariable(xml);
+  }
+
+  initStereotypeSettingsPanel() {
+    this.elementsHandler.initStereotypeSettingsPanel(this);
+  }
+
+  terminateStereotypeSettingsPanel() {
+    this.elementsHandler.terminateStereotypeSettingsPanel();
   }
 
 }

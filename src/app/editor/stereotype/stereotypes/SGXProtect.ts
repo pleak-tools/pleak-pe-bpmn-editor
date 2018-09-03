@@ -23,6 +23,21 @@ export class SGXProtect extends TaskStereotype {
     return super.getTitle();
   }
 
+  getSavedStereotypeSettings() {
+    if (this.task.SGXProtect != null) {
+      return JSON.parse(this.task.SGXProtect);
+    } else {
+      return null;
+    }
+  }
+
+  // Returns an object with properties:
+  // groupId
+  getCurrentStereotypeSettings() {
+    let group = this.settingsPanelContainer.find('#SGXProtect-groupSelect').val();
+    return {groupId: group};
+  }
+
   getGroup() {
     return this.group;
   }
@@ -57,7 +72,7 @@ export class SGXProtect extends TaskStereotype {
         this.SGXProtectGroupsTasks.push({groupId: this.selectedGroup, taskId: this.task.id});
       }
       selectedGroupId = this.selectedGroup;
-    } else if (this.task.SGXProtect != null) {
+    } else if (this.getSavedStereotypeSettings() != null) {
       selectedGroupId = this.getGroup();
     } else {
       if (this.SGXProtectGroupsTasks.length > 0) {
@@ -125,7 +140,6 @@ export class SGXProtect extends TaskStereotype {
       }
     }
 
-    this.settingsPanelContainer.find('#SGXProtect-taskName').text(this.task.name);
     this.settingsPanelContainer.find('#SGXProtect-groupSelect').html(groups);
     this.settingsPanelContainer.find('#SGXProtect-inputObjects').html(inputObjects);
     this.settingsPanelContainer.find('#SGXProtect-outputObjects').html(outputObjects);
@@ -144,27 +158,28 @@ export class SGXProtect extends TaskStereotype {
   }
 
   saveStereotypeSettings() {
-    let group = this.settingsPanelContainer.find('#SGXProtect-groupSelect').val();
-    if (group) {
-      if (this.areInputsAndOutputsNumbersCorrect()) {
-        if (this.task.SGXProtect == null) {
+    if (this.areInputsAndOutputsNumbersCorrect()) {
+      let currentStereotypeSettings = this.getCurrentStereotypeSettings();
+      let group = currentStereotypeSettings.groupId;
+      if (group) {
+        if (this.getSavedStereotypeSettings() == null) {
           this.addStereotypeToElement();
         }
         this.setGroup(group);
         this.SGXProtectGroupsTasks = $.grep(this.SGXProtectGroupsTasks, (el, idx) => {return el.taskId == this.task.id}, true);
         this.SGXProtectGroupsTasks.push({groupId: group, taskId: this.task.id});
-        this.task.SGXProtect = JSON.stringify({groupId: group});
+        this.task.SGXProtect = JSON.stringify(currentStereotypeSettings);
         this.settingsPanelContainer.find('.form-group').removeClass('has-error');
         this.settingsPanelContainer.find('.help-block').hide();
-        super.saveStereotypeSettings();
+        return true;
       } else {
-        this.settingsPanelContainer.find('#SGXProtect-conditions-form-group').addClass('has-error');
-        this.settingsPanelContainer.find('#SGXProtect-conditions-help').show();
-        this.initSaveAndRemoveButtons();
+        this.settingsPanelContainer.find('#SGXProtect-groupSelect-form-group').addClass('has-error');
+        this.settingsPanelContainer.find('#SGXProtect-groupSelect-help').show();
       }
     } else {
-      this.settingsPanelContainer.find('#SGXProtect-groupSelect-form-group').addClass('has-error');
-      this.settingsPanelContainer.find('#SGXProtect-groupSelect-help').show();
+      this.settingsPanelContainer.find('#SGXProtect-conditions-form-group').addClass('has-error');
+      this.settingsPanelContainer.find('#SGXProtect-conditions-help').show();
+      this.initRemoveButton();
     }
   }
 
@@ -172,15 +187,15 @@ export class SGXProtect extends TaskStereotype {
     if (confirm('Are you sure you wish to remove the stereotype?')) {
       super.removeStereotype();
     } else {
-      this.initSaveAndRemoveButtons();
+      this.initRemoveButton();
       return false;
     }
   }
 
   /** SGXProtect class specific functions */
   init() {
-    if (this.task.SGXProtect != null) {
-      this.setGroup(JSON.parse(this.task.SGXProtect).groupId);
+    if (this.getSavedStereotypeSettings() != null) {
+      this.setGroup(this.getSavedStereotypeSettings().groupId);
     }
     this.addStereotypeToTheListOfGroupStereotypesOnModel(this.getTitle());
   }
@@ -436,9 +451,8 @@ export class SGXProtect extends TaskStereotype {
     this.init();
     this.loadAllSGXProtectGroupsTasks();
 
-    let groupTasks = this.getSGXProtectGroupTasks(this.getGroup());
-    let groupTasksIds = groupTasks.map(a => a.id);
-    let savedData = JSON.parse(this.task.SGXProtect);
+    let savedData = this.getSavedStereotypeSettings();
+
     if (!this.areInputsAndOutputsNumbersCorrect()) {
       this.addUniqueErrorToErrorsList(existingErrors, "SGXProtect error: exactly 1 input and 1 output are required", [this.task.id], []);
     }

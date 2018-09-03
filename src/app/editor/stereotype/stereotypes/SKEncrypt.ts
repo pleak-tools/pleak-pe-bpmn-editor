@@ -16,6 +16,23 @@ export class SKEncrypt extends TaskStereotype {
     return super.getTitle();
   }
 
+  getSavedStereotypeSettings() {
+    if (this.task.SKEncrypt != null) {
+      return JSON.parse(this.task.SKEncrypt);
+    } else {
+      return null;
+    }
+  }
+
+  // Returns an object with properties:
+  // key
+  // inputData
+  getCurrentStereotypeSettings() {
+    let key = this.settingsPanelContainer.find('#SKEncrypt-keySelect').val();
+    let inputData = this.settingsPanelContainer.find('#SKEncrypt-inputDataSelect').val();
+    return {key: key, inputData: inputData};
+  }
+
   initStereotypePublicView() {
     super.initStereotypePublicView();
     this.highlightTaskInputAndOutputObjects();
@@ -32,8 +49,8 @@ export class SKEncrypt extends TaskStereotype {
     let outputObject = "";
     let selected = null;
 
-    if (this.task.SKEncrypt != null) {
-      selected = JSON.parse(this.task.SKEncrypt);
+    if (this.getSavedStereotypeSettings() != null) {
+      selected = this.getSavedStereotypeSettings();
     }
 
     for (let inputObject of this.getTaskInputObjects()) {
@@ -69,27 +86,28 @@ export class SKEncrypt extends TaskStereotype {
 
   saveStereotypeSettings() {
     if (this.areInputsAndOutputsNumbersCorrect()) {
-      let key = this.settingsPanelContainer.find('#SKEncrypt-keySelect').val();
-      let inputData = this.settingsPanelContainer.find('#SKEncrypt-inputDataSelect').val();
+      let currentStereotypeSettings = this.getCurrentStereotypeSettings();
+      let key = currentStereotypeSettings.key;
+      let inputData = currentStereotypeSettings.inputData;
       if (key == inputData) {
         this.settingsPanelContainer.find('#SKEncrypt-conditions-form-group').addClass('has-error');
         this.settingsPanelContainer.find('#SKEncrypt-key-form-group').addClass('has-error');
         this.settingsPanelContainer.find('#SKEncrypt-inputData-form-group').addClass('has-error');
         this.settingsPanelContainer.find('#SKEncrypt-conditions-help2').show();
-        this.initSaveAndRemoveButtons();
+        this.initRemoveButton();
         return;
       }
-      if (this.task.SKEncrypt == null) {
+      if (this.getSavedStereotypeSettings() == null) {
         this.addStereotypeToElement();
       }
-      this.task.SKEncrypt = JSON.stringify({key: key, inputData: inputData});
+      this.task.SKEncrypt = JSON.stringify(currentStereotypeSettings);
       this.settingsPanelContainer.find('.form-group').removeClass('has-error');
       this.settingsPanelContainer.find('.help-block').hide();
-      super.saveStereotypeSettings();
+      return true;
     } else {
       this.settingsPanelContainer.find('#SKEncrypt-conditions-form-group').addClass('has-error');
       this.settingsPanelContainer.find('#SKEncrypt-conditions-help').show();
-      this.initSaveAndRemoveButtons();
+      this.initRemoveButton();
     }
   }
   
@@ -97,7 +115,7 @@ export class SKEncrypt extends TaskStereotype {
     if (confirm('Are you sure you wish to remove the stereotype?')) {
       super.removeStereotype();
     } else {
-      this.initSaveAndRemoveButtons();
+      this.initRemoveButton();
       return false;
     }
   }
@@ -141,7 +159,7 @@ export class SKEncrypt extends TaskStereotype {
   }
 
   checkForErrors(existingErrors: ValidationErrorObject[]) {
-    let savedData = JSON.parse(this.task.SKEncrypt);
+    let savedData = this.getSavedStereotypeSettings();
     if (!this.areInputsAndOutputsNumbersCorrect()) {
       this.addUniqueErrorToErrorsList(existingErrors, "SKEncrypt error: exactly 2 inputs and 1 output are required", [this.task.id], []);
     }

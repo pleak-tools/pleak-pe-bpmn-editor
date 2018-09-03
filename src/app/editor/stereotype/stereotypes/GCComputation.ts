@@ -21,6 +21,23 @@ export class GCComputation extends TaskStereotype {
     return super.getTitle();
   }
 
+  getSavedStereotypeSettings() {
+    if (this.task.GCComputation != null) {
+      return JSON.parse(this.task.GCComputation);
+    } else {
+      return null;
+    }
+  }
+
+  // Returns an object with properties:
+  // groupId
+  // inputScript
+  getCurrentStereotypeSettings() {
+    let group = this.settingsPanelContainer.find('#GCComputation-groupSelect').val();
+    let inputScript = this.settingsPanelContainer.find('#GCComputation-inputScript').val();
+    return {groupId: group, inputScript: inputScript};
+  }
+
   getGroup() {
     return this.group;
   }
@@ -56,7 +73,7 @@ export class GCComputation extends TaskStereotype {
         this.GCComputationGroupsTasks.push({groupId: this.selectedGroup, taskId: this.task.id});
       }
       selectedGroupId = this.selectedGroup;
-    } else if (this.task.GCComputation != null) {
+    } else if (this.getSavedStereotypeSettings() != null) {
       selectedGroupId = this.getGroup();
     } else {
       if (this.GCComputationGroupsTasks.length > 0) {
@@ -119,7 +136,6 @@ export class GCComputation extends TaskStereotype {
       }
     }
   
-    this.settingsPanelContainer.find('#GCComputation-taskName').text(this.task.name);
     this.settingsPanelContainer.find('#GCComputation-groupSelect').html(groups);
     this.settingsPanelContainer.find('#GCComputation-inputScript').val(inputScript);
     this.settingsPanelContainer.find('#GCComputation-inputObjects').html(inputObjects);
@@ -140,8 +156,8 @@ export class GCComputation extends TaskStereotype {
 
   saveStereotypeSettings() {
     let self = this;
-    let group = this.settingsPanelContainer.find('#GCComputation-groupSelect').val();
-    let inputScript = this.settingsPanelContainer.find('#GCComputation-inputScript').val();
+    let currentStereotypeSettings = this.getCurrentStereotypeSettings();
+    let group = currentStereotypeSettings.groupId;
     if (group) {
       let tasks = this.getGCComputationGroupTasks(group);
       let taskAlreadyInGroup = tasks.filter(( obj ) => {
@@ -152,18 +168,18 @@ export class GCComputation extends TaskStereotype {
         this.settingsPanelContainer.find('#GCComputation-groupSelect-help2').show();
         return;
       }
-      if (this.task.GCComputation == null) {
+      if (this.getSavedStereotypeSettings() == null) {
         this.addStereotypeToElement();
       }
       this.setGroup(group);
       this.GCComputationGroupsTasks = $.grep(this.GCComputationGroupsTasks, (el, idx) => {return el.taskId == this.task.id}, true);
       this.GCComputationGroupsTasks.push({groupId: group, taskId: this.task.id});
       for (let task of this.getGCComputationGroupTasks(group)) {
-        task.businessObject.GCComputation = JSON.stringify({groupId: group, inputScript: inputScript});
+        task.businessObject.GCComputation = JSON.stringify(currentStereotypeSettings);
       }
       this.settingsPanelContainer.find('.form-group').removeClass('has-error');
       this.settingsPanelContainer.find('.help-block').hide();
-      super.saveStereotypeSettings();
+      return true;
     } else {
       this.settingsPanelContainer.find('#GCComputation-groupSelect-form-group').addClass('has-error');
       this.settingsPanelContainer.find('#GCComputation-groupSelect-help').show();
@@ -174,15 +190,15 @@ export class GCComputation extends TaskStereotype {
     if (confirm('Are you sure you wish to remove the stereotype?')) {
       super.removeStereotype();
     } else {
-      this.initSaveAndRemoveButtons();
+      this.initRemoveButton();
       return false;
     }
   }
 
   /** GCComputation class specific functions */
   init() {
-    if (this.task.GCComputation != null) {
-      this.setGroup(JSON.parse(this.task.GCComputation).groupId);
+    if (this.getSavedStereotypeSettings() != null) {
+      this.setGroup(this.getSavedStereotypeSettings().groupId);
     }
     this.addStereotypeToTheListOfGroupStereotypesOnModel(this.getTitle());
   }
@@ -472,7 +488,7 @@ export class GCComputation extends TaskStereotype {
 
     let groupTasks = this.getGCComputationGroupTasks(this.getGroup());
     let groupTasksIds = groupTasks.map(a => a.id);
-    let savedData = JSON.parse(this.task.GCComputation);
+    let savedData = this.getSavedStereotypeSettings();
 
     // If group has no inputs or outputs
     if (this.getNumberOfGCComputationGroupInputs() == 0 || this.getNumberOfGCComputationGroupOutputs() == 0) {

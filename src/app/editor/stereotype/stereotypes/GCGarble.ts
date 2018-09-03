@@ -22,6 +22,27 @@ export class GCGarble extends TaskStereotype {
     return super.getTitle();
   }
 
+  getSavedStereotypeSettings() {
+    if (this.task.GCGarble != null) {
+      return JSON.parse(this.task.GCGarble);
+    } else {
+      return null;
+    }
+  }
+
+  // Returns an object with properties:
+  // groupId
+  // inputScript
+  // garbledCircuit
+  // inputEncoding
+  getCurrentStereotypeSettings() {
+    let group = this.settingsPanelContainer.find('#GCGarble-groupSelect').val();
+    let inputScript = this.settingsPanelContainer.find('#GCGarble-inputScript').val();
+    let garbledCircuit = this.settingsPanelContainer.find('#GCGarble-garbledCircuitSelect').val();
+    let inputEncoding = this.settingsPanelContainer.find('#GCGarble-inputEncodingSelect').val();
+    return {groupId: group, inputScript: inputScript, garbledCircuit: garbledCircuit, inputEncoding: inputEncoding};
+  }
+
   getGroup() {
     return this.group;
   }
@@ -58,9 +79,9 @@ export class GCGarble extends TaskStereotype {
         this.GCGarbleAndEvaluateGroupsTasks.push({groupId: this.selectedGroup, taskId: this.task.id});
       }
       selectedGroupId = this.selectedGroup;
-    } else if (this.task.GCGarble != null) {
+    } else if (this.getSavedStereotypeSettings() != null) {
       selectedGroupId = this.getGroup();
-      selected = JSON.parse(this.task.GCGarble);
+      selected = this.getSavedStereotypeSettings();
     } else {
       if (this.GCGarbleAndEvaluateGroupsTasks.length > 0) {
         selectedGroupId = this.GCGarbleAndEvaluateGroupsTasks[0].groupId;
@@ -128,7 +149,6 @@ export class GCGarble extends TaskStereotype {
       }
     }
   
-    this.settingsPanelContainer.find('#GCGarble-taskName').text(this.task.name);
     this.settingsPanelContainer.find('#GCGarble-groupSelect').html(groups);
     this.settingsPanelContainer.find('#GCGarble-inputScript').val(inputScript);
     this.settingsPanelContainer.find('#GCGarble-garbledCircuitSelect').html(garbledCircuit);
@@ -149,12 +169,13 @@ export class GCGarble extends TaskStereotype {
 
   saveStereotypeSettings() {
     let self = this;
-    let group = this.settingsPanelContainer.find('#GCGarble-groupSelect').val();
-    let inputScript = this.settingsPanelContainer.find('#GCGarble-inputScript').val();
-    let garbledCircuit = this.settingsPanelContainer.find('#GCGarble-garbledCircuitSelect').val();
-    let inputEncoding = this.settingsPanelContainer.find('#GCGarble-inputEncodingSelect').val();
-    if (group) {
-      if (this.areInputsAndOutputsNumbersCorrect()) {
+    if (this.areInputsAndOutputsNumbersCorrect()) {
+      let currentStereotypeSettings = this.getCurrentStereotypeSettings();
+      let group = currentStereotypeSettings.groupId;
+      if (group) {
+        let inputScript = currentStereotypeSettings.inputScript;
+        let garbledCircuit = currentStereotypeSettings.garbledCircuit;
+        let inputEncoding = currentStereotypeSettings.inputEncoding;
         let tasks = this.getGCGarbleAndGCEvaluateGroupTasks(group);
         let taskAlreadyInGroup = tasks.filter(( obj ) => {
           return obj.id == self.task.id;
@@ -177,10 +198,10 @@ export class GCGarble extends TaskStereotype {
           this.settingsPanelContainer.find('#GCGarble-garbledCircuit-form-group').addClass('has-error');
           this.settingsPanelContainer.find('#GCGarble-inputEncoding-form-group').addClass('has-error');
           this.settingsPanelContainer.find('#GCGarble-conditions-help2').show();
-          this.initSaveAndRemoveButtons();
+          this.initRemoveButton();
           return;
         }
-        if (this.task.GCGarble == null) {
+        if (this.getSavedStereotypeSettings() == null) {
           this.addStereotypeToElement();
         }
         this.setGroup(group);
@@ -188,22 +209,22 @@ export class GCGarble extends TaskStereotype {
         this.GCGarbleAndEvaluateGroupsTasks.push({groupId: group, taskId: this.task.id});
         for (let task of this.getGCGarbleAndGCEvaluateGroupTasks(group)) {
           if (task.id == this.task.id) {
-            task.businessObject.GCGarble = JSON.stringify({groupId: group, inputScript: inputScript, garbledCircuit: garbledCircuit, inputEncoding: inputEncoding});
+            task.businessObject.GCGarble = JSON.stringify(currentStereotypeSettings);
           } else {
             task.businessObject.GCEvaluate = JSON.stringify({groupId: group, inputScript: inputScript, garbledCircuit: JSON.parse(task.businessObject.GCEvaluate).garbledCircuit, inputEncoding: JSON.parse(task.businessObject.GCEvaluate).inputEncoding});
           }
         }
         this.settingsPanelContainer.find('.form-group').removeClass('has-error');
         this.settingsPanelContainer.find('.help-block').hide();
-        super.saveStereotypeSettings();
+        return true;
       } else {
-        this.settingsPanelContainer.find('#GCGarble-conditions-form-group').addClass('has-error');
-        this.settingsPanelContainer.find('#GCGarble-conditions-help').show();
-        this.initSaveAndRemoveButtons();
+        this.settingsPanelContainer.find('#GCGarble-groupSelect-form-group').addClass('has-error');
+        this.settingsPanelContainer.find('#GCGarble-groupSelect-help').show();
       }
     } else {
-      this.settingsPanelContainer.find('#GCGarble-groupSelect-form-group').addClass('has-error');
-      this.settingsPanelContainer.find('#GCGarble-groupSelect-help').show();
+      this.settingsPanelContainer.find('#GCGarble-conditions-form-group').addClass('has-error');
+      this.settingsPanelContainer.find('#GCGarble-conditions-help').show();
+      this.initRemoveButton();
     }
   }
 
@@ -211,15 +232,15 @@ export class GCGarble extends TaskStereotype {
     if (confirm('Are you sure you wish to remove the stereotype?')) {
       super.removeStereotype();
     } else {
-      this.initSaveAndRemoveButtons();
+      this.initRemoveButton();
       return false;
     }
   }
 
   /** GCGarble class specific functions */
   init() {
-    if (this.task.GCGarble != null) {
-      this.setGroup(JSON.parse(this.task.GCGarble).groupId);
+    if (this.getSavedStereotypeSettings() != null) {
+      this.setGroup(this.getSavedStereotypeSettings().groupId);
     }
   }
 
@@ -515,7 +536,7 @@ export class GCGarble extends TaskStereotype {
   isGarbledCircuitSameForBothGCGarbleAndGCEvaluateGroupMembers() {
     let GCEvaluateElementId = this.getGroupSecondElementId();
     let GCEvaluateElement = this.registry.get(GCEvaluateElementId);
-    let GCGarbleElement = JSON.parse(this.task.GCGarble);
+    let GCGarbleElement = this.getSavedStereotypeSettings();
     if (GCEvaluateElement && GCGarbleElement) {
       let GCEvaluateElementGarbledCircuit = JSON.parse(GCEvaluateElement.businessObject.GCEvaluate).garbledCircuit;
       let GCGarbleElementGarbledCircuit = GCGarbleElement.garbledCircuit;
@@ -540,7 +561,7 @@ export class GCGarble extends TaskStereotype {
 
     let groupTasks = this.getGCGarbleAndGCEvaluateGroupTasks(this.getGroup());
     let groupTasksIds = groupTasks.map(a => a.id);
-    let savedData = JSON.parse(this.task.GCGarble);
+    let savedData = this.getSavedStereotypeSettings();
 
     if (!this.areInputsAndOutputsNumbersCorrect()) {
       this.addUniqueErrorToErrorsList(existingErrors, "GCGarble error: exactly 2 outputs and no inputs are required", [this.task.id], []);

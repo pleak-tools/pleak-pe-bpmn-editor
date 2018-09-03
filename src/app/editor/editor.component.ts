@@ -183,7 +183,7 @@ export class EditorComponent implements OnInit {
     });
 
     $(window).bind('beforeunload', (e) => {
-      if (this.file.content != this.lastContent) {
+      if (this.file.content != this.lastContent || elementsHandler.areThereUnsavedChangesOnModel()) {
         return 'Are you sure you want to close this tab? Unsaved progress will be lost.';
       }
     });

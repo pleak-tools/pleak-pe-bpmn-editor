@@ -22,6 +22,21 @@ export class SGXAttestationChallenge extends TaskStereotype {
     return super.getTitle();
   }
 
+  getSavedStereotypeSettings() {
+    if (this.task.SGXAttestationChallenge != null) {
+      return JSON.parse(this.task.SGXAttestationChallenge);
+    } else {
+      return null;
+    }
+  }
+
+  // Returns an object with properties:
+  // groupId
+  getCurrentStereotypeSettings() {
+    let group = this.settingsPanelContainer.find('#SGXAttestationChallenge-groupSelect').val();
+    return {groupId: group};
+  }
+
   getGroup() {
     return this.group;
   }
@@ -57,9 +72,9 @@ export class SGXAttestationChallenge extends TaskStereotype {
         this.SGXAttestationEnclaveAndEvaluateGroupsTasks.push({groupId: this.selectedGroup, taskId: this.task.id});
       }
       selectedGroupId = this.selectedGroup;
-    } else if (this.task.SGXAttestationChallenge != null) {
+    } else if (this.getSavedStereotypeSettings() != null) {
       selectedGroupId = this.getGroup();
-      selected = JSON.parse(this.task.SGXAttestationChallenge);
+      selected = this.getSavedStereotypeSettings();
     } else {
       if (this.SGXAttestationEnclaveAndEvaluateGroupsTasks.length > 0) {
         selectedGroupId = this.SGXAttestationEnclaveAndEvaluateGroupsTasks[0].groupId;
@@ -113,7 +128,6 @@ export class SGXAttestationChallenge extends TaskStereotype {
       }
     }
   
-    this.settingsPanelContainer.find('#SGXAttestationChallenge-taskName').text(this.task.name);
     this.settingsPanelContainer.find('#SGXAttestationChallenge-groupSelect').html(groups);
     this.settingsPanelContainer.find('#SGXAttestationChallenge-newGroup').html('');
     this.settingsPanelContainer.find('#SGXAttestationChallenge-inputObject').html(inputObject);
@@ -133,9 +147,10 @@ export class SGXAttestationChallenge extends TaskStereotype {
 
   saveStereotypeSettings() {
     let self = this;
-    let group = this.settingsPanelContainer.find('#SGXAttestationChallenge-groupSelect').val();
-    if (group) {
-      if (this.areInputsAndOutputsNumbersCorrect()) {
+    let currentStereotypeSettings = this.getCurrentStereotypeSettings();
+    if (this.areInputsAndOutputsNumbersCorrect()) {
+      let group = currentStereotypeSettings.groupId;
+      if (group) {
         let tasks = this.getSGXAttestationGroupTasks(group);
         let taskAlreadyInGroup = tasks.filter(( obj ) => {
           return obj.id == self.task.id;
@@ -153,7 +168,7 @@ export class SGXAttestationChallenge extends TaskStereotype {
             }
           }
         }
-        if (this.task.SGXAttestationChallenge == null) {
+        if (this.getSavedStereotypeSettings() == null) {
           this.addStereotypeToElement();
         }
         this.setGroup(group);
@@ -161,20 +176,20 @@ export class SGXAttestationChallenge extends TaskStereotype {
         this.SGXAttestationEnclaveAndEvaluateGroupsTasks.push({groupId: group, taskId: this.task.id});
         for (let task of this.getSGXAttestationGroupTasks(group)) {
           if (task.id == this.task.id) {
-            task.businessObject.SGXAttestationChallenge = JSON.stringify({groupId: group});
+            task.businessObject.SGXAttestationChallenge = JSON.stringify(currentStereotypeSettings);
           }
         }
         this.settingsPanelContainer.find('.form-group').removeClass('has-error');
         this.settingsPanelContainer.find('.help-block').hide();
-        super.saveStereotypeSettings();
+        return true;
       } else {
-        this.settingsPanelContainer.find('#SGXAttestationChallenge-conditions-form-group').addClass('has-error');
-        this.settingsPanelContainer.find('#SGXAttestationChallenge-conditions-help').show();
-        this.initSaveAndRemoveButtons();
+        this.settingsPanelContainer.find('#SGXAttestationChallenge-groupSelect-form-group').addClass('has-error');
+        this.settingsPanelContainer.find('#SGXAttestationChallenge-groupSelect-help').show();
       }
     } else {
-      this.settingsPanelContainer.find('#SGXAttestationChallenge-groupSelect-form-group').addClass('has-error');
-      this.settingsPanelContainer.find('#SGXAttestationChallenge-groupSelect-help').show();
+      this.settingsPanelContainer.find('#SGXAttestationChallenge-conditions-form-group').addClass('has-error');
+      this.settingsPanelContainer.find('#SGXAttestationChallenge-conditions-help').show();
+      this.initRemoveButton();
     }
   }
 
@@ -182,15 +197,15 @@ export class SGXAttestationChallenge extends TaskStereotype {
     if (confirm('Are you sure you wish to remove the stereotype?')) {
       super.removeStereotype();
     } else {
-      this.initSaveAndRemoveButtons();
+      this.initRemoveButton();
       return false;
     }
   }
 
   /** SGXAttestationChallenge class specific functions */
   init() {
-    if (this.task.SGXAttestationChallenge != null) {
-      this.setGroup(JSON.parse(this.task.SGXAttestationChallenge).groupId);
+    if (this.getSavedStereotypeSettings() != null) {
+      this.setGroup(this.getSavedStereotypeSettings().groupId);
     }
     this.addStereotypeToTheListOfGroupStereotypesOnModel(this.getTitle());
   }
@@ -462,7 +477,7 @@ export class SGXAttestationChallenge extends TaskStereotype {
 
     let groupTasks = this.getSGXAttestationGroupTasks(this.getGroup());
     let groupTasksIds = groupTasks.map(a => a.id);
-    let savedData = JSON.parse(this.task.SGXAttestationChallenge);
+    let savedData = this.getSavedStereotypeSettings();
 
     if (!this.areInputsAndOutputsNumbersCorrect()) {
       this.addUniqueErrorToErrorsList(existingErrors, "SGXAttestationChallenge error: exactly 1 output is required", [this.task.id], []);

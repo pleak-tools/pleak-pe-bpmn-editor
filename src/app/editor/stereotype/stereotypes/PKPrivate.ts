@@ -27,6 +27,21 @@ export class PKPrivate extends DataObjectStereotype {
     return super.getTitle();
   }
 
+  getSavedStereotypeSettings() {
+    if (this.dataObject.PKPrivate != null) {
+      return JSON.parse(this.dataObject.PKPrivate);
+    } else {
+      return null;
+    }
+  }
+
+  // Returns an object with properties:
+  // groupId
+  getCurrentStereotypeSettings() {
+    let group = this.settingsPanelContainer.find('#PKPrivate-groupSelect').val();
+    return {groupId: group};
+  }
+
   getGroup() {
     return this.group;
   }
@@ -60,9 +75,9 @@ export class PKPrivate extends DataObjectStereotype {
         this.PKPublicAndPrivateGroupsDataObjects.push({groupId: this.selectedGroup, dataObjectId: this.dataObject.id});
       }
       selectedGroupId = this.selectedGroup;
-    } else if (this.dataObject.PKPrivate != null) {
+    } else if (this.getSavedStereotypeSettings() != null) {
       selectedGroupId = this.getGroup();
-      selected = JSON.parse(this.dataObject.PKPrivate);
+      selected = this.getSavedStereotypeSettings();
     } else {
       if (this.PKPublicAndPrivateGroupsDataObjects.length > 0) {
         selectedGroupId = this.PKPublicAndPrivateGroupsDataObjects[0].groupId;
@@ -131,7 +146,8 @@ export class PKPrivate extends DataObjectStereotype {
 
   saveStereotypeSettings() {
     let self = this;
-    let group = this.settingsPanelContainer.find('#PKPrivate-groupSelect').val();
+    let currentStereotypeSettings = this.getCurrentStereotypeSettings();
+    let group = currentStereotypeSettings.groupId;
     if (group) {
       let dataObjects = this.getPKPublicAndPKPrivateGroupObjects(group);
       let dataObjectAlreadyInGroup = dataObjects.filter(( obj ) => {
@@ -152,7 +168,7 @@ export class PKPrivate extends DataObjectStereotype {
           }
         }
       }
-      if (this.dataObject.PKPrivate == null) {
+      if (this.getSavedStereotypeSettings() == null) {
         this.addStereotypeToElement();
       }
       this.setGroup(group);
@@ -160,12 +176,12 @@ export class PKPrivate extends DataObjectStereotype {
       this.PKPublicAndPrivateGroupsDataObjects.push({groupId: group, dataObjectId: this.dataObject.id});
       for (let dataObject of this.getPKPublicAndPKPrivateGroupObjects(group)) {
         if (dataObject.id == this.dataObject.id) {
-            dataObject.businessObject.PKPrivate = JSON.stringify({groupId: group});
+            dataObject.businessObject.PKPrivate = JSON.stringify(currentStereotypeSettings);
           }
       }
       this.settingsPanelContainer.find('.form-group').removeClass('has-error');
       this.settingsPanelContainer.find('.help-block').hide();
-      super.saveStereotypeSettings();
+      return true;
     } else {
       this.settingsPanelContainer.find('#PKPrivate-groupSelect-form-group').addClass('has-error');
       this.settingsPanelContainer.find('#PKPrivate-groupSelect-help').show();
@@ -176,15 +192,15 @@ export class PKPrivate extends DataObjectStereotype {
     if (confirm('Are you sure you wish to remove the stereotype?')) {
       super.removeStereotype();
     } else {
-      this.initSaveAndRemoveButtons();
+      this.initRemoveButton();
       return false;
     }
   }
 
   /** PKPrivate class specific functions */
   init() {
-    if (this.dataObject.PKPrivate != null) {
-      this.setGroup(JSON.parse(this.dataObject.PKPrivate).groupId);
+    if (this.getSavedStereotypeSettings() != null) {
+      this.setGroup(this.getSavedStereotypeSettings().groupId);
     }
   }
 
@@ -345,7 +361,7 @@ export class PKPrivate extends DataObjectStereotype {
     this.init();
     this.loadAllPKPublicAndPKPrivateGroupsDataObjects();
 
-    let savedData = JSON.parse(this.dataObject.PKPrivate);
+    let savedData = this.getSavedStereotypeSettings();
 
     if (!this.doesPairHaveKeysOfBothTypes()) {
       this.addUniqueErrorToErrorsList(existingErrors, "PKPrivate error: PKPublic key is missing from the pair", this.getGroupPKPrivateDataObjectsIds(), []);

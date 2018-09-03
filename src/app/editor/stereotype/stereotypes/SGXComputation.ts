@@ -23,6 +23,45 @@ export class SGXComputation extends TaskStereotype {
     return super.getTitle();
   }
 
+  getSavedStereotypeSettings() {
+    if (this.task.SGXComputation != null) {
+      return JSON.parse(this.task.SGXComputation);
+    } else {
+      return null;
+    }
+  }
+
+  // Returns an object with properties:
+  // groupId
+  // inputScript
+  // inputTypes
+  // outputTypes
+  getCurrentStereotypeSettings() {
+    let group = this.settingsPanelContainer.find('#SGXComputation-groupSelect').val();
+    let inputScriptType = "";
+    let inputScriptContents = "";
+    let inputScript;
+    if (this.settingsPanelContainer.find('#SGXComputation-inputScriptType-script').is('.link-selected')) {
+      inputScriptType = "script";
+      inputScriptContents = this.settingsPanelContainer.find('#SGXComputation-inputScript').val();
+    } else if (this.settingsPanelContainer.find('#SGXComputation-inputScriptType-stereotype').is('.link-selected')) {
+      inputScriptType = "stereotype";
+      inputScriptContents = this.settingsPanelContainer.find('#SGXComputation-inputStereotypeSelect').val();
+    }
+    inputScript = {type: inputScriptType, contents: inputScriptContents};
+    let inputTypes = [];
+    let outputTypes = [];
+    for (let inputObject of this.getTaskInputObjects()) {
+      let type = $('#SGXComputation-input-type-select-'+inputObject.id).val();
+      inputTypes.push({id: inputObject.id, type: type});
+    }
+    for (let outputObject of this.getTaskOutputObjects()) {
+      let type = $('#SGXComputation-output-type-select-'+outputObject.id).val();
+      outputTypes.push({id: outputObject.id, type: type});
+    }
+    return {groupId: group, inputScript: inputScript, inputTypes: inputTypes, outputTypes: outputTypes};
+  }
+
   getGroup() {
     return this.group;
   }
@@ -62,9 +101,9 @@ export class SGXComputation extends TaskStereotype {
         this.SGXComputationGroupsTasks.push({groupId: this.selectedGroup, taskId: this.task.id});
       }
       selectedGroupId = this.selectedGroup;
-    } else if (this.task.SGXComputation != null) {
+    } else if (this.getSavedStereotypeSettings() != null) {
       selectedGroupId = this.getGroup();
-      selected = JSON.parse(this.task.SGXComputation);
+      selected = this.getSavedStereotypeSettings();
       if (selected.inputTypes) {
         inputTypes = selected.inputTypes;
       }
@@ -211,7 +250,6 @@ export class SGXComputation extends TaskStereotype {
       }
     }
 
-    this.settingsPanelContainer.find('#SGXComputation-taskName').text(this.task.name);
     this.settingsPanelContainer.find('#SGXComputation-groupSelect').html(groups);
     this.settingsPanelContainer.find('#SGXComputation-inputStereotypeSelect').html('');
     this.settingsPanelContainer.find('#SGXComputation-inputStereotypeSelect').html(stObjects);
@@ -233,41 +271,24 @@ export class SGXComputation extends TaskStereotype {
   }
 
   saveStereotypeSettings() {
-    let group = this.settingsPanelContainer.find('#SGXComputation-groupSelect').val();
-    let inputScriptType = "";
-    let inputScriptContents = "";
-    let inputScript;
-    if (this.settingsPanelContainer.find('#SGXComputation-inputScriptType-script').is('.link-selected')) {
-      inputScriptType = "script";
-      inputScriptContents = this.settingsPanelContainer.find('#SGXComputation-inputScript').val();
-    } else if (this.settingsPanelContainer.find('#SGXComputation-inputScriptType-stereotype').is('.link-selected')) {
-      inputScriptType = "stereotype";
-      inputScriptContents = this.settingsPanelContainer.find('#SGXComputation-inputStereotypeSelect').val();
-    }
-    inputScript = {type: inputScriptType, contents: inputScriptContents};
-    if (group) {
-      if (this.areInputsAndOutputsNumbersCorrect()) {
-        let inputTypes = [];
-        let outputTypes = [];
+    if (this.areInputsAndOutputsNumbersCorrect()) {
+      let currentStereotypeSettings = this.getCurrentStereotypeSettings();
+      let group = currentStereotypeSettings.groupId;
+      if (group) {
         let flag = false;
         for (let inputObject of this.getTaskInputObjects()) {
           let type = $('#SGXComputation-input-type-select-'+inputObject.id).val();
           if (type == "private") {
             flag = true;
           }
-          inputTypes.push({id: inputObject.id, type: type});
         }
         if (!flag) {
           this.settingsPanelContainer.find('#SGXComputation-inputObjects-form-group').addClass('has-error');
           this.settingsPanelContainer.find('#SGXComputation-inputObjects-help').show();
-          this.initSaveAndRemoveButtons();
+          this.initRemoveButton();
           return;
         }
-        for (let outputObject of this.getTaskOutputObjects()) {
-          let type = $('#SGXComputation-output-type-select-'+outputObject.id).val();
-          outputTypes.push({id: outputObject.id, type: type});
-        }
-        if (this.task.SGXComputation == null) {
+        if (this.getSavedStereotypeSettings() == null) {
           this.addStereotypeToElement();
         }
         this.setGroup(group);
@@ -275,20 +296,20 @@ export class SGXComputation extends TaskStereotype {
         this.SGXComputationGroupsTasks.push({groupId: group, taskId: this.task.id});
         for (let task of this.getSGXComputationGroupTasks(group)) {
           if (task.id == this.task.id) {
-            task.businessObject.SGXComputation = JSON.stringify({groupId: group, inputScript: inputScript, inputTypes: inputTypes, outputTypes: outputTypes});
+            task.businessObject.SGXComputation = JSON.stringify(currentStereotypeSettings);
           }
         }
         this.settingsPanelContainer.find('.form-group').removeClass('has-error');
         this.settingsPanelContainer.find('.help-block').hide();
-        super.saveStereotypeSettings();
+        return true;
       } else {
-        this.settingsPanelContainer.find('#SGXComputation-conditions-form-group').addClass('has-error');
-        this.settingsPanelContainer.find('#SGXComputation-conditions-help').show();
-        this.initSaveAndRemoveButtons();
+        this.settingsPanelContainer.find('#SGXComputation-groupSelect-form-group').addClass('has-error');
+        this.settingsPanelContainer.find('#SGXComputation-groupSelect-help').show();
       }
     } else {
-      this.settingsPanelContainer.find('#SGXComputation-groupSelect-form-group').addClass('has-error');
-      this.settingsPanelContainer.find('#SGXComputation-groupSelect-help').show();
+      this.settingsPanelContainer.find('#SGXComputation-conditions-form-group').addClass('has-error');
+      this.settingsPanelContainer.find('#SGXComputation-conditions-help').show();
+      this.initRemoveButton();
     }
   }
 
@@ -296,15 +317,15 @@ export class SGXComputation extends TaskStereotype {
     if (confirm('Are you sure you wish to remove the stereotype?')) {
       super.removeStereotype();
     } else {
-      this.initSaveAndRemoveButtons();
+      this.initRemoveButton();
       return false;
     }
   }
 
   /** SGXComputation class specific functions */
   init() {
-    if (this.task.SGXComputation != null) {
-      this.setGroup(JSON.parse(this.task.SGXComputation).groupId);
+    if (this.getSavedStereotypeSettings() != null) {
+      this.setGroup(this.getSavedStereotypeSettings().groupId);
     }
     this.addStereotypeToTheListOfGroupStereotypesOnModel(this.getTitle());
   }
@@ -558,14 +579,14 @@ export class SGXComputation extends TaskStereotype {
       }
     }
     if (outputIds.indexOf(dataObjectId) !== -1) {
-      let savedData = JSON.parse(this.task.SGXComputation);
+      let savedData = this.getSavedStereotypeSettings();
       if (savedData.inputScript.type == "stereotype" && savedData.inputScript.contents) {
         if (this.taskHasStereotype(this.task, savedData.inputScript.contents) && (savedData.inputScript.contents == "PKEncrypt" || savedData.inputScript.contents == "SKEncrypt" || savedData.inputScript.contents == "SGXProtect")) {
           return this.getTaskHandlerByTaskId(this.task.id).getTaskStereotypeInstanceByName(savedData.inputScript.contents).getDataObjectVisibilityStatus(dataObjectId);
         }
       }
-      if (JSON.parse(this.task.SGXComputation).outputTypes && JSON.parse(this.task.SGXComputation).outputTypes[0]) {
-        let outputType = JSON.parse(this.task.SGXComputation).outputTypes[0].type;
+      if (this.getSavedStereotypeSettings().outputTypes && this.getSavedStereotypeSettings().outputTypes[0]) {
+        let outputType = this.getSavedStereotypeSettings().outputTypes[0].type;
         if (outputType == "private") {
           statuses.push("private-o");
         } else if (outputType == "public") {
@@ -610,7 +631,7 @@ export class SGXComputation extends TaskStereotype {
   }
 
   isThereAtLeastOnePrivateInput() {
-    let savedData = JSON.parse(this.task.SGXComputation);
+    let savedData = this.getSavedStereotypeSettings();
     if (savedData.inputTypes) {
       for (let inputType of savedData.inputTypes) {
         if (inputType.type == "private") {
@@ -624,7 +645,7 @@ export class SGXComputation extends TaskStereotype {
   getTaskPrivateInputs() {
     let privateInputObjects = [];
     let inputObjects = this.getTaskInputObjects();
-    let savedData = JSON.parse(this.task.SGXComputation);
+    let savedData = this.getSavedStereotypeSettings();
     if (savedData.inputTypes && inputObjects.length > 0) {
       for (let inputObject of inputObjects) {
         let matchingInputs = savedData.inputTypes.filter(function( obj ) {
@@ -721,7 +742,7 @@ export class SGXComputation extends TaskStereotype {
 
     let groupTasks = this.getSGXComputationGroupTasks(this.getGroup());
     let groupTasksIds = groupTasks.map(a => a.id);
-    let savedData = JSON.parse(this.task.SGXComputation);
+    let savedData = this.getSavedStereotypeSettings();
     if (!this.areInputsAndOutputsNumbersCorrect()) {
       this.addUniqueErrorToErrorsList(existingErrors, "SGXComputation error: at least 1 input and exactly 1 output are required", [this.task.id], []);
     } else {

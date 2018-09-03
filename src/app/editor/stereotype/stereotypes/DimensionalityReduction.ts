@@ -16,6 +16,23 @@ export class DimensionalityReduction extends TaskStereotype {
     return super.getTitle();
   }
 
+  getSavedStereotypeSettings() {
+    if (this.task.DimensionalityReduction != null) {
+      return JSON.parse(this.task.DimensionalityReduction);
+    } else {
+      return null;
+    }
+  }
+
+  // Returns an object with properties:
+  // data
+  // projectionMatrix
+  getCurrentStereotypeSettings() {
+    let data = this.settingsPanelContainer.find('#DimensionalityReduction-dataSelect').val();
+    let projectionMatrix = this.settingsPanelContainer.find('#DimensionalityReduction-projectionMatrixSelect').val();
+    return {data: data, projectionMatrix: projectionMatrix};
+  }
+
   initStereotypePublicView() {
     super.initStereotypePublicView();
     this.highlightTaskInputAndOutputObjects();
@@ -32,8 +49,8 @@ export class DimensionalityReduction extends TaskStereotype {
     let outputObject = "";
     let selected = null;
 
-    if (this.task.DimensionalityReduction != null) {
-      selected = JSON.parse(this.task.DimensionalityReduction);
+    if (this.getSavedStereotypeSettings() != null) {
+      selected = this.getSavedStereotypeSettings();
     }
 
     for (let inputObject of this.getTaskInputObjects()) {
@@ -69,27 +86,28 @@ export class DimensionalityReduction extends TaskStereotype {
 
   saveStereotypeSettings() {
     if (this.areInputsAndOutputsNumbersCorrect()) {
-      let data = this.settingsPanelContainer.find('#DimensionalityReduction-dataSelect').val();
-      let projectionMatrix = this.settingsPanelContainer.find('#DimensionalityReduction-projectionMatrixSelect').val();
+      let currentStereotypeSettings = this.getCurrentStereotypeSettings();
+      let data = currentStereotypeSettings.data;
+      let projectionMatrix = currentStereotypeSettings.projectionMatrix;
       if (data == projectionMatrix) {
         this.settingsPanelContainer.find('#DimensionalityReduction-conditions-form-group').addClass('has-error');
         this.settingsPanelContainer.find('#DimensionalityReduction-data-form-group').addClass('has-error');
         this.settingsPanelContainer.find('#DimensionalityReduction-projectionMatrix-form-group').addClass('has-error');
         this.settingsPanelContainer.find('#DimensionalityReduction-conditions-help2').show();
-        this.initSaveAndRemoveButtons();
+        this.initRemoveButton();
         return;
       }
-      if (this.task.DimensionalityReduction == null) {
+      if (this.getSavedStereotypeSettings() == null) {
         this.addStereotypeToElement();
       }
-      this.task.DimensionalityReduction = JSON.stringify({data: data, projectionMatrix: projectionMatrix});
+      this.task.DimensionalityReduction = JSON.stringify(currentStereotypeSettings);
       this.settingsPanelContainer.find('.form-group').removeClass('has-error');
       this.settingsPanelContainer.find('.help-block').hide();
-      super.saveStereotypeSettings();
+      return true;
     } else {
       this.settingsPanelContainer.find('#DimensionalityReduction-conditions-form-group').addClass('has-error');
       this.settingsPanelContainer.find('#DimensionalityReduction-conditions-help').show();
-      this.initSaveAndRemoveButtons();
+      this.initRemoveButton();
     }
   }
   
@@ -97,7 +115,7 @@ export class DimensionalityReduction extends TaskStereotype {
     if (confirm('Are you sure you wish to remove the stereotype?')) {
       super.removeStereotype();
     } else {
-      this.initSaveAndRemoveButtons();
+      this.initRemoveButton();
       return false;
     }
   }
@@ -132,7 +150,7 @@ export class DimensionalityReduction extends TaskStereotype {
   }
 
   checkForErrors(existingErrors: ValidationErrorObject[]) {
-    let savedData = JSON.parse(this.task.DimensionalityReduction);
+    let savedData = this.getSavedStereotypeSettings();
     if (!this.areInputsAndOutputsNumbersCorrect()) {
       this.addUniqueErrorToErrorsList(existingErrors, "DimensionalityReduction error: exactly 2 inputs and 1 output are required", [this.task.id], []);
     }

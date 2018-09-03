@@ -49,51 +49,124 @@ export class ElementsHandler {
       });
       // Add click event listener to init and terminate stereotype processes
       this.eventBus.on('element.click', (e) => {
-        // If there is some other element being edited than clicked one, terminate edit process
-        let beingEditedElementHandler = this.taskHandlers.filter(function( obj ) {
-          return obj.task != e.element.businessObject && (obj.beingEdited && obj.stereotypeSelector != null || obj.stereotypeSelectorHidden);
-        });
-        if (beingEditedElementHandler.length > 0) {
-          beingEditedElementHandler[0].terminateStereotypeEditProcess();
+
+        if (is(e.element.businessObject, 'bpmn:Task') || is(e.element.businessObject, 'bpmn:DataObjectReference') || is(e.element.businessObject, 'bpmn:MessageFlow')) {
+
+          this.canvas.removeMarker(e.element.id, 'selected');
+          // If there is some other element being edited than clicked one, terminate edit process
+          let beingEditedTasktHandler = this.taskHandlers.filter(function( obj ) {
+            return obj.task != e.element.businessObject && (obj.beingEdited && obj.stereotypeSelector != null || obj.stereotypeSelectorHidden);
+          });
+          if (beingEditedTasktHandler.length > 0) {
+            beingEditedTasktHandler[0].checkForUnsavedChanges();
+          }
+          let beingEditedMessageFlowHandler = this.messageFlowHandlers.filter(function( obj ) {
+            return obj.messageFlow != e.element.businessObject && (obj.beingEdited && obj.stereotypeSelector != null || obj.stereotypeSelectorHidden);
+          });
+          if (beingEditedMessageFlowHandler.length > 0) {
+            beingEditedMessageFlowHandler[0].checkForUnsavedChanges();
+          }
+          let beingEditedDataObjectHandler = this.dataObjectHandlers.filter(function( obj ) {
+            return obj.dataObject != e.element.businessObject && (obj.beingEdited && obj.stereotypeSelector != null || obj.stereotypeSelectorHidden);
+          });
+          if (beingEditedDataObjectHandler.length > 0) {
+            beingEditedDataObjectHandler[0].checkForUnsavedChanges();
+          }
+
         }
-        let beingEditedMessageFlowHandler = this.messageFlowHandlers.filter(function( obj ) {
-          return obj.messageFlow != e.element.businessObject && (obj.beingEdited && obj.stereotypeSelector != null || obj.stereotypeSelectorHidden);
-        });
-        if (beingEditedMessageFlowHandler.length > 0) {
-          beingEditedMessageFlowHandler[0].terminateStereotypeEditProcess();
-        }
-        let beingEditedDataObjectHandler = this.dataObjectHandlers.filter(function( obj ) {
-          return obj.dataObject != e.element.businessObject && (obj.beingEdited && obj.stereotypeSelector != null || obj.stereotypeSelectorHidden);
-        });
-        if (beingEditedDataObjectHandler.length > 0) {
-          beingEditedDataObjectHandler[0].terminateStereotypeEditProcess();
-        }
-        
+
         // If clicked element is not yet being edited, start edit process
         let toBeEditedelementHandler = [];
-        if (is(e.element.businessObject, 'bpmn:Task')) {
-          toBeEditedelementHandler = this.taskHandlers.filter(function( obj ) {
-            return obj.task == e.element.businessObject && obj.beingEdited == false;
-          });
-        } else if (is(e.element.businessObject, 'bpmn:MessageFlow')) {
-          toBeEditedelementHandler = this.messageFlowHandlers.filter(function( obj ) {
-            return obj.messageFlow == e.element.businessObject && obj.beingEdited == false;
-          });
-        } else if (is(e.element.businessObject, 'bpmn:DataObjectReference')) {
-          toBeEditedelementHandler = this.dataObjectHandlers.filter(function( obj ) {
-            return obj.dataObject == e.element.businessObject && obj.beingEdited == false;
-          });
-        }
-        if (toBeEditedelementHandler.length > 0) {
-          if (!this.canEdit && (is(e.element.businessObject, 'bpmn:Task') || is(e.element.businessObject, 'bpmn:DataObjectReference') || is(e.element.businessObject, 'bpmn:MessageFlow'))) {
-            toBeEditedelementHandler[0].initPublicStereotypeView();
-          } else {
-            toBeEditedelementHandler[0].initStereotypeEditProcess();
+
+        if (!this.isAnotherTaskOrDataObjectBeingEdited(e.element.id)) {
+
+          this.canvas.addMarker(e.element.id, 'selected');
+          if (is(e.element.businessObject, 'bpmn:Task')) {
+            toBeEditedelementHandler = this.taskHandlers.filter(function( obj ) {
+              return obj.task == e.element.businessObject && obj.beingEdited == false;
+            });
+          } else if (is(e.element.businessObject, 'bpmn:MessageFlow')) {
+            toBeEditedelementHandler = this.messageFlowHandlers.filter(function( obj ) {
+              return obj.messageFlow == e.element.businessObject && obj.beingEdited == false;
+            });
+          } else if (is(e.element.businessObject, 'bpmn:DataObjectReference')) {
+            toBeEditedelementHandler = this.dataObjectHandlers.filter(function( obj ) {
+              return obj.dataObject == e.element.businessObject && obj.beingEdited == false;
+            });
           }
+          if (toBeEditedelementHandler.length > 0) {
+            if (!this.canEdit && (is(e.element.businessObject, 'bpmn:Task') || is(e.element.businessObject, 'bpmn:DataObjectReference') || is(e.element.businessObject, 'bpmn:MessageFlow'))) {
+              toBeEditedelementHandler[0].initPublicStereotypeView();
+            } else {
+              toBeEditedelementHandler[0].initStereotypeEditProcess();
+            }
+          }
+
         }
 
       });
     });
+  }
+
+  // Check if another element (compared to the input id) is being currently edited
+  isAnotherTaskOrDataObjectBeingEdited(elementId: string) {
+    let beingEditedElementHandler = this.taskHandlers.filter(function( obj ) {
+      return obj.beingEdited;
+    });
+    let beingEditedDataObjectHandler = this.dataObjectHandlers.filter(function( obj ) {
+      return obj.beingEdited;
+    });
+    let beingEditedMessageFlowHandler = this.messageFlowHandlers.filter(function( obj ) {
+      return obj.beingEdited;
+    });
+    if ((beingEditedElementHandler.length > 0 && beingEditedElementHandler[0].task.id !== elementId) || (beingEditedDataObjectHandler.length > 0 && beingEditedDataObjectHandler[0].dataObject.id !== elementId) || (beingEditedMessageFlowHandler.length > 0 && beingEditedMessageFlowHandler[0].messageFlow.id !== elementId)) {
+      return true;
+    }
+    return false;
+  }
+
+  initStereotypeSettingsPanel(elementHandler: any) {
+    if (elementHandler.stereotypes.length > 0 || elementHandler.tempStereotype != null) {
+      $(document).find('#stereotype-options-title').text(elementHandler.getName());
+      $(document).find('#stereotype-options-hide-button').off('click');
+      $(document).find('#stereotype-options-hide-button').on('click', () => {
+        elementHandler.checkForUnsavedChanges();
+      });
+      $(document).find('#stereotype-options-save-button').off('click');
+      $(document).find('#stereotype-options-save-button').on('click', () => {
+        this.saveStereotypes(elementHandler);
+      });
+      $(document).find('#stereotype-options-sidebar').removeClass('hidden');
+    }
+  }
+
+  terminateStereotypeSettingsPanel() {
+    $(document).find('#stereotype-options-title').text('');
+    $(document).find('#stereotype-options-hide-button').off('click');
+    $(document).find('#stereotype-options-sidebar').addClass('hidden');
+  }
+
+  saveStereotypes(elementHandler: any) {
+    let flag = false;
+    if (elementHandler.tempStereotype != null && !elementHandler.tempStereotype.saveStereotypeSettings()) {
+      flag = true;
+    }
+    for (let sType of elementHandler.stereotypes) {
+      if (!sType.saveStereotypeSettings()) {
+        flag = true;
+      }
+    }
+    if (!flag) {
+      elementHandler.terminateStereotypeEditProcess();
+      this.viewer.saveXML(
+        {
+          format: true
+        },
+        (err: any, xml: string) => {
+          this.updateModelContentVariable(xml);
+        }
+      );
+    }
   }
 
   // Create handler instance for each task / messageFlow of model
@@ -116,8 +189,10 @@ export class ElementsHandler {
               this.taskHandlers.push(new TaskHandler(this, node));
             }
             for (let sprocess of participant.processRef.flowElements.filter((e:any) => is(e, "bpmn:SubProcess"))) {
-              for (let node of sprocess.flowElements.filter((e:any) => is(e, "bpmn:Task"))) {
-                this.taskHandlers.push(new TaskHandler(this, node));
+              if (sprocess.flowElements) {
+                for (let node of sprocess.flowElements.filter((e:any) => is(e, "bpmn:Task"))) {
+                  this.taskHandlers.push(new TaskHandler(this, node));
+                }
               }
             }
             for (let node of participant.processRef.flowElements.filter((e:any) => is(e, "bpmn:DataObjectReference"))) {
@@ -198,6 +273,33 @@ export class ElementsHandler {
     }
   }
 
+  areThereUnsavedChangesOnModel() {
+    let beingEditedElementHandler = this.taskHandlers.filter(function( obj ) {
+      return obj.beingEdited;
+    });
+    let beingEditedDataObjectHandler = this.dataObjectHandlers.filter(function( obj ) {
+      return obj.beingEdited;
+    });
+    let beingEditedMessageFlowHandler = this.messageFlowHandlers.filter(function( obj ) {
+      return obj.beingEdited;
+    });
+    if (beingEditedElementHandler.length > 0) {
+      if (beingEditedElementHandler[0].areThereUnsavedTaskChanges()) {
+        return true;
+      }
+
+    }
+    if (beingEditedDataObjectHandler.length > 0) {
+      if (beingEditedDataObjectHandler[0].areThereUnsavedDataObjectChanges()) {
+        return true;
+      }
+    }
+    if (beingEditedMessageFlowHandler.length > 0) {
+      if (beingEditedMessageFlowHandler[0].areThereUnsavedMessageFlowChanges()) {
+        return true;
+      }
+    }
+  }
 
   /** Wrappers to access validationHandler functions*/
 
