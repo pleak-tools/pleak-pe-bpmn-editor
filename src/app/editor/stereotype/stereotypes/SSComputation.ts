@@ -594,7 +594,7 @@ export class SSComputation extends TaskStereotype {
       }
     }
     let taskOutputs = this.getTaskOutputObjects();
-    if (taskOutputs.map(a => a.id).indexOf(dataObjectId)) {
+    if (taskOutputs.map(a => a.id).indexOf(dataObjectId) !== -1) {
       statuses.push("private-o");
     }
     if (statuses.length > 0) {
