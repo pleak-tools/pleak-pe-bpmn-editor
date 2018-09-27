@@ -837,7 +837,7 @@ export class ValidationHandler {
   }
 
   // Find all data objects from the incoming path of input element (data object)
-  findIncomingPathDataObjects(incDataObjects: any, input: any, sourceInputId: String) {
+  findIncomingPathDataObjects(incDataObjects: any, input: any, sourceInputId: String, messageFlowInputs: any) {
     if (!input) {
       return;
     }
@@ -864,32 +864,36 @@ export class ValidationHandler {
         if (incDataObjects.filter(item => item == input.sourceRef.id).length > 5) {
           return;
         }
-        this.findIncomingPathDataObjects(incDataObjects, input.sourceRef, sourceInputId);
+        this.findIncomingPathDataObjects(incDataObjects, input.sourceRef, sourceInputId, messageFlowInputs);
       }
       if (input.incoming) {
         if (incDataObjects.filter(item => item == input.incoming.id).length > 5) {
           return;
         }
-        this.findIncomingPathDataObjects(incDataObjects, input.incoming, sourceInputId);
+        this.findIncomingPathDataObjects(incDataObjects, input.incoming, sourceInputId, messageFlowInputs);
       }
       if (input.source) {
         if (incDataObjects.filter(item => item == input.source.id).length > 5) {
           return;
         }
-        this.findIncomingPathDataObjects(incDataObjects, input.source, sourceInputId);
+        this.findIncomingPathDataObjects(incDataObjects, input.source, sourceInputId, messageFlowInputs);
       }
       if (input.type === "bpmn:StartEvent" || input.type === "bpmn:IntermediateCatchEvent") {
           for (let element of input.incoming) {
-            this.findIncomingPathDataObjects(incDataObjects, element, sourceInputId);
+            this.findIncomingPathDataObjects(incDataObjects, element, sourceInputId, messageFlowInputs);
           }
       }
       for (let element of input) {
         if (element.type === "bpmn:MessageFlow") {
-          this.findIncomingPathDataObjects(incDataObjects, element.source, sourceInputId);
+          messageFlowInputs.push(element.id);
+          if (messageFlowInputs.filter(item => item == element.id).length > 5) {
+            return;
+          }
+          this.findIncomingPathDataObjects(incDataObjects, element.source, sourceInputId, messageFlowInputs);
         }
         if (element.sourceRef) {
           if (element.type !== "bpmn:SequenceFlow") {
-            this.findIncomingPathDataObjects(incDataObjects, element.sourceRef, sourceInputId);
+            this.findIncomingPathDataObjects(incDataObjects, element.sourceRef, sourceInputId, messageFlowInputs);
           }
         }
         if (element.incoming) {
@@ -897,7 +901,7 @@ export class ValidationHandler {
             return;
           }
           if (element.type !== "bpmn:SequenceFlow") {
-            this.findIncomingPathDataObjects(incDataObjects, element.incoming, sourceInputId);
+            this.findIncomingPathDataObjects(incDataObjects, element.incoming, sourceInputId, messageFlowInputs);
           }
         }
         if (element.source) {
@@ -905,7 +909,7 @@ export class ValidationHandler {
             return;
           }
           if (element.type !== "bpmn:SequenceFlow") {
-            this.findIncomingPathDataObjects(incDataObjects, element.source, sourceInputId);
+            this.findIncomingPathDataObjects(incDataObjects, element.source, sourceInputId, messageFlowInputs);
           }
         }
       }
@@ -1138,7 +1142,8 @@ export class ValidationHandler {
   // Return all data objects from the incoming path of element
   getDataObjectsOfIncomingPathByInputElement(inputElement: any) {
     let incDataObjectIds = [];
-    this.findIncomingPathDataObjects(incDataObjectIds, inputElement.incoming, inputElement.id);
+    let messageFlowInputs = [];
+    this.findIncomingPathDataObjects(incDataObjectIds, inputElement.incoming, inputElement.id, messageFlowInputs);
     let incDataObjects = [];
     for (let id of $.unique(incDataObjectIds)) {
       incDataObjects.push(this.registry.get(id));

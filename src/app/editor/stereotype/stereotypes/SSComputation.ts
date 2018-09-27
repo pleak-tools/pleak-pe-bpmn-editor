@@ -136,7 +136,13 @@ export class SSComputation extends TaskStereotype {
       let groupInputNames = [];
       for (let input of groupInputs) {
         for (let inp of input.inputs) {
-          groupInputNames.push(this.registry.get(inp.id).businessObject.name);
+          if (this.registry.get(inp.id)) {
+            if (this.registry.get(inp.id).businessObject.name) {
+              groupInputNames.push(this.registry.get(inp.id).businessObject.name);
+            } else {
+              groupInputNames.push("unnamed");
+            }
+          }
         }
       }
       let groupInputNamesStr = groupInputNames.sort().toString();
@@ -147,7 +153,13 @@ export class SSComputation extends TaskStereotype {
 
           let inputNamesStr = [];
           for (let input of inputNames) {
-            inputNamesStr.push(this.registry.get(input.id).businessObject.name);
+            if (this.registry.get(input.id)) {
+              if (this.registry.get(input.id).businessObject.name) {
+                inputNamesStr.push(this.registry.get(input.id).businessObject.name);
+              } else {
+                inputNamesStr.push("unnamed");
+              }
+            }
           }
 
           let inputSel = '';
