@@ -39,6 +39,8 @@ export class EditorComponent implements OnInit {
 
   @Input() authenticated: Boolean;
 
+  private loaded: boolean = false;
+
   private viewer: NavigatedViewer;
 
   private modelId;
@@ -54,6 +56,10 @@ export class EditorComponent implements OnInit {
 
   isAuthenticated() {
     return this.authenticated;
+  }
+
+  isLoaded() {
+    return this.loaded;
   }
 
   getChangesInModelStatus() {
@@ -127,6 +133,7 @@ export class EditorComponent implements OnInit {
 
       let elementsHandler = new ElementsHandler(this.viewer, diagram, this, this.canEdit());
       this.addEventHandlers(elementsHandler);
+      this.loaded = true;
     }
   }
 
