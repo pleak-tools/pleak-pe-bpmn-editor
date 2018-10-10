@@ -247,6 +247,7 @@ export class MessageFlowHandler {
         this.tempStereotype = st;
       }
     }
+    this.initStereotypeSettingsPanel();
   }
 
   // Add new stereotype to the messageFlow (save)

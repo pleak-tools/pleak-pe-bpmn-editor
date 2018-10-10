@@ -406,7 +406,7 @@ export class FunSSComputation extends TaskStereotype {
     return groupTasks;
   }
 
-  getFunSSComputationGroupOutputs(group: String) {
+  getGroupOutputs(group: String) {
     this.init();
     this.loadAllFunSSComputationGroupsTasks();
     let groupTasks = this.getFunSSComputationGroupTasks(group);
@@ -542,7 +542,7 @@ export class FunSSComputation extends TaskStereotype {
       let flag = false;
       for (let incTask of this.getTasksOfIncomingPath()) {
         if (this.isOneOfInputObjectsInTaskStereotypeOutputs(incTask, [this.registry.get(this.getSavedStereotypeSettings().shareOfFunction), this.registry.get(JSON.parse(this.registry.get(this.getGroupSecondElementId()).businessObject.FunSSComputation).shareOfFunction)]) && this.areInputsFromTaskWithStereotypeAccepted(incTask)) {
-          let outputElementsNames = this.getTaskOutputObjectsBasedOnTaskStereotype(incTask).map(a => a.businessObject.name.trim());
+          let outputElementsNames = this.elementHandler.elementsHandler.getTaskHandlerByTaskId(incTask).getTaskOutputObjectsBasedOnTaskStereotype().map(a => a.businessObject.name.trim());
           if (outputElementsNames.indexOf(shareOfFunctionElementName) !== -1 && outputElementsNames.indexOf(secondGroupTaskShareOfFunctionElementName) !== -1) {
             flag = true;
           }

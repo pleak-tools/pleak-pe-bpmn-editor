@@ -1,5 +1,3 @@
-import * as Rx from 'rxjs/Rx';
-import { Subject } from "rxjs/Subject";
 import * as Viewer from 'bpmn-js/lib/NavigatedViewer';
 
 import { TaskHandler } from "./task-handler";
@@ -28,6 +26,8 @@ export class ElementsHandler {
   diagram: String;
   parent: any;
   canEdit: Boolean;
+
+  private changesInModel: boolean = true;
 
   validationHandler: ValidationHandler;
 
@@ -212,8 +212,15 @@ export class ElementsHandler {
   }
 
   updateModelContentVariable(xml: String) {
-    this.parent.updateModelContentVariable(xml);
-    this.validationHandler.hideSimpleDisclosureAnalysisMenuOnModelChange();
+    if (xml) {
+      this.parent.file.content = xml;
+      if (this.parent.file.content != this.parent.lastContent) {
+        this.setModelChanged(true);
+        this.validationHandler.simpleDisclosureAnalysisHandler.terminate();
+        this.validationHandler.dataDependenciesAnalysisHandler.terminate();
+        this.parent.modelChanged();
+      }
+    }
   }
 
   // Get taskHandler instance of task by task id
@@ -268,9 +275,7 @@ export class ElementsHandler {
   }
 
   initValidation() {
-    if (this.parent.getChangesInModelStatus()) {
-      this.checkForStereotypeErrorsAndShowErrorsList();
-    }
+    this.checkForStereotypeErrorsAndShowErrorsList();
   }
 
   areThereUnsavedChangesOnModel() {
@@ -299,6 +304,14 @@ export class ElementsHandler {
         return true;
       }
     }
+  }
+
+  setModelChanged(status: boolean) {
+    this.changesInModel = status;
+  }
+
+  getModelChanged() {
+    return this.changesInModel;
   }
 
   /** Wrappers to access validationHandler functions*/

@@ -1,7 +1,7 @@
 import * as Viewer from 'bpmn-js/lib/NavigatedViewer';
 
 import { ElementsHandler } from "./elements-handler";
-import { ValidationHandler, ValidationErrorObject } from "./validation-handler";
+import { ValidationHandler } from "./validation-handler";
 import { DataObjectStereotype } from "../stereotype/data-object-stereotype";
 import { PKPublic } from "../stereotype/stereotypes/PKPublic";
 import { PKPrivate } from "../stereotype/stereotypes/PKPrivate";
@@ -363,6 +363,7 @@ export class DataObjectHandler {
         this.tempStereotype = st;
       }
     }
+    this.initStereotypeSettingsPanel();
   }
 
   // Add new stereotype to the dataObject (save)

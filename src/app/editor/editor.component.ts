@@ -46,7 +46,6 @@ export class EditorComponent implements OnInit {
   private modelId;
   private viewerType;
 
-  private changesInModel: boolean = true;
   private lastContent: String = '';
 
   private fileId: Number = null;
@@ -60,14 +59,6 @@ export class EditorComponent implements OnInit {
 
   isLoaded() {
     return this.loaded;
-  }
-
-  getChangesInModelStatus() {
-    return this.changesInModel;
-  }
-
-  setChangesInModelStatus(status: boolean) {
-    this.changesInModel = status;
   }
 
   // Load model
@@ -250,7 +241,6 @@ export class EditorComponent implements OnInit {
                   self.file.md5Hash = data.md5Hash;
                   self.lastContent = self.file.content;
                   self.fileId = data.id;
-                  self.setChangesInModelStatus(true);
                 } else if (success.status === 401) {
                    $('#loginModal').modal();
                 }
@@ -260,16 +250,6 @@ export class EditorComponent implements OnInit {
             );
           }
         });
-    }
-  }
-
-  updateModelContentVariable(xml: String) {
-    if (xml) {
-      this.file.content = xml;
-      if (this.file.content != this.lastContent) {
-        this.setChangesInModelStatus(true);
-        this.modelChanged();
-      }
     }
   }
 

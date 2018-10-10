@@ -1,13 +1,11 @@
-import * as Rx from 'rxjs/Rx';
-import { Subject } from "rxjs/Subject";
 import * as Viewer from 'bpmn-js/lib/NavigatedViewer';
 
 import { ElementsHandler } from "./elements-handler";
 import { TaskHandler } from "./task-handler";
 import { MessageFlowHandler } from "./message-flow-handler";
 import { DataObjectHandler } from "./data-object-handler";
-import { error } from 'util';
-import { element } from 'protractor';
+import { SimpleDisclosureAnalysisHandler } from "./simple-disclosure-analysis-handler";
+import { DataDependenciesAnalysisHandler } from './data-dependencies-analysis-handler';
 
 declare let $: any;
 let is = (element, type) => element.$instanceOf(type);
@@ -36,7 +34,14 @@ export class ValidationHandler {
   canvas: any;
   diagram: String;
 
+  analysisPanel: any;
+  errorsList: any;
+  errorsPanel: any;
+  successPanel: any;
+
   elementsHandler: ElementsHandler;
+  simpleDisclosureAnalysisHandler: SimpleDisclosureAnalysisHandler;
+  dataDependenciesAnalysisHandler: DataDependenciesAnalysisHandler;
 
   taskHandlers: TaskHandler[] = [];
   messageFlowHandlers: MessageFlowHandler[] = [];
@@ -56,9 +61,17 @@ export class ValidationHandler {
         this.removeAllErrorHighlights();
       });
     });
+
+    this.analysisPanel = $('#analysis');
+    this.errorsList = $('#errors-list');
+    this.errorsPanel = $('#model-errors');
+    this.successPanel = $('#model-correct');
+
     this.taskHandlers = this.elementsHandler.getAllModelTaskHandlers();
     this.messageFlowHandlers = this.elementsHandler.getAllModelMessageFlowHandlers();
     this.dataObjectHandlers = this.elementsHandler.getAllModelDataObjectHandlers();
+    this.simpleDisclosureAnalysisHandler = new SimpleDisclosureAnalysisHandler(this.viewer, this.diagram, this.elementsHandler, this);
+    this.dataDependenciesAnalysisHandler = new DataDependenciesAnalysisHandler(this.viewer, this.diagram, this.elementsHandler, this);
   }
 
   // Add validation errors to the model validation errors list
@@ -71,10 +84,14 @@ export class ValidationHandler {
     }
   }
 
+  isAnalysisResultsPanelHidden() {
+    return this.successPanel.hasClass('hidden') && this.errorsPanel.hasClass('hidden');
+  }
+
   // Check for errors in task stereotypes
   checkForErrorsInStereotypes(stereotypes: any, existingErrors: ValidationErrorObject[]) {
     for (let stereotype of stereotypes) {
-      let errorsInStereotype = stereotype.checkForErrors(existingErrors);
+      stereotype.checkForErrors(existingErrors);
     }
   }
 
@@ -119,9 +136,11 @@ export class ValidationHandler {
 
   // Init validation checks for all stereotypes
   checkForStereotypeErrorsAndShowErrorsList() {
-    let errors: ValidationErrorObject[] = [];
-    this.errorChecks = {dataObjects: false, tasks: false, messageFlows: false};
-    this.checkTaskErrors(errors);
+    if (this.areThereChangesInModel() || this.isAnalysisResultsPanelHidden()) {
+      let errors: ValidationErrorObject[] = [];
+      this.errorChecks = {dataObjects: false, tasks: false, messageFlows: false};
+      this.checkTaskErrors(errors);
+    }
   }
 
   showErrorsIfChecksFinished(errors) {
@@ -135,11 +154,7 @@ export class ValidationHandler {
     let areThereAnyErrorsOnModel = false;
     let areThereAnyWarningsOnModel = false;
     // Empty previous errors list
-    $('#errors-list').html('');
-    $('#model-correct').addClass('hidden');
-    this.removeAllErrorHighlights();
-    this.removeErrorsListClickHandlers();
-    this.numberOfErrorsInModel = 0;
+    this.emptyErrorsList();
     // Create new errors list
     if (errors.length > 0) {
       this.numberOfErrorsInModel = errors.length;
@@ -155,56 +170,45 @@ export class ValidationHandler {
           color = "orange";
         }
         errors_list += '<li class="error-list-element error-'+i+'" style="font-size:16px; color:' + color + '; cursor:pointer;">'+error.error+'</li>';
-        $('#errors-list').on('click', '.error-' + i, (e) => {
+        this.errorsList.on('click', '.error-' + i, (e) => {
           this.highlightObjectWithErrorByIds(error.object, error.highlight);
           $(e.target).css("font-weight", "bold");
         });
         i++;
       }
       errors_list += '</ol>';
-      $('#errors-list').html(errors_list);
+      this.errorsList.html(errors_list);
       $('.analysis-spinner').hide();
-      $('#model-errors').removeClass('hidden');
+      this.errorsPanel.removeClass('hidden');
     }
     if (areThereAnyErrorsOnModel) {
-      $('#analysis').addClass('hidden');
-      $('#analysis').off('click', '#analyze-simple-disclosure');
-      $('#analysis').off('click', '#analyze-dependencies');
-      this.setChangesInModelStatus(false);
+      this.analysisPanel.addClass('hidden');
     } else {
       $('.analysis-spinner').hide();
       if (!areThereAnyWarningsOnModel) {
-        $('#errors-list').html('');
-        $('#model-errors').addClass('hidden');
-        $('#model-correct').removeClass('hidden');
+        this.errorsList.html('');
+        this.errorsPanel.addClass('hidden');
+        this.successPanel.removeClass('hidden');
       }
-      $('#analysis').removeClass('hidden');
-      $('#analysis').off('click', '#analyze-simple-disclosure');
-      $('#analysis').off('click', '#analyze-dependencies');
-      $('#analysis').on('click', '#analyze-simple-disclosure', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        this.createSimpleDisclosureReportTable();
-      });
-      $('#analysis').on('click', '#analyze-dependencies', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        this.createDataDependenciesAnalysisReportTable();
-      });
-      this.setChangesInModelStatus(false);
+      this.analysisPanel.removeClass('hidden');
+      this.simpleDisclosureAnalysisHandler.init();
+      this.dataDependenciesAnalysisHandler.init();
     }
+    this.setChangesInModelStatus(false);
   }
 
-  // Hide simple disclosure menu (button) on model change, as the analysis report might have been changed
-  hideSimpleDisclosureAnalysisMenuOnModelChange() {
-    $('#model-correct').addClass('hidden');
-    $('#analysis').addClass('hidden');
+  emptyErrorsList() {
+    this.errorsList.html('');
+    this.successPanel.addClass('hidden');
+    this.removeAllErrorHighlights();
+    this.removeErrorsListClickHandlers();
+    this.numberOfErrorsInModel = 0;
   }
 
   // Remove click handler of valiation error list links
   removeErrorsListClickHandlers() {
     for (let j=0; j < this.numberOfErrorsInModel; j++) {
-      $('#errors-list').off('click', '.error-' + j);
+      this.errorsList.off('click', '.error-' + j);
     }
   }
 
@@ -239,102 +243,7 @@ export class ValidationHandler {
     this.canvas.removeMarker(elementId, 'highlight-specific-error');
   }
 
-  // Compare object name properties
-  compareNames(a: any, b: any) {
-    if (a.name < b.name)
-      return -1;
-    if (a.name > b.name)
-      return 1;
-    return 0;
-  }
-
-  // Check if task has a stereotype (by stereotype name)
-  messageFlowHasStereotype(messageFlow: any, stereotype: String) {
-    if (messageFlow && messageFlow[(<any>stereotype)]) {
-      return true;
-    } else {
-      return false;
-    }
-  }
-
-  // Return list of lanes and pools with their names
-  getListOfModelLanesAndPoolsObjects() {
-    let lanesAndPools = this.getModelLanesAndPools();
-    let lanesAndPoolsObjects = [];
-    let index = 1;
-    let index2 = 1;
-    for (let laneOrPool of lanesAndPools) {
-      if (this.registry.get(laneOrPool.id).businessObject.name) {
-        lanesAndPoolsObjects.push({id: laneOrPool.id, name: this.registry.get(laneOrPool.id).businessObject.name.trim(), children: laneOrPool.children});
-      } else {
-        if (this.registry.get(laneOrPool.id).businessObject && this.registry.get(laneOrPool.id).type === "bpmn:Participant") {
-          lanesAndPoolsObjects.push({id: laneOrPool.id, name: "Unnamed pool " + index, children: laneOrPool.children});
-          index++;
-        }
-        if (this.registry.get(laneOrPool.id).type === "bpmn:Lane") {
-          if (this.registry.get(laneOrPool.id).parent.businessObject.name) {
-            lanesAndPoolsObjects.push({id: laneOrPool.id, name: this.registry.get(laneOrPool.id).parent.businessObject.name.trim(), children: laneOrPool.children});
-          } else if (this.registry.get(laneOrPool.id).parent.businessObject)  {
-            lanesAndPoolsObjects.push({id: laneOrPool.id, name: "Unnamed lane " + index2, children: laneOrPool.children});
-            index2++;
-          }
-        }
-      }
-    }
-    lanesAndPoolsObjects = lanesAndPoolsObjects.sort(this.compareNames);
-    return lanesAndPoolsObjects;
-  }
-
-  // Return list of data objects (unique by their name)
-  getListOfModelUniqueDataObjects() {
-    let dataObjectHandlers = this.elementsHandler.getAllModelDataObjectHandlers();
-    let uniqueDataObjectsByName = [];
-    for (let dataObjectHandler of dataObjectHandlers) {
-      let visibleTo = $.unique(dataObjectHandler.getLanesAndPoolsDataObjectIsVisibleTo());
-      let visibility = dataObjectHandler.getVisibilityStatus();
-      if (dataObjectHandler.dataObject.name) {
-        let dataObjectAlreadyAdded = uniqueDataObjectsByName.filter(( obj ) => {
-          return obj.name.trim() == dataObjectHandler.dataObject.name.trim();
-        });
-        if (dataObjectAlreadyAdded.length > 0) {
-          dataObjectAlreadyAdded[0].visibleTo = $.unique(dataObjectAlreadyAdded[0].visibleTo.concat(visibleTo));
-          dataObjectAlreadyAdded[0].visibility = $.unique(dataObjectAlreadyAdded[0].visibility.concat(visibility));
-        } else {
-          uniqueDataObjectsByName.push({name: dataObjectHandler.dataObject.name.trim(), visibleTo: visibleTo, visibility: visibility});
-        }
-      }
-    }
-    uniqueDataObjectsByName = uniqueDataObjectsByName.sort(this.compareNames);
-    return uniqueDataObjectsByName;
-  }
-
-  // Return list of dataObjects that are moved over MessageFlow / SecureChannel
-  getListOfModeldataObjectsAndMessageFlowConnections() {
-    let messageFlowHandlers = this.elementsHandler.getAllModelMessageFlowHandlers();
-    let messageFlowObjects = [];
-    for (let messageFlowHandler of messageFlowHandlers) {
-      let messageFlowOutputNames = messageFlowHandler.getMessageFlowOutputObjects().map(a => a.businessObject.name.trim());
-      let connectedDataObjects = messageFlowOutputNames;
-      let messageFlow = messageFlowHandler.messageFlow;
-      let messageFlowType = "MF";
-      if (this.messageFlowHasStereotype(messageFlow, "SecureChannel") || this.messageFlowHasStereotype(messageFlow, "CommunicationProtection")) {
-        messageFlowType = "S";
-      }
-      for (let dObject of connectedDataObjects) {
-        let oTypes = [];
-        oTypes.push(messageFlowType);
-        let messageFlowAlreadyInList = messageFlowObjects.filter(( obj ) => {
-          return obj.dataObject == dObject;
-        });
-        if (messageFlowAlreadyInList.length === 0) {
-          messageFlowObjects.push({dataObject: dObject, types: oTypes});
-        } else {
-          messageFlowAlreadyInList[0].types = $.unique(messageFlowAlreadyInList[0].types.concat(oTypes));
-        }
-      }
-    }
-    return messageFlowObjects;
-  }
+  /** Validation functions */
 
   // Return unique objects from array by their id property
   getUniqueObjectsByIdFromArray(array: any[]) {
@@ -363,239 +272,6 @@ export class ValidationHandler {
     }
     return uniqueObjects;
   }
-
-  // Return information about data objects that are related to each other
-  getDataObjectsDependencies() {
-    let dependencies = [];
-    let allDataObjectHandlers = this.elementsHandler.getAllModelDataObjectHandlers();
-    for (let dataObjectHandler of allDataObjectHandlers) {
-      for (let parentTask of dataObjectHandler.getDataObjectIncomingParentTasks()) {
-        let parentOutputs = this.elementsHandler.getTaskHandlerByTaskId(parentTask.id).getTaskOutputObjects();
-        for (let dO of parentOutputs) {
-          let dataObjectAlreadyInList = dependencies.filter(( obj ) => {
-            return obj.name === dO.businessObject.name.trim();
-          });
-          if (dataObjectAlreadyInList.length !== 0) {
-            //if (this.getDataObjectsOfIncomingPathByInputElement(dO).length > 0) {
-              dataObjectAlreadyInList[0].connections = $.unique(dataObjectAlreadyInList[0].connections.concat(this.getDataObjectsOfIncomingPathByInputElement(dO).map(a=>a.businessObject.name.trim())));
-            //}
-          } else {
-            //if (this.getDataObjectsOfIncomingPathByInputElement(dO).length > 0 && dO.businessObject.name) {
-            if (dO.businessObject.name) {
-              dependencies.push({name: dO.businessObject.name.trim(), connections: $.unique(this.getDataObjectsOfIncomingPathByInputElement(dO).map(a=>a.businessObject.name.trim()))});
-            }
-          }
-        }
-      }
-    }
-    dependencies = dependencies.sort(this.compareNames);
-    return dependencies;
-  }
-
-  // Return list of unique (by name) data objects on the model
-  getListOfModelUniqueDataObjectNames() {
-    let dataObjectHandlers = this.elementsHandler.getAllModelDataObjectHandlers();
-    let uniqueDataObjectsByName = [];
-    for (let dataObjectHandler of dataObjectHandlers) {
-      if (dataObjectHandler.dataObject.name) {
-        if (uniqueDataObjectsByName.indexOf(dataObjectHandler.dataObject.name.trim()) === -1) {
-          uniqueDataObjectsByName.push(dataObjectHandler.dataObject.name.trim());
-        }
-      }
-    }
-    return uniqueDataObjectsByName.sort();
-  }
-
-  getOutgoingDataObjectInstancesByName(dataObjectName: String) {
-    let allDataObjectHandlers = this.elementsHandler.getAllModelDataObjectHandlers();
-    let dataObjects = [];
-    for (let dataObjectHandler of allDataObjectHandlers) {
-      for (let parentTask of dataObjectHandler.getDataObjectIncomingParentTasks()) {
-        let parentOutputs = this.elementsHandler.getTaskHandlerByTaskId(parentTask.id).getTaskOutputObjects();
-        for (let dO of parentOutputs) {
-          if (dO.businessObject.name) {
-            let dOName = dO.businessObject.name.trim();
-            if (dOName == dataObjectName) {
-              dataObjects.push(dO);
-            }
-          }
-        }
-      }
-    }
-    return dataObjects;
-  }
-
-  getIncomingDataObjectInstancesByName(dataObjectName: String) {
-    let allDataObjectHandlers = this.elementsHandler.getAllModelDataObjectHandlers();
-    let dataObjects = [];
-    for (let dataObjectHandler of allDataObjectHandlers) {
-      for (let parentTask of dataObjectHandler.getDataObjectOutgoingParentTasks()) {
-        let parentOutputs = this.elementsHandler.getTaskHandlerByTaskId(parentTask.id).getTaskInputObjects();
-        for (let dO of parentOutputs) {
-          if (dO.businessObject.name) {
-            let dOName = dO.businessObject.name.trim();
-            if (dOName == dataObjectName) {
-              dataObjects.push(dO);
-            }
-          }
-        }
-      }
-    }
-    return dataObjects;
-  }
-
-  // Check if two data objects (by name) have at least one same parent (by name)
-  isThereACommonParentForDataObjects(dataObject1Name: String, dataObject2Name: String) {
-    let dataObject1Instances = this.getOutgoingDataObjectInstancesByName(dataObject1Name);
-    let dataObject2Instances = this.getIncomingDataObjectInstancesByName(dataObject2Name);
-    let dO1Parents = [];
-    let dO2Parents = [];
-    for (let dO1Instance of dataObject1Instances) {
-      let dO1InstanceParents = this.elementsHandler.getDataObjectHandlerByDataObjectId(dO1Instance.id).getDataObjectIncomingParentTasks();
-      dO1Parents = dO1Parents.concat(dO1InstanceParents);
-    }
-    for (let dO2Instance of dataObject2Instances) {
-      let dO2InstanceParents = this.elementsHandler.getDataObjectHandlerByDataObjectId(dO2Instance.id).getDataObjectOutgoingParentTasks();
-      dO2Parents = dO2Parents.concat(dO2InstanceParents);
-    }
-    for (let parent1 of dO1Parents) {
-      for (let parent2 of dO2Parents) {
-        let p1 = this.registry.get(parent1.id).businessObject.name.trim();
-        let p2 = this.registry.get(parent2.id).businessObject.name.trim();
-        if (p1 == p2) {
-          return true;
-        }
-      }
-    }
-    return false;
-  }
-
-  // Create data dependencies report table
-  createDataDependenciesAnalysisReportTable() {
-    let uniqueDataObjectNames = this.getListOfModelUniqueDataObjectNames();
-    let dependencies = this.getDataObjectsDependencies();
-    let rows = uniqueDataObjectNames.length;
-    let columns = uniqueDataObjectNames.length;
-
-    let table = "";
-    table += '<table class="table" style="text-align:center">';
-    table += '<tr><th style="background-color:#f5f5f5; text-align:center;">#</th>';
-    for (let c = 0; c < columns; c++) {
-      table += '<th style="background-color:#f5f5f5; text-align:center;">' + uniqueDataObjectNames[c] + '</th>';
-    }
-    table += '</tr>';
-    for (let r = 0; r < rows; r++) {
-      table += '<tr><td style="background-color:#f5f5f5;"><b>' + uniqueDataObjectNames[r] + '</b></td>';
-      for (let c = 0; c < columns; c++) {
-        let value = '-';
-        if (uniqueDataObjectNames[r] != uniqueDataObjectNames[c]) {
-          let hasRelations = dependencies.filter(( obj ) => {
-            return obj.name === uniqueDataObjectNames[r];
-          });
-          if (hasRelations.length !== 0) {
-            if (hasRelations[0].connections.indexOf(uniqueDataObjectNames[c]) !== -1) {
-              if (this.isThereACommonParentForDataObjects(uniqueDataObjectNames[r], uniqueDataObjectNames[c])) {
-                value = 'D';
-              } else {
-                value = 'I';
-              }
-            }
-          }
-        }
-        if (uniqueDataObjectNames[r] == uniqueDataObjectNames[c] && value == '-') {
-          value = '#';
-        }
-        table += '<td>'+value+'</td>';
-      }
-      table += '</tr>';
-    }
-    table += '</tabel>';
-    $('#dataDependenciesAnalysisReportModal').find('#report-table').html('');
-    $('#dataDependenciesAnalysisReportModal').find('#report-table').html(table);
-    $('#dataDependenciesAnalysisReportModal').find('#dependenciesAnalysisReportTitle').text('');
-    $('#dataDependenciesAnalysisReportModal').find('#dependenciesAnalysisReportTitle').text(this.elementsHandler.parent.file.title);
-    $('#dataDependenciesAnalysisReportModal').modal();
-  }
-
-  // Create simple disclosure report table
-  createSimpleDisclosureReportTable() {
-    let uniqueLanesAndPools = this.getListOfModelLanesAndPoolsObjects();
-    let uniqueDataObjectsByName = this.getListOfModelUniqueDataObjects();
-    let dataObjectMessageFlowConnections = this.getListOfModeldataObjectsAndMessageFlowConnections();
-    let rows = uniqueLanesAndPools.length;
-    let columns = uniqueDataObjectsByName.length;
-
-    let table = "";
-    table += '<table class="table" style="text-align:center">';
-    table += '<tr><th style="background-color:#f5f5f5; text-align:center;">#</th>';
-    for (let c = 0; c < columns; c++) {
-      table += '<th style="background-color:#f5f5f5; text-align:center;">' + uniqueDataObjectsByName[c].name + '</th>';
-    }
-    table += '</tr>';
-    for (let r = 0; r < rows; r++) {
-      table += '<tr><td style="background-color:#f5f5f5;"><b>' + uniqueLanesAndPools[r].name + '</b></td>';
-      for (let c = 0; c < columns; c++) {
-        if (uniqueDataObjectsByName[c].visibleTo.indexOf(uniqueLanesAndPools[r].id) !== -1) {
-          let visibility = "";
-          let visibilityDataOriginal = $.unique(uniqueDataObjectsByName[c].visibility);
-          let visibilityData = [];
-          for (let vData of visibilityDataOriginal) {
-            visibilityData.push(vData.split("-")[0]);
-          }
-          visibilityData = $.unique(visibilityData);
-          if (visibilityData.length === 1) {
-            if (visibilityData[0] == "private") {
-              visibility = "H";
-            } else if (visibilityData[0] == "public") {
-              visibility = "V";
-            }
-          } else if (visibilityData.length > 1) {
-            visibility = "V";
-            for (let data of visibilityDataOriginal) {
-              let source = data.split('-')[1];
-              if (source == "o") {
-                if (data.split('-')[0] == "private") {
-                  visibility = "H";
-                } else if (data.split('-')[0] == "public") {
-                  visibility = "V";
-                }
-              }
-            }
-          } else if (visibilityData.length === 0) {
-            visibility = "V";
-          }
-          table += '<td>' + visibility + '</td>';
-        } else {
-          table += '<td>-</td>';
-        }
-        
-      }
-      table += '</tr>';
-    }
-
-    if (dataObjectMessageFlowConnections) {
-      table += '<tr><td colspan="' + (columns+1) + '"></td></tr><tr><td>Shared over</td>'
-      for (let c2 = 0; c2 < columns; c2++) {
-        let messageFlowAlreadyInList = dataObjectMessageFlowConnections.filter(( obj ) => {
-          return obj.dataObject == uniqueDataObjectsByName[c2].name;
-        });
-        if (messageFlowAlreadyInList.length !== 0) {
-          table += '<td>' + messageFlowAlreadyInList[0].types + '</td>';
-        } else {
-          table += '<td>-</td>';
-        }
-      }
-      table += '</tr>';
-    }
-    table += '</tabel>';
-    $('#simpleDisclosureReportModal').find('#report-table').html('');
-    $('#simpleDisclosureReportModal').find('#report-table').html(table);
-    $('#simpleDisclosureReportModal').find('#simpleDisclosureReportTitle').text('');
-    $('#simpleDisclosureReportModal').find('#simpleDisclosureReportTitle').text(this.elementsHandler.parent.file.title);
-    $('#simpleDisclosureReportModal').modal();
-  }
-
-  /** Validation functions */
 
   // Return the list of lanes and pools
   getModelLanesAndPools() {
@@ -821,7 +497,7 @@ export class ValidationHandler {
     if (taskId) {
       let task = this.registry.get(taskId);
       if (task) {
-        let outputElements = this.getTaskOutputObjectsBasedOnTaskStereotype(task.id);
+        let outputElements = this.elementsHandler.getTaskHandlerByTaskId(task.id).getTaskOutputObjectsBasedOnTaskStereotype();
         if (outputElements) {
           let outputElementsNames = outputElements.map(a => a.businessObject.name.trim());
           let inputObjectsNames = inputObjects.map(a => a.businessObject.name.trim());
@@ -834,86 +510,6 @@ export class ValidationHandler {
       }
     }
     return false;
-  }
-
-  // Find all data objects from the incoming path of input element (data object)
-  findIncomingPathDataObjects(incDataObjects: any, input: any, sourceInputId: String, messageFlowInputs: any) {
-    if (!input) {
-      return;
-    }
-    if (input.id != sourceInputId) {
-      if (input.type === "bpmn:Task") {
-        let flag = false;
-        for (let element of input.incoming) {
-          if (element.type === "bpmn:DataInputAssociation") {
-            flag = true;
-            break;
-          }
-        }
-        if (!flag) {
-          return;
-        }
-      }
-      if (input.type === "bpmn:SequenceFlow") {
-        return;
-      }
-      if (input.type === "bpmn:DataObjectReference") {
-        incDataObjects.push(input.id);
-      }
-      if (input.sourceRef) {
-        if (incDataObjects.filter(item => item == input.sourceRef.id).length > 5) {
-          return;
-        }
-        this.findIncomingPathDataObjects(incDataObjects, input.sourceRef, sourceInputId, messageFlowInputs);
-      }
-      if (input.incoming) {
-        if (incDataObjects.filter(item => item == input.incoming.id).length > 5) {
-          return;
-        }
-        this.findIncomingPathDataObjects(incDataObjects, input.incoming, sourceInputId, messageFlowInputs);
-      }
-      if (input.source) {
-        if (incDataObjects.filter(item => item == input.source.id).length > 5) {
-          return;
-        }
-        this.findIncomingPathDataObjects(incDataObjects, input.source, sourceInputId, messageFlowInputs);
-      }
-      if (input.type === "bpmn:StartEvent" || input.type === "bpmn:IntermediateCatchEvent") {
-          for (let element of input.incoming) {
-            this.findIncomingPathDataObjects(incDataObjects, element, sourceInputId, messageFlowInputs);
-          }
-      }
-      for (let element of input) {
-        if (element.type === "bpmn:MessageFlow") {
-          messageFlowInputs.push(element.id);
-          if (messageFlowInputs.filter(item => item == element.id).length > 5) {
-            return;
-          }
-          this.findIncomingPathDataObjects(incDataObjects, element.source, sourceInputId, messageFlowInputs);
-        }
-        if (element.sourceRef) {
-          if (element.type !== "bpmn:SequenceFlow") {
-            this.findIncomingPathDataObjects(incDataObjects, element.sourceRef, sourceInputId, messageFlowInputs);
-          }
-        }
-        if (element.incoming) {
-          if (incDataObjects.filter(item => item == element.incoming.id).length > 5) {
-            return;
-          }
-          if (element.type !== "bpmn:SequenceFlow") {
-            this.findIncomingPathDataObjects(incDataObjects, element.incoming, sourceInputId, messageFlowInputs);
-          }
-        }
-        if (element.source) {
-          if (incDataObjects.filter(item => item == element.source.id).length > 5) {
-            return;
-          }
-          if (element.type !== "bpmn:SequenceFlow") {
-            this.findIncomingPathDataObjects(incDataObjects, element.source, sourceInputId, messageFlowInputs);
-          }
-        }
-      }
-    }
   }
 
   // Find all tasks from the incoming path of task
@@ -1139,18 +735,6 @@ export class ValidationHandler {
     return $.unique(incTasks);
   }
 
-  // Return all data objects from the incoming path of element
-  getDataObjectsOfIncomingPathByInputElement(inputElement: any) {
-    let incDataObjectIds = [];
-    let messageFlowInputs = [];
-    this.findIncomingPathDataObjects(incDataObjectIds, inputElement.incoming, inputElement.id, messageFlowInputs);
-    let incDataObjects = [];
-    for (let id of $.unique(incDataObjectIds)) {
-      incDataObjects.push(this.registry.get(id));
-    }
-    return incDataObjects;
-  }
-
   // Return all tasks from the outgoing path of task
   getTasksOfOutgoingPathByInputElement(inputElement: any) {
     let outgTasks = [];
@@ -1292,26 +876,6 @@ export class ValidationHandler {
     return allPathsOfProcess;
   }
 
-  // Return task output objects according to the stereotype
-  getTaskOutputObjectsBasedOnTaskStereotype(taskId: String) {
-    let outputObjects = null;
-    if (taskId) {
-      let task = this.registry.get(taskId);
-      if (task) {
-        if (task.businessObject.AddSSSharing || task.businessObject.FunSSSharing || task.businessObject.SSSharing || task.businessObject.PKEncrypt || task.businessObject.SKEncrypt || task.businessObject.PKComputation || task.businessObject.SKComputation || task.businessObject.SGXComputation || task.businessObject.SGXProtect || task.businessObject.ProtectConfidentiality || task.businessObject.OpenConfidentiality || task.businessObject.PETComputation) {
-          outputObjects = this.elementsHandler.getTaskHandlerByTaskId(task.id).getTaskOutputObjects();
-        } else if (task.businessObject.AddSSComputation) {
-          outputObjects = this.elementsHandler.getTaskHandlerByTaskId(task.id).getTaskStereotypeInstanceByName("AddSSComputation").getAddSSComputationGroupOutputs(JSON.parse(this.registry.get(task.id).businessObject.AddSSComputation).groupId);
-        } else if (task.businessObject.FunSSComputation) {
-          outputObjects = this.elementsHandler.getTaskHandlerByTaskId(task.id).getTaskStereotypeInstanceByName("FunSSComputation").getFunSSComputationGroupOutputs(JSON.parse(this.registry.get(task.id).businessObject.FunSSComputation).groupId);
-        } else if (task.businessObject.SSComputation) {
-          outputObjects = this.elementsHandler.getTaskHandlerByTaskId(task.id).getTaskStereotypeInstanceByName("SSComputation").getSSComputationGroupOutputs(JSON.parse(this.registry.get(task.id).businessObject.SSComputation).groupId);
-        }
-      }
-    }
-    return outputObjects;
-  }
-
   // Check if tasks (by id) are parallel
   areTasksParallel(taskIds: String[]) {
     for (let taskId of taskIds) {
@@ -1378,7 +942,11 @@ export class ValidationHandler {
 
   /* */
   setChangesInModelStatus(status: boolean) {
-    this.elementsHandler.parent.setChangesInModelStatus(status);
+    this.elementsHandler.setModelChanged(status);
+  }
+
+  areThereChangesInModel() {
+    return this.elementsHandler.getModelChanged();
   }
 
 }

@@ -486,7 +486,7 @@ export class SSComputation extends TaskStereotype {
     return groupTasks;
   }
 
-  getSSComputationGroupOutputs(group: String) {
+  getGroupOutputs(group: String) {
     this.init();
     this.loadAllSSComputationGroupsTasks();
     let groupTasks = this.getSSComputationGroupTasks(group);
@@ -682,7 +682,7 @@ export class SSComputation extends TaskStereotype {
         if (this.areNamesUnique(sharesGroup)) {
           for (let incTask of this.getTasksOfIncomingPath()) {
             if (this.isOneOfInputObjectsInTaskStereotypeOutputs(incTask, sharesGroup) && this.areInputsFromTaskWithStereotypeAccepted(incTask)) {
-              let outputElementsNames = this.getTaskOutputObjectsBasedOnTaskStereotype(incTask).map(a => a.businessObject.name.trim());
+              let outputElementsNames = this.elementHandler.elementsHandler.getTaskHandlerByTaskId(incTask).getTaskOutputObjectsBasedOnTaskStereotype().map(a => a.businessObject.name.trim());
               if (outputElementsNames) {
                 if (sharesGroup.map(a => a.businessObject.name.trim()).every(elem => outputElementsNames.indexOf(elem) > -1)) {
                   correcGroupInputsIds.push(inputs.id);

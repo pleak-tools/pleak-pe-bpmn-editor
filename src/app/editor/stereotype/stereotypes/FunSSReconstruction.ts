@@ -136,7 +136,7 @@ export class FunSSReconstruction extends TaskStereotype {
     let flag = false;
     for (let incTask of this.getTasksOfIncomingPath()) {
       if (this.isOneOfInputObjectsInTaskStereotypeOutputs(incTask, this.getTaskInputObjects()) && this.areInputsFromTaskWithStereotypeAccepted(incTask)) {
-        let outputElementsNames = this.getTaskOutputObjectsBasedOnTaskStereotype(incTask).map(a => a.businessObject.name.trim());
+        let outputElementsNames = this.elementHandler.elementsHandler.getTaskHandlerByTaskId(incTask).getTaskOutputObjectsBasedOnTaskStereotype().map(a => a.businessObject.name.trim());
         let matchingNames = [];
         if (outputElementsNames) {
           for (let outputElementName of outputElementsNames) {

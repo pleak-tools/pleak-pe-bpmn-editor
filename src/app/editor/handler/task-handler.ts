@@ -105,6 +105,26 @@ export class TaskHandler {
     "PETComputation"
   ];
 
+  normalOutputStereotypes: string[] = [
+    "AddSSSharing",
+    "FunSSSharing",
+    "SSSharing",
+    "PKEncrypt",
+    "SKEncrypt",
+    "PKComputation",
+    "SKComputation",
+    "SGXComputation",
+    "SGXProtect",
+    "ProtectConfidentiality",
+    "OpenConfidentiality",
+    "PETComputation"
+  ];
+  groupOutputStereotypes: string[] = [
+    "AddSSComputation",
+    "FunSSComputation",
+    "SSComputation"
+  ];
+
   getTaskId() {
     return this.task.id;
   }
@@ -125,7 +145,7 @@ export class TaskHandler {
     this.loadTaskLaneOrPool();
   }
 
-  getDataObjectVisibilityStatus(dataObjectId: String) {
+  getDataObjectVisibilityStatus(dataObjectId: string) {
     let allStatuses = [];
     for (let sType of this.getAllTaskStereotypeInstances()) {
       let statuses = sType.getDataObjectVisibilityStatus(dataObjectId);
@@ -840,6 +860,19 @@ export class TaskHandler {
   // Return all task stereotype instances
   getAllTaskStereotypeInstances() {
     return this.stereotypes;
+  }
+
+  // Return task output objects according to the stereotype
+  getTaskOutputObjectsBasedOnTaskStereotype() {
+    let outputObjects = null;
+    for (let sType of this.stereotypes.map(a => a.getTitle())) {
+      if (this.normalOutputStereotypes.indexOf(<string>sType) !== -1) {
+        outputObjects = this.getTaskOutputObjects();
+      } else if (this.groupOutputStereotypes.indexOf(<string>sType) !== -1) {
+        outputObjects = this.elementsHandler.getTaskHandlerByTaskId(this.task.id).getTaskStereotypeInstanceByName((<string>sType)).getGroupOutputs(JSON.parse(this.registry.get(this.task.id).businessObject[(<string>sType)]).groupId);
+      }
+    }
+    return outputObjects;
   }
 
 

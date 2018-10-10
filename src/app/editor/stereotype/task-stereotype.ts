@@ -77,7 +77,7 @@ export class TaskStereotype extends Stereotype {
     return this.taskHandler.getAllTaskStereotypeInstances();
   }
 
-  getDataObjectVisibilityStatus(dataObjectId: String) {}
+  getDataObjectVisibilityStatus(dataObjectId: string): string[] { return []; }
 
   /** Wrappers to access validationHandler functions */
 
@@ -97,8 +97,8 @@ export class TaskStereotype extends Stereotype {
     return this.validationHandler.areAllGroupTasksAccesibleForTask(this.task.id);
   }
 
-  getTaskOutputObjectsBasedOnTaskStereotype(taskId: String) {
-    return this.validationHandler.getTaskOutputObjectsBasedOnTaskStereotype(taskId);
+  getTaskOutputObjectsBasedOnTaskStereotype() {
+    return this.taskHandler.getTaskOutputObjectsBasedOnTaskStereotype();
   }
 
   isOneOfInputObjectsInTaskStereotypeOutputs(taskId: String, inputObjects: any[]) {
