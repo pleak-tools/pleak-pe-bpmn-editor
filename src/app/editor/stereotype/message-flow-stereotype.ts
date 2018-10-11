@@ -1,6 +1,3 @@
-import * as Viewer from 'bpmn-js/lib/NavigatedViewer';
-
-import { ValidationErrorObject } from "../handler/validation-handler";
 import { MessageFlowHandler } from "../handler/message-flow-handler";
 import { Stereotype } from "./stereotype";
 

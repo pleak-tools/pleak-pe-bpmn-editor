@@ -1,7 +1,7 @@
 import * as Viewer from 'bpmn-js/lib/NavigatedViewer';
 
 import { ElementsHandler } from "./elements-handler";
-import { ValidationHandler, ValidationErrorObject } from "./validation-handler";
+import { ValidationHandler } from "./validation-handler";
 import { MessageFlowStereotype } from "../stereotype/message-flow-stereotype";
 import { SecureChannel } from "../stereotype/stereotypes/SecureChannel";
 import { CommunicationProtection } from "../stereotype/stereotypes/CommunicationProtection";

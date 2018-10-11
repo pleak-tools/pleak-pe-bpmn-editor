@@ -1,6 +1,4 @@
-import * as Viewer from 'bpmn-js/lib/NavigatedViewer';
-
-import { ValidationErrorObject, ValidationHandler } from "../handler/validation-handler";
+import { ValidationHandler } from "../handler/validation-handler";
 import { TaskHandler } from "../handler/task-handler";
 import { Stereotype } from "./stereotype";
 

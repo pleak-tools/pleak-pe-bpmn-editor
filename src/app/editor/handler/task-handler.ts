@@ -1,7 +1,7 @@
 import * as Viewer from 'bpmn-js/lib/NavigatedViewer';
 
 import { ElementsHandler } from "./elements-handler";
-import { ValidationHandler, ValidationErrorObject } from "./validation-handler";
+import { ValidationHandler } from "./validation-handler";
 import { TaskStereotype } from "../stereotype/task-stereotype";
 import { PKEncrypt } from "../stereotype/stereotypes/PKEncrypt";
 import { PKDecrypt } from "../stereotype/stereotypes/PKDecrypt";

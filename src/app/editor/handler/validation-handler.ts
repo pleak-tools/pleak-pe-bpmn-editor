@@ -904,12 +904,12 @@ export class ValidationHandler {
     for (let paths of this.getAllPathsOfProcess(taskId)) {
       for (let path1 of paths) {
         for (let path2 of paths) {
-          if (path1.toString() !== path2.toString()) {
+          if (path1.toString() !== path2.toString() && path1[0] !== path2[0] && path1[0] !== taskId && path2[0] !== taskId) {
             let len = path1.length;
             if (path2.length < len) {
               len = path2.length;
             }
-            for (let i = 0; i < len; i ++) {
+            for (let i = 0; i < len; i++) {
               if (path1[i] != path2[i]) {
                 let gateways1 = this.getExclusiveGatewaysOfIncomingPathOfInputElement(this.registry.get(path2[i]).businessObject);
                 let gateways2 = this.getExclusiveGatewaysOfIncomingPathOfInputElement(this.registry.get(path1[i]).businessObject);
@@ -920,7 +920,11 @@ export class ValidationHandler {
                   let subPath1 = path1.slice(i,path1.length);
                   let subPath2 = path2.slice(i,path2.length);
                   if (subPath1.indexOf(taskId) === -1 && subPath2.indexOf(taskId) !== -1 || subPath1.indexOf(taskId) !== -1 && subPath2.indexOf(taskId) === -1) {
-                    return false;
+                    let gW1 = this.getExclusiveGatewaysOfIncomingPathOfInputElement(this.registry.get(path1[0]).businessObject);
+                    let gW2 = this.getExclusiveGatewaysOfIncomingPathOfInputElement(this.registry.get(path2[0]).businessObject)
+                    if (gW1.length > 0 && gW2.length > 0 && gW1.toString() === gW2.toString()) {
+                      return false;
+                    }
                   }
                 }
               }
