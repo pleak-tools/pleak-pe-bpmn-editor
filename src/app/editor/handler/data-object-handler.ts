@@ -399,10 +399,18 @@ export class DataObjectHandler {
            <span class="stereotype-label-color" style="font-size:10px;"><b>` + title + `</b></span>
          </div>`
       );
+      let topPosition, leftPosition = 0;
+      if (is(this.dataObject, 'bpmn:DataStoreReference')) {
+        topPosition = 20;
+        leftPosition = -10;
+      } else if (is(this.dataObject, 'bpmn:DataObjectReference')) {
+        topPosition = 0;
+        leftPosition = -10;
+      }
       let stLabel = this.overlays.add(this.registry.get(this.dataObject.id), {
         position: {
-          top: 0,
-          left: -10
+          top: topPosition,
+          left: leftPosition
         },
         show: {
           minZoom: 0,
