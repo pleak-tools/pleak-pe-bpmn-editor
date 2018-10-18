@@ -305,7 +305,7 @@ export class MessageFlowHandler {
       for (let inputAssociation of this.messageFlow.sourceRef.dataInputAssociations) {
         if (inputAssociation && inputAssociation.sourceRef) {
           for (let inputData of inputAssociation.sourceRef) {
-            if (inputData.$type === "bpmn:DataObjectReference") {
+            if (inputData.$type === "bpmn:DataObjectReference" || inputData.$type === "bpmn:DataStoreReference") {
               objects.push(this.registry.get(inputData.id));
             }
           }
@@ -322,12 +322,12 @@ export class MessageFlowHandler {
       for (let outputAssociation of this.messageFlow.targetRef.dataOutputAssociations) {
         if (outputAssociation.targetRef && outputAssociation.targetRef.length > 1) {
           for (let outputData of outputAssociation.targetRef) {
-            if (outputData.$type === "bpmn:DataObjectReference") {
+            if (outputData.$type === "bpmn:DataObjectReference" || outputData.$type === "bpmn:DataStoreReference") {
               objects.push(this.registry.get(outputData.id));
             }
           }
         } else {
-          if (outputAssociation.targetRef && outputAssociation.targetRef.$type === "bpmn:DataObjectReference") {
+          if (outputAssociation.targetRef && (outputAssociation.targetRef.$type === "bpmn:DataObjectReference" || outputAssociation.targetRef.$type === "bpmn:DataStoreReference")) {
             objects.push(this.registry.get(outputAssociation.targetRef.id));
           }
         }

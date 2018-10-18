@@ -199,7 +199,7 @@ export class DataDependenciesAnalysisHandler {
       if (input.type === "bpmn:SequenceFlow") {
         return;
       }
-      if (input.type === "bpmn:DataObjectReference") {
+      if (input.type === "bpmn:DataObjectReference" || input.type === "bpmn:DataStoreReference") {
         incDataObjects.push(input.id);
       }
       if (input.sourceRef) {

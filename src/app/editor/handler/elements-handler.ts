@@ -50,7 +50,7 @@ export class ElementsHandler {
       // Add click event listener to init and terminate stereotype processes
       this.eventBus.on('element.click', (e) => {
 
-        if (is(e.element.businessObject, 'bpmn:Task') || is(e.element.businessObject, 'bpmn:DataObjectReference') || is(e.element.businessObject, 'bpmn:MessageFlow')) {
+        if (is(e.element.businessObject, 'bpmn:Task') || is(e.element.businessObject, 'bpmn:DataObjectReference') || is(e.element.businessObject, 'bpmn:DataStoreReference') || is(e.element.businessObject, 'bpmn:MessageFlow')) {
 
           this.canvas.removeMarker(e.element.id, 'selected');
           // If there is some other element being edited than clicked one, terminate edit process
@@ -89,13 +89,13 @@ export class ElementsHandler {
             toBeEditedelementHandler = this.messageFlowHandlers.filter(function( obj ) {
               return obj.messageFlow == e.element.businessObject && obj.beingEdited == false;
             });
-          } else if (is(e.element.businessObject, 'bpmn:DataObjectReference')) {
+          } else if (is(e.element.businessObject, 'bpmn:DataObjectReference') || is(e.element.businessObject, 'bpmn:DataStoreReference')) {
             toBeEditedelementHandler = this.dataObjectHandlers.filter(function( obj ) {
               return obj.dataObject == e.element.businessObject && obj.beingEdited == false;
             });
           }
           if (toBeEditedelementHandler.length > 0) {
-            if (!this.canEdit && (is(e.element.businessObject, 'bpmn:Task') || is(e.element.businessObject, 'bpmn:DataObjectReference') || is(e.element.businessObject, 'bpmn:MessageFlow'))) {
+            if (!this.canEdit && (is(e.element.businessObject, 'bpmn:Task') || is(e.element.businessObject, 'bpmn:DataObjectReference') || is(e.element.businessObject, 'bpmn:DataStoreReference') || is(e.element.businessObject, 'bpmn:MessageFlow'))) {
               toBeEditedelementHandler[0].initPublicStereotypeView();
             } else {
               toBeEditedelementHandler[0].initStereotypeEditProcess();
@@ -181,6 +181,9 @@ export class ElementsHandler {
           for (let node of element.flowElements.filter((e:any) => is(e, "bpmn:DataObjectReference"))) {
             this.dataObjectHandlers.push(new DataObjectHandler(this, node));
           }
+          for (let node of element.flowElements.filter((e:any) => is(e, "bpmn:DataStoreReference"))) {
+            this.dataObjectHandlers.push(new DataObjectHandler(this, node));
+          }
         }
       } else {
         for (let participant of element.participants) {
@@ -196,6 +199,9 @@ export class ElementsHandler {
               }
             }
             for (let node of participant.processRef.flowElements.filter((e:any) => is(e, "bpmn:DataObjectReference"))) {
+              this.dataObjectHandlers.push(new DataObjectHandler(this, node));
+            }
+            for (let node of participant.processRef.flowElements.filter((e:any) => is(e, "bpmn:DataStoreReference"))) {
               this.dataObjectHandlers.push(new DataObjectHandler(this, node));
             }
           }
