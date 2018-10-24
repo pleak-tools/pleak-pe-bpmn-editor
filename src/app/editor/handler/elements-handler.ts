@@ -12,8 +12,7 @@ let is = (element, type) => element.$instanceOf(type);
 
 export class ElementsHandler {
 
-  constructor(editorService: EditorService, viewer: Viewer, diagram: string, parent: any, canEdit: Boolean) {
-    this.editorService = editorService;
+  constructor(viewer: Viewer, diagram: string, parent: any, canEdit: Boolean) {
     this.viewer = viewer;
     this.lastContent = diagram;
     this.eventBus = this.viewer.get('eventBus');
@@ -23,8 +22,6 @@ export class ElementsHandler {
     this.canEdit = canEdit;
     this.init();
   }
-
-  editorService: EditorService;
 
   viewer: Viewer;
   eventBus: any;
@@ -228,7 +225,7 @@ export class ElementsHandler {
 
   updateModelContentVariable(xml: string) {
     if (xml) {
-      this.editorService.updateModel(xml);
+      this.parent.editorService.updateModel(xml);
       this.content = xml;
       if (this.content != this.lastContent) {
         this.setModelChanged(true);

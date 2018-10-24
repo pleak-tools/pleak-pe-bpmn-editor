@@ -22,17 +22,10 @@ export class EditorComponent {
 
   @Input() authenticated: Boolean;
 
-  private loaded: boolean = false;
-
   private viewer: NavigatedViewer;
-
-  isLoaded() {
-    return this.loaded;
-  }
 
   // Load diagram and add editor
   openDiagram(diagram: string) {
-
     if (diagram) {
       $('#canvas').html('');
 
@@ -46,9 +39,8 @@ export class EditorComponent {
         }
       });
 
-      let elementsHandler = new ElementsHandler(this.editorService, this.viewer, diagram, this, this.canEdit());
+      let elementsHandler = new ElementsHandler(this.viewer, diagram, this, this.canEdit());
       this.addEventHandlers(elementsHandler);
-      this.loaded = true;
     }
   }
 
