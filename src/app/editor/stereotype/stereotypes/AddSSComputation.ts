@@ -383,6 +383,7 @@ export class AddSSComputation extends TaskStereotype {
     if (currentGroupObj.groupId != null) {
       this.initAllElementStereotypesSettings();
     } else {
+      this.initAllElementStereotypesSettings();
       this.initStereotypeSettings();
     }
 
