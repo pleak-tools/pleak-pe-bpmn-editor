@@ -38,7 +38,8 @@ export class AddSSComputation extends TaskStereotype {
     let inputScript = this.settingsPanelContainer.find('#AddSSComputation-inputScript').val();
     let inputObjects = this.getTaskInputObjects();
     let inputs = [];
-    if (this.getAddSSComputationGroupTasks(group).length <= 1) {
+    let groupTasks = this.getAddSSComputationGroupTasks(group);
+    if (groupTasks.length === 0 || groupTasks.length === 1 && groupTasks[0].id == this.task.id) {
       for (let i = 0; i < inputObjects.length; i++) {
         inputs.push({id: i, inputs: [{id: inputObjects[i].id}]});
       }
