@@ -352,7 +352,7 @@ export class MessageFlowHandler {
     return this.elementsHandler.getAllModelMessageFlowHandlers();
   }
 
-  updateModelContentVariable(xml: String) {
+  updateModelContentVariable(xml: string) {
     this.elementsHandler.updateModelContentVariable(xml);
   }
 

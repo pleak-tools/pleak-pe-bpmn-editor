@@ -890,7 +890,7 @@ export class TaskHandler {
     return this.elementsHandler.getMessageFlowHandlerByMessageFlowId(messageFlowId);
   }
 
-  updateModelContentVariable(xml: String) {
+  updateModelContentVariable(xml: string) {
     this.elementsHandler.updateModelContentVariable(xml);
   }
 

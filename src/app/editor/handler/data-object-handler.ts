@@ -438,7 +438,7 @@ export class DataObjectHandler {
     return this.elementsHandler.getAllModelDataObjectHandlers();
   }
 
-  updateModelContentVariable(xml: String) {
+  updateModelContentVariable(xml: string) {
     this.elementsHandler.updateModelContentVariable(xml);
   }
 

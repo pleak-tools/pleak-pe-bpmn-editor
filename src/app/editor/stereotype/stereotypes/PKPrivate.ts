@@ -6,7 +6,7 @@ import { PKPublic } from "./PKPublic";
 declare let $: any;
 let is = (element, type) => element.$instanceOf(type);
 
-interface PKPrivateGroupDataObject {
+export interface PKPrivateGroupDataObject {
     groupId: String;
     dataObjectId: String;
 }

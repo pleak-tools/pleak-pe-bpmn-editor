@@ -5,13 +5,17 @@ import { MessageFlowHandler } from "./message-flow-handler";
 import { DataObjectHandler } from "./data-object-handler";
 import { ValidationHandler } from './validation-handler';
 
+import { EditorService } from '../editor.service';
+
 declare let $: any;
 let is = (element, type) => element.$instanceOf(type);
 
 export class ElementsHandler {
 
-  constructor(viewer: Viewer, diagram: String, parent: any, canEdit: Boolean) {
+  constructor(editorService: EditorService, viewer: Viewer, diagram: string, parent: any, canEdit: Boolean) {
+    this.editorService = editorService;
     this.viewer = viewer;
+    this.lastContent = diagram;
     this.eventBus = this.viewer.get('eventBus');
     this.canvas = this.viewer.get('canvas');
     this.diagram = diagram;
@@ -19,6 +23,8 @@ export class ElementsHandler {
     this.canEdit = canEdit;
     this.init();
   }
+
+  editorService: EditorService;
 
   viewer: Viewer;
   eventBus: any;
@@ -34,6 +40,9 @@ export class ElementsHandler {
   taskHandlers: TaskHandler[] = [];
   messageFlowHandlers: MessageFlowHandler[] = [];
   dataObjectHandlers: DataObjectHandler[] = [];
+
+  private lastContent: string | null;
+  private content: string | null;
 
   init() {
     this.validationHandler = new ValidationHandler(this.viewer, this.diagram, this);
@@ -217,14 +226,14 @@ export class ElementsHandler {
     }
   }
 
-  updateModelContentVariable(xml: String) {
+  updateModelContentVariable(xml: string) {
     if (xml) {
-      this.parent.file.content = xml;
-      if (this.parent.file.content != this.parent.lastContent) {
+      this.editorService.updateModel(xml);
+      this.content = xml;
+      if (this.content != this.lastContent) {
         this.setModelChanged(true);
         this.validationHandler.simpleDisclosureAnalysisHandler.terminate();
         this.validationHandler.dataDependenciesAnalysisHandler.terminate();
-        this.parent.modelChanged();
       }
     }
   }

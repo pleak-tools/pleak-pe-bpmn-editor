@@ -207,7 +207,7 @@ export class Stereotype {
     this.elementHandler.terminateStereotypeEditProcess();
   }
 
-  updateModelContentVariable(xml: String) {
+  updateModelContentVariable(xml: string) {
     this.elementHandler.updateModelContentVariable(xml);
   }
 
