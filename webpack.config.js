@@ -157,6 +157,7 @@ module.exports = {
       "./node_modules/bpmn-js/dist/assets/bpmn-font/css/bpmn-embedded.css",
       "./node_modules/bootstrap/dist/css/bootstrap.min.css",
       "./node_modules/font-awesome/css/font-awesome.css",
+      "./node_modules/ngx-toastr/toastr.css",
       "./src/styles.less"
     ]
   },
@@ -196,6 +197,7 @@ module.exports = {
           path.join(process.cwd(), "node_modules/bpmn-js/dist/assets/bpmn-font/css/bpmn-embedded.css"),
           path.join(process.cwd(), "node_modules/bootstrap/dist/css/bootstrap.min.css"),
           path.join(process.cwd(), "node_modules/font-awesome/css/font-awesome.css"),
+          path.join(process.cwd(), "node_modules/ngx-toastr/toastr.css"),
           path.join(process.cwd(), "src/styles.less")
         ],
         "test": /\.css$/,
@@ -220,6 +222,7 @@ module.exports = {
           path.join(process.cwd(), "node_modules/bpmn-js/dist/assets/bpmn-font/css/bpmn-embedded.css"),
           path.join(process.cwd(), "node_modules/bootstrap/dist/css/bootstrap.min.css"),
           path.join(process.cwd(), "node_modules/font-awesome/css/font-awesome.css"),
+          path.join(process.cwd(), "node_modules/ngx-toastr/toastr.css"),
           path.join(process.cwd(), "src/styles.less")
         ],
         "test": /\.scss$|\.sass$/,
@@ -252,6 +255,7 @@ module.exports = {
           path.join(process.cwd(), "node_modules/bpmn-js/dist/assets/bpmn-font/css/bpmn-embedded.css"),
           path.join(process.cwd(), "node_modules/bootstrap/dist/css/bootstrap.min.css"),
           path.join(process.cwd(), "node_modules/font-awesome/css/font-awesome.css"),
+          path.join(process.cwd(), "node_modules/ngx-toastr/toastr.css"),
           path.join(process.cwd(), "src/styles.less")
         ],
         "test": /\.less$/,
@@ -282,6 +286,7 @@ module.exports = {
           path.join(process.cwd(), "node_modules/bpmn-js/dist/assets/bpmn-font/css/bpmn-embedded.css"),
           path.join(process.cwd(), "node_modules/bootstrap/dist/css/bootstrap.min.css"),
           path.join(process.cwd(), "node_modules/font-awesome/css/font-awesome.css"),
+          path.join(process.cwd(), "node_modules/ngx-toastr/toastr.css"),
           path.join(process.cwd(), "src/styles.less")
         ],
         "test": /\.styl$/,
@@ -313,6 +318,7 @@ module.exports = {
           path.join(process.cwd(), "node_modules/bpmn-js/dist/assets/bpmn-font/css/bpmn-embedded.css"),
           path.join(process.cwd(), "node_modules/bootstrap/dist/css/bootstrap.min.css"),
           path.join(process.cwd(), "node_modules/font-awesome/css/font-awesome.css"),
+          path.join(process.cwd(), "node_modules/ngx-toastr/toastr.css"),
           path.join(process.cwd(), "src/styles.less")
         ],
         "test": /\.css$/,
@@ -338,6 +344,7 @@ module.exports = {
           path.join(process.cwd(), "node_modules/bpmn-js/dist/assets/bpmn-font/css/bpmn-embedded.css"),
           path.join(process.cwd(), "node_modules/bootstrap/dist/css/bootstrap.min.css"),
           path.join(process.cwd(), "node_modules/font-awesome/css/font-awesome.css"),
+          path.join(process.cwd(), "node_modules/ngx-toastr/toastr.css"),
           path.join(process.cwd(), "src/styles.less")
         ],
         "test": /\.scss$|\.sass$/,
@@ -371,6 +378,7 @@ module.exports = {
           path.join(process.cwd(), "node_modules/bpmn-js/dist/assets/bpmn-font/css/bpmn-embedded.css"),
           path.join(process.cwd(), "node_modules/bootstrap/dist/css/bootstrap.min.css"),
           path.join(process.cwd(), "node_modules/font-awesome/css/font-awesome.css"),
+          path.join(process.cwd(), "node_modules/ngx-toastr/toastr.css"),
           path.join(process.cwd(), "src/styles.less")
         ],
         "test": /\.less$/,
@@ -402,6 +410,7 @@ module.exports = {
           path.join(process.cwd(), "node_modules/bpmn-js/dist/assets/bpmn-font/css/bpmn-embedded.css"),
           path.join(process.cwd(), "node_modules/bootstrap/dist/css/bootstrap.min.css"),
           path.join(process.cwd(), "node_modules/font-awesome/css/font-awesome.css"),
+          path.join(process.cwd(), "node_modules/ngx-toastr/toastr.css"),
           path.join(process.cwd(), "src/styles.less")
         ],
         "test": /\.styl$/,

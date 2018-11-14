@@ -1,10 +1,13 @@
 import { Component, HostListener, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 
+import { ToastrService } from 'ngx-toastr';
+
 import { AuthService } from './auth/auth.service';
 import { EditorService } from './editor/editor.service';
 
-declare function require(name:string);
+
+declare function require(name: string);
 const config = require('../config.json');
 
 @Component({
@@ -13,7 +16,7 @@ const config = require('../config.json');
   styleUrls: ['./app.component.less']
 })
 export class AppComponent implements OnInit {
-  constructor(private authService: AuthService, private editorService: EditorService, private http: HttpClient) {
+  constructor(private authService: AuthService, private editorService: EditorService, private http: HttpClient, private toastr: ToastrService) {
     const pathname = window.location.pathname.split('/');
     if (pathname[2] === 'viewer') {
       this.modelId = pathname[3];
@@ -94,7 +97,7 @@ export class AppComponent implements OnInit {
 
   saveModel() {
 
-    let requestItem = Object.assign({}, this.file);
+    const requestItem = Object.assign({}, this.file);
     Object.assign(requestItem, {content: this.editorService.getModel()});
 
     this.http.put(config.backend.host + '/rest/directories/files/' + this.modelId, requestItem, {headers: {'JSON-Web-Token': localStorage.jwt || ''}}).subscribe(
@@ -105,6 +108,10 @@ export class AppComponent implements OnInit {
         localStorage.setItem('lastModifiedFileId', `"${response.id}"`);
         localStorage.setItem('lastModified', `"${(new Date()).getTime()}"`);
 
+        this.toastr.success('Model saved', '', {disableTimeOut: true});
+      },
+      () => {
+        this.toastr.warning('Error saving model');
       }
     );
   }
