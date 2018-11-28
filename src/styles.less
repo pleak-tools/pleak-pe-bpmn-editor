@@ -93,7 +93,7 @@ html, body, #canvas, #canvas > div {
   fill: greenyellow!important;
 }
 
-.highlight-input-selected:not(.djs-connection) .djs-visual > :nth-child(1) {
+.highlight-input-selected:not(.djs-connection) .djs-visual > :nth-child(1), .highlight-dd-input:not(.djs-connection) .djs-visual > :nth-child(1) {
   fill: springgreen!important;
 }
 
@@ -109,7 +109,7 @@ html, body, #canvas, #canvas > div {
   fill: lightsalmon!important;
 }
 
-.highlight-output-selected:not(.djs-connection) .djs-visual > :nth-child(1) {
+.highlight-output-selected:not(.djs-connection) .djs-visual > :nth-child(1), .highlight-dd-output:not(.djs-connection) .djs-visual > :nth-child(1) {
   fill: lightcoral!important;
 }
 
@@ -138,6 +138,10 @@ html, body, #canvas, #canvas > div {
 
 .highlight-specific-error.djs-connection > .djs-visual > :nth-child(1) {
   stroke: red!important;
+}
+
+.highlight-dd-between:not(.djs-connection) .djs-visual > :nth-child(1) {
+  fill: lightgray!important;
 }
 /* */
 .text-16 {
@@ -252,5 +256,12 @@ html, body, #canvas, #canvas > div {
     #report-table {
       overflow-x: auto;
     }
+    .dd-v {
+      cursor: pointer;
+    }
   }
+}
+
+.dd-transparent {
+  opacity: 0.5;
 }

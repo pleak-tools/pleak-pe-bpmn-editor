@@ -8,7 +8,7 @@ let is = (element, type) => element.$instanceOf(type);
 
 export class SimpleDisclosureAnalysisHandler {
 
-  constructor(viewer: Viewer, diagram: String, elementsHandler: ElementsHandler, validationHandler: ValidationHandler) {
+  constructor(viewer: Viewer, diagram: string, elementsHandler: ElementsHandler, validationHandler: ValidationHandler) {
     this.viewer = viewer;
     this.registry = this.viewer.get('elementRegistry');
     this.eventBus = this.viewer.get('eventBus');
@@ -24,7 +24,7 @@ export class SimpleDisclosureAnalysisHandler {
   registry: any;
   eventBus: any;
   canvas: any;
-  diagram: String;
+  diagram: string;
 
   elementsHandler: ElementsHandler;
   validationHandler: ValidationHandler;
@@ -32,7 +32,7 @@ export class SimpleDisclosureAnalysisHandler {
   analysisPanel: any;
   successPanel: any;
 
-  init() {
+  init(): void {
     this.analysisPanel.off('click', '#analyze-simple-disclosure');
     this.analysisPanel.on('click', '#analyze-simple-disclosure', (e) => {
       e.preventDefault();
@@ -41,64 +41,77 @@ export class SimpleDisclosureAnalysisHandler {
     });
   }
 
-  terminate() {
+  terminate(): void {
     this.analysisPanel.off('click', '#analyze-simple-disclosure');
     this.analysisPanel.addClass('hidden');
     this.successPanel.addClass('hidden');
   }
 
-  showResults() {
+  showResults(): void {
     this.createSimpleDisclosureReportTable();
   }
 
-  // Create simple disclosure report table
-  createSimpleDisclosureReportTable() {
-    let uniqueLanesAndPools = this.getListOfModelLanesAndPoolsObjects();
+  getSimpleDisclosureData(): any[] {
     let uniqueDataObjectsByName = this.getListOfModelUniqueDataObjects();
+    let resultData = [];
+
+    for (let dataObjectObj of uniqueDataObjectsByName) {
+      let visibility = "-";
+      let visibilityDataOriginal = $.unique(dataObjectObj.visibility);
+      let visibilityData = [];
+      let visibilityObj = {name: dataObjectObj.name, visibleTo: dataObjectObj.visibleTo, visibility: visibility}
+      for (let vData of visibilityDataOriginal) {
+        visibilityData.push(vData.split("-")[0]);
+      }
+      visibilityData = $.unique(visibilityData);
+      if (visibilityData.length === 1) {
+        if (visibilityData[0] == "private") {
+          visibility = "H";
+        } else if (visibilityData[0] == "public") {
+          visibility = "V";
+        }
+      } else if (visibilityData.length > 1) {
+        visibility = "V";
+        for (let data of visibilityDataOriginal) {
+          let source = data.split('-')[1];
+          if (source == "o") {
+            if (data.split('-')[0] == "private") {
+              visibility = "H";
+            } else if (data.split('-')[0] == "public") {
+              visibility = "V";
+            }
+          }
+        }
+      } else if (visibilityData.length === 0) {
+        visibility = "V";
+      }
+      visibilityObj.visibility = visibility;
+      resultData.push(visibilityObj);
+
+    }
+    return resultData;
+  }
+
+  // Create simple disclosure report table
+  createSimpleDisclosureReportTable(): void {
+    let uniqueLanesAndPools = this.getListOfModelLanesAndPoolsObjects();
+    let simpleDisclosureDataObjects = this.getSimpleDisclosureData();
     let dataObjectMessageFlowConnections = this.getListOfModeldataObjectsAndMessageFlowConnections();
     let rows = uniqueLanesAndPools.length;
-    let columns = uniqueDataObjectsByName.length;
+    let columns = simpleDisclosureDataObjects.length;
 
     let table = "";
     table += '<table class="table" style="text-align:center">';
     table += '<tr><th style="background-color:#f5f5f5; text-align:center;">#</th>';
     for (let c = 0; c < columns; c++) {
-      table += '<th style="background-color:#f5f5f5; text-align:center;">' + uniqueDataObjectsByName[c].name + '</th>';
+      table += '<th style="background-color:#f5f5f5; text-align:center;">' + simpleDisclosureDataObjects[c].name + '</th>';
     }
     table += '</tr>';
     for (let r = 0; r < rows; r++) {
       table += '<tr><td style="background-color:#f5f5f5;"><b>' + uniqueLanesAndPools[r].name + '</b></td>';
       for (let c = 0; c < columns; c++) {
-        if (uniqueDataObjectsByName[c].visibleTo.indexOf(uniqueLanesAndPools[r].id) !== -1) {
-          let visibility = "";
-          let visibilityDataOriginal = $.unique(uniqueDataObjectsByName[c].visibility);
-          let visibilityData = [];
-          for (let vData of visibilityDataOriginal) {
-            visibilityData.push(vData.split("-")[0]);
-          }
-          visibilityData = $.unique(visibilityData);
-          if (visibilityData.length === 1) {
-            if (visibilityData[0] == "private") {
-              visibility = "H";
-            } else if (visibilityData[0] == "public") {
-              visibility = "V";
-            }
-          } else if (visibilityData.length > 1) {
-            visibility = "V";
-            for (let data of visibilityDataOriginal) {
-              let source = data.split('-')[1];
-              if (source == "o") {
-                if (data.split('-')[0] == "private") {
-                  visibility = "H";
-                } else if (data.split('-')[0] == "public") {
-                  visibility = "V";
-                }
-              }
-            }
-          } else if (visibilityData.length === 0) {
-            visibility = "V";
-          }
-          table += '<td>' + visibility + '</td>';
+        if (simpleDisclosureDataObjects[c].visibleTo.indexOf(uniqueLanesAndPools[r].id) !== -1) {
+          table += '<td>' + simpleDisclosureDataObjects[c].visibility + '</td>';
         } else {
           table += '<td>-</td>';
         }
@@ -106,12 +119,11 @@ export class SimpleDisclosureAnalysisHandler {
       }
       table += '</tr>';
     }
-
     if (dataObjectMessageFlowConnections) {
       table += '<tr><td colspan="' + (columns+1) + '"></td></tr><tr><td>Shared over</td>'
       for (let c2 = 0; c2 < columns; c2++) {
         let messageFlowAlreadyInList = dataObjectMessageFlowConnections.filter(( obj ) => {
-          return obj.dataObject == uniqueDataObjectsByName[c2].name;
+          return obj.dataObject == simpleDisclosureDataObjects[c2].name;
         });
         if (messageFlowAlreadyInList.length !== 0) {
           table += '<td>' + messageFlowAlreadyInList[0].types + '</td>';
@@ -130,7 +142,7 @@ export class SimpleDisclosureAnalysisHandler {
   }
 
   // Return list of lanes and pools with their names
-  getListOfModelLanesAndPoolsObjects() {
+  getListOfModelLanesAndPoolsObjects(): any[] {
     let lanesAndPools = this.validationHandler.getModelLanesAndPools();
     let lanesAndPoolsObjects = [];
     let index = 1;
@@ -158,7 +170,7 @@ export class SimpleDisclosureAnalysisHandler {
   }
 
   // Return list of data objects (unique by their name)
-  getListOfModelUniqueDataObjects() {
+  getListOfModelUniqueDataObjects(): any[] {
     let dataObjectHandlers = this.elementsHandler.getAllModelDataObjectHandlers();
     let uniqueDataObjectsByName = [];
     for (let dataObjectHandler of dataObjectHandlers) {
@@ -181,7 +193,7 @@ export class SimpleDisclosureAnalysisHandler {
   }
 
   // Return list of dataObjects that are moved over MessageFlow / SecureChannel
-  getListOfModeldataObjectsAndMessageFlowConnections() {
+  getListOfModeldataObjectsAndMessageFlowConnections(): any[] {
     let messageFlowHandlers = this.elementsHandler.getAllModelMessageFlowHandlers();
     let messageFlowObjects = [];
     for (let messageFlowHandler of messageFlowHandlers) {
@@ -209,7 +221,7 @@ export class SimpleDisclosureAnalysisHandler {
   }
 
   // Check if task has a stereotype (by stereotype name)
-  messageFlowHasStereotype(messageFlow: any, stereotype: String) {
+  messageFlowHasStereotype(messageFlow: any, stereotype: string): boolean {
     if (messageFlow && messageFlow[(<any>stereotype)]) {
       return true;
     } else {
@@ -218,7 +230,7 @@ export class SimpleDisclosureAnalysisHandler {
   }
 
   // Compare object name properties
-  compareNames(a: any, b: any) {
+  compareNames(a: any, b: any): number {
     if (a.name < b.name)
       return -1;
     if (a.name > b.name)

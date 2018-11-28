@@ -39,6 +39,7 @@ export class DataObjectHandler {
   outgoingParentTasks: any[] = [];
   tasksVisibleTo: any[] = [];
   visibilityStatus: any[] = [];
+  dataObjectType: string;
 
   stereotypes: DataObjectStereotype[] = [];
   stereotypeSelector: String = null;
@@ -84,6 +85,10 @@ export class DataObjectHandler {
     return this.visibilityStatus;
   }
 
+  getDataObjectType() {
+    return this.dataObjectType;
+  }
+
   init() {
     // Add stereotype instances to the dataObject (based on xml of the model)
     for (let sType of this.supportedStereotypes) {
@@ -98,6 +103,17 @@ export class DataObjectHandler {
     this.loadOutgoingParentTasks();
     this.loadLanesAndPoolsToWhichDataObjectIsVisibleTo();
     this.loadDataObjectVisibilityStatus();
+    this.loadDataObjectType();
+  }
+
+  loadDataObjectType() {
+    if (this.registry.get(this.dataObject.id) && this.registry.get(this.dataObject.id).incoming.length > 0 && this.registry.get(this.dataObject.id).outgoing.length > 0) {
+      this.dataObjectType = "input-output";
+    } else if (this.registry.get(this.dataObject.id) && this.registry.get(this.dataObject.id).incoming.length > 0) {
+      this.dataObjectType = "output";
+    } else if (this.registry.get(this.dataObject.id) && this.registry.get(this.dataObject.id).outgoing.length > 0) {
+      this.dataObjectType = "input";
+    }
   }
 
   // Load data object's parent lane/pool information

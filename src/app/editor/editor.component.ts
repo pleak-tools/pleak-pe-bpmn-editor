@@ -28,7 +28,6 @@ export class EditorComponent {
   openDiagram(diagram: string) {
     if (diagram) {
       $('#canvas').html('');
-
       this.viewer = new NavigatedViewer({
         container: '#canvas',
         keyboard: {
@@ -40,6 +39,7 @@ export class EditorComponent {
       });
 
       let elementsHandler = new ElementsHandler(this.viewer, diagram, this, this.canEdit());
+      elementsHandler.init();
       this.addEventHandlers(elementsHandler);
     }
   }
