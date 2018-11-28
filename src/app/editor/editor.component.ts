@@ -109,7 +109,7 @@ export class EditorComponent implements OnInit {
   }
 
   // Load diagram and add editor
-  openDiagram(diagram: String) {
+  openDiagram(diagram: string) {
     let self = this;
     if (diagram && this.viewer == null) {
       this.viewer = new NavigatedViewer({
@@ -123,6 +123,7 @@ export class EditorComponent implements OnInit {
       });
 
       let elementsHandler = new ElementsHandler(this.viewer, diagram, this, this.canEdit());
+      elementsHandler.init();
       this.addEventHandlers(elementsHandler);
       this.loaded = true;
     }

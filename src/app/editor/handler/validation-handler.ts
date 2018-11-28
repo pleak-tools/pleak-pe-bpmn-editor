@@ -18,21 +18,20 @@ export interface ValidationErrorObject {
 
 export class ValidationHandler {
 
-  constructor(viewer: Viewer, diagram: String, elementsHandler: ElementsHandler) {
+  constructor(viewer: Viewer, diagram: string, elementsHandler: ElementsHandler) {
     this.viewer = viewer;
     this.registry = this.viewer.get('elementRegistry');
     this.eventBus = this.viewer.get('eventBus');
     this.canvas = this.viewer.get('canvas');
     this.diagram = diagram;
     this.elementsHandler = elementsHandler;
-    this.init();
   }
 
   viewer: Viewer;
   registry: any;
   eventBus: any;
   canvas: any;
-  diagram: String;
+  diagram: string;
 
   analysisPanel: any;
   errorsList: any;
@@ -54,19 +53,24 @@ export class ValidationHandler {
   errorChecks: any = {dataObjects: false, tasks: false, messageFlows: false};
 
   init() {
-    // Import model from xml file
-    this.viewer.importXML(this.diagram, () => {
+    return new Promise((resolve) => {
       // Add click event listener to init and terminate stereotype processes
       this.eventBus.on('element.click', (e) => {
         this.removeAllErrorHighlights();
+        this.dataDependenciesAnalysisHandler.removeModelDependencyHiglights();
       });
+
+      this.analysisPanel = $('#analysis');
+      this.errorsList = $('#errors-list');
+      this.errorsPanel = $('#model-errors');
+      this.successPanel = $('#model-correct');
+
+      this.initHandlers();
+      resolve();
     });
+  }
 
-    this.analysisPanel = $('#analysis');
-    this.errorsList = $('#errors-list');
-    this.errorsPanel = $('#model-errors');
-    this.successPanel = $('#model-correct');
-
+  initHandlers() {
     this.taskHandlers = this.elementsHandler.getAllModelTaskHandlers();
     this.messageFlowHandlers = this.elementsHandler.getAllModelMessageFlowHandlers();
     this.dataObjectHandlers = this.elementsHandler.getAllModelDataObjectHandlers();

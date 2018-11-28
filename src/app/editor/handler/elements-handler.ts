@@ -10,20 +10,19 @@ let is = (element, type) => element.$instanceOf(type);
 
 export class ElementsHandler {
 
-  constructor(viewer: Viewer, diagram: String, parent: any, canEdit: Boolean) {
+  constructor(viewer: Viewer, diagram: string, parent: any, canEdit: Boolean) {
     this.viewer = viewer;
     this.eventBus = this.viewer.get('eventBus');
     this.canvas = this.viewer.get('canvas');
     this.diagram = diagram;
     this.parent = parent;
     this.canEdit = canEdit;
-    this.init();
   }
 
   viewer: Viewer;
   eventBus: any;
   canvas: any;
-  diagram: String;
+  diagram: string;
   parent: any;
   canEdit: Boolean;
 
@@ -42,9 +41,14 @@ export class ElementsHandler {
       this.viewer.get("moddle").fromXML(this.diagram, (err:any, definitions:any) => {
         if (typeof definitions !== 'undefined') {
           // Add stereotype labels to elements based on xml labels
-          this.viewer.importDefinitions(definitions, () => this.createElementHandlerInstances(definitions));
-          $('#stereotype-options').html('');
-          $('#analyze-diagram').addClass('active');
+          this.viewer.importDefinitions(definitions, () => {
+            this.createElementHandlerInstances(definitions).then(() => {
+              this.validationHandler.init().then(() => {
+                $('#stereotype-options').html('');
+                $('#analyze-diagram').addClass('active');
+              });
+            });
+          });
         }
       });
       // Add click event listener to init and terminate stereotype processes
@@ -104,6 +108,23 @@ export class ElementsHandler {
 
         }
 
+      });
+    });
+  }
+
+  initWithoutClickHandlers() {
+    this.validationHandler = new ValidationHandler(this.viewer, this.diagram, this);
+    // Import model from xml file
+    this.viewer.importXML(this.diagram, () => {
+      this.viewer.get("moddle").fromXML(this.diagram, (err:any, definitions:any) => {
+        if (typeof definitions !== 'undefined') {
+          // Add stereotype labels to elements based on xml labels
+          this.viewer.importDefinitions(definitions, () => {
+            this.createElementHandlerInstances(definitions).then(() => {
+              this.validationHandler.initHandlers();
+            });
+          });
+        }
       });
     });
   }
@@ -171,50 +192,53 @@ export class ElementsHandler {
 
   // Create handler instance for each task / messageFlow of model
   createElementHandlerInstances(definitions: any) {
-    for (let diagram of definitions.diagrams) {
-      let element = diagram.plane.bpmnElement;
-      if (element.$type === "bpmn:Process") {
-        if (element.flowElements) {
-          for (let node of element.flowElements.filter((e:any) => is(e, "bpmn:Task"))) {
-            this.taskHandlers.push(new TaskHandler(this, node));
-          }
-          for (let node of element.flowElements.filter((e:any) => is(e, "bpmn:DataObjectReference"))) {
-            this.dataObjectHandlers.push(new DataObjectHandler(this, node));
-          }
-          for (let node of element.flowElements.filter((e:any) => is(e, "bpmn:DataStoreReference"))) {
-            this.dataObjectHandlers.push(new DataObjectHandler(this, node));
-          }
-        }
-      } else {
-        for (let participant of element.participants) {
-          if (participant.processRef && participant.processRef.flowElements) {
-            for (let node of participant.processRef.flowElements.filter((e:any) => is(e, "bpmn:Task"))) {
+    return new Promise((resolve) => {
+      for (let diagram of definitions.diagrams) {
+        let element = diagram.plane.bpmnElement;
+        if (element.$type === "bpmn:Process") {
+          if (element.flowElements) {
+            for (let node of element.flowElements.filter((e:any) => is(e, "bpmn:Task"))) {
               this.taskHandlers.push(new TaskHandler(this, node));
             }
-            for (let sprocess of participant.processRef.flowElements.filter((e:any) => is(e, "bpmn:SubProcess"))) {
-              if (sprocess.flowElements) {
-                for (let node of sprocess.flowElements.filter((e:any) => is(e, "bpmn:Task"))) {
-                  this.taskHandlers.push(new TaskHandler(this, node));
+            for (let node of element.flowElements.filter((e:any) => is(e, "bpmn:DataObjectReference"))) {
+              this.dataObjectHandlers.push(new DataObjectHandler(this, node));
+            }
+            for (let node of element.flowElements.filter((e:any) => is(e, "bpmn:DataStoreReference"))) {
+              this.dataObjectHandlers.push(new DataObjectHandler(this, node));
+            }
+          }
+        } else {
+          for (let participant of element.participants) {
+            if (participant.processRef && participant.processRef.flowElements) {
+              for (let node of participant.processRef.flowElements.filter((e:any) => is(e, "bpmn:Task"))) {
+                this.taskHandlers.push(new TaskHandler(this, node));
+              }
+              for (let sprocess of participant.processRef.flowElements.filter((e:any) => is(e, "bpmn:SubProcess"))) {
+                if (sprocess.flowElements) {
+                  for (let node of sprocess.flowElements.filter((e:any) => is(e, "bpmn:Task"))) {
+                    this.taskHandlers.push(new TaskHandler(this, node));
+                  }
                 }
               }
+              for (let node of participant.processRef.flowElements.filter((e:any) => is(e, "bpmn:DataObjectReference"))) {
+                this.dataObjectHandlers.push(new DataObjectHandler(this, node));
+              }
+              for (let node of participant.processRef.flowElements.filter((e:any) => is(e, "bpmn:DataStoreReference"))) {
+                this.dataObjectHandlers.push(new DataObjectHandler(this, node));
+              }
             }
-            for (let node of participant.processRef.flowElements.filter((e:any) => is(e, "bpmn:DataObjectReference"))) {
-              this.dataObjectHandlers.push(new DataObjectHandler(this, node));
-            }
-            for (let node of participant.processRef.flowElements.filter((e:any) => is(e, "bpmn:DataStoreReference"))) {
-              this.dataObjectHandlers.push(new DataObjectHandler(this, node));
+          }
+        }
+        if (element.$type === "bpmn:Collaboration") {
+          if (element.messageFlows) {
+            for (let node of element.messageFlows.filter((e:any) => is(e, "bpmn:MessageFlow"))) {
+              this.messageFlowHandlers.push(new MessageFlowHandler(this, node));
             }
           }
         }
       }
-      if (element.$type === "bpmn:Collaboration") {
-        if (element.messageFlows) {
-          for (let node of element.messageFlows.filter((e:any) => is(e, "bpmn:MessageFlow"))) {
-            this.messageFlowHandlers.push(new MessageFlowHandler(this, node));
-          }
-        }
-      }
-    }
+      resolve();
+    });
   }
 
   updateModelContentVariable(xml: String) {
@@ -278,6 +302,17 @@ export class ElementsHandler {
   // Get all dataObjectHandler instances of the model
   getAllModelDataObjectHandlers() {
     return this.dataObjectHandlers;
+  }
+
+  getDataObjectHandlersByDataObjectName(name: string) {
+    let handlers = [];
+    let tmp = this.getAllModelDataObjectHandlers().filter( (obj)  => {
+      return obj.dataObject.name.trim() == name.trim();
+    });
+    if (tmp.length > 0) {
+      handlers = tmp;
+    }
+    return handlers;
   }
 
   initValidation() {
