@@ -137,7 +137,7 @@ export class SimpleDisclosureAnalysisHandler {
     $('#simpleDisclosureReportModal').find('#report-table').html('');
     $('#simpleDisclosureReportModal').find('#report-table').html(table);
     $('#simpleDisclosureReportModal').find('#simpleDisclosureReportTitle').text('');
-    //$('#simpleDisclosureReportModal').find('#simpleDisclosureReportTitle').text(this.elementsHandler.parent.file.title);
+    $('#simpleDisclosureReportModal').find('#simpleDisclosureReportTitle').text($('#fileName').text());
     $('#simpleDisclosureReportModal').modal();
   }
 

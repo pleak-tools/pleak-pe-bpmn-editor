@@ -44,7 +44,7 @@ export class ElementsHandler {
     this.validationHandler = new ValidationHandler(this.viewer, this.diagram, this);
     // Import model from xml file
     this.viewer.importXML(this.diagram, () => {
-      this.viewer.get("moddle").fromXML(this.diagram, (err:any, definitions:any) => {
+      this.viewer.get("moddle").fromXML(this.diagram, (err: any, definitions: any) => {
         if (typeof definitions !== 'undefined') {
           // Add stereotype labels to elements based on xml labels
           this.viewer.importDefinitions(definitions, () => {

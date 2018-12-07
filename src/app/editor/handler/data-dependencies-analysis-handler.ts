@@ -117,7 +117,7 @@ export class DataDependenciesAnalysisHandler {
     $('#dataDependenciesAnalysisReportModal').find('#report-table').html('');
     $('#dataDependenciesAnalysisReportModal').find('#report-table').html(table);
     $('#dataDependenciesAnalysisReportModal').find('#dependenciesAnalysisReportTitle').text('');
-    //$('#dataDependenciesAnalysisReportModal').find('#dependenciesAnalysisReportTitle').text(this.elementsHandler.parent.file.title);
+    $('#dataDependenciesAnalysisReportModal').find('#dependenciesAnalysisReportTitle').text($('#fileName').text());
     $('#dataDependenciesAnalysisReportModal').modal();
   }
 
