@@ -202,7 +202,7 @@ export class PKDecrypt extends TaskStereotype {
         }
       }
     }
-    return $.unique(keys);
+    return this.getUniqueValuesOfArray(keys);
   }
 
   getKeysFromIncomingPathOfTask(taskId: string) {

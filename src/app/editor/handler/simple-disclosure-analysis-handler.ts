@@ -86,13 +86,13 @@ export class SimpleDisclosureAnalysisHandler {
 
     for (let dataObjectObj of uniqueDataObjectsByName) {
       let visibility = "-";
-      let visibilityDataOriginal = this.getUniqueValuesOfArray(dataObjectObj.visibility);
+      let visibilityDataOriginal = this.validationHandler.getUniqueValuesOfArray(dataObjectObj.visibility);
       let visibilityData = [];
       let visibilityObj = { name: dataObjectObj.name, visibleTo: dataObjectObj.visibleTo, visibility: visibility }
       for (let vData of visibilityDataOriginal) {
         visibilityData.push(vData.split("-")[0]);
       }
-      visibilityData = this.getUniqueValuesOfArray(visibilityData);
+      visibilityData = this.validationHandler.getUniqueValuesOfArray(visibilityData);
       if (visibilityData.length === 1) {
         if (visibilityData[0] == "private") {
           visibility = "H";
@@ -263,7 +263,7 @@ export class SimpleDisclosureAnalysisHandler {
     let dataObjectsGroupsBasedOnStereotypes = this.getDataObjectsGroupsBasedOnStereotypes();
     let getSimpleDisclosureDataMatrix = this.getSimpleDisclosureDataMatrix();
     let groups = dataObjectsGroupsBasedOnStereotypes.map(a => ({ ...a }));
-    let dataObjectsNames = this.getUniqueValuesOfArray(getSimpleDisclosureDataMatrix.map(a => a.name));
+    let dataObjectsNames = this.validationHandler.getUniqueValuesOfArray(getSimpleDisclosureDataMatrix.map(a => a.name));
     let dataObjectsOfGroups = [].concat.apply([], groups.map(a => a.dataObjects));
     let frawDataObjectsGroupData = [];
 
@@ -281,7 +281,7 @@ export class SimpleDisclosureAnalysisHandler {
       });
       if (matchingGroups.length > 0) {
         let dataObjects = [].concat.apply([], matchingGroups.map(a => a.dataObjects));
-        let newGroup = { group: matchingGroups.map(a => a.group).join('-'), dataObjects: this.getUniqueValuesOfArray(dataObjects) };
+        let newGroup = { group: matchingGroups.map(a => a.group).join('-'), dataObjects: this.validationHandler.getUniqueValuesOfArray(dataObjects) };
         for (let group of matchingGroups) {
           groups = groups.filter((obj) => {
             return obj.group !== group.group;
@@ -453,15 +453,15 @@ export class SimpleDisclosureAnalysisHandler {
     let dataObjectHandlers = this.elementsHandler.getAllModelDataObjectHandlers();
     let uniqueDataObjectsByName = [];
     for (let dataObjectHandler of dataObjectHandlers) {
-      let visibleTo = this.getUniqueValuesOfArray(dataObjectHandler.getLanesAndPoolsDataObjectIsVisibleTo());
+      let visibleTo = this.validationHandler.getUniqueValuesOfArray(dataObjectHandler.getLanesAndPoolsDataObjectIsVisibleTo());
       let visibility = dataObjectHandler.getVisibilityStatus();
       if (dataObjectHandler.dataObject.name) {
         let dataObjectAlreadyAdded = uniqueDataObjectsByName.filter((obj) => {
           return obj.name.trim() == dataObjectHandler.dataObject.name.trim();
         });
         if (dataObjectAlreadyAdded.length > 0) {
-          dataObjectAlreadyAdded[0].visibleTo = this.getUniqueValuesOfArray(dataObjectAlreadyAdded[0].visibleTo.concat(visibleTo));
-          dataObjectAlreadyAdded[0].visibility = this.getUniqueValuesOfArray(dataObjectAlreadyAdded[0].visibility.concat(visibility));
+          dataObjectAlreadyAdded[0].visibleTo = this.validationHandler.getUniqueValuesOfArray(dataObjectAlreadyAdded[0].visibleTo.concat(visibleTo));
+          dataObjectAlreadyAdded[0].visibility = this.validationHandler.getUniqueValuesOfArray(dataObjectAlreadyAdded[0].visibility.concat(visibility));
         } else {
           uniqueDataObjectsByName.push({ name: dataObjectHandler.dataObject.name.trim(), visibleTo: visibleTo, visibility: visibility });
         }
@@ -492,7 +492,7 @@ export class SimpleDisclosureAnalysisHandler {
         if (messageFlowAlreadyInList.length === 0) {
           messageFlowObjects.push({ dataObject: dObject, types: oTypes });
         } else {
-          messageFlowAlreadyInList[0].types = this.getUniqueValuesOfArray(messageFlowAlreadyInList[0].types.concat(oTypes));
+          messageFlowAlreadyInList[0].types = this.validationHandler.getUniqueValuesOfArray(messageFlowAlreadyInList[0].types.concat(oTypes));
         }
       }
     }
@@ -515,11 +515,6 @@ export class SimpleDisclosureAnalysisHandler {
     if (a.name > b.name)
       return 1;
     return 0;
-  }
-
-  // Get unique values of an array
-  getUniqueValuesOfArray(array: string[]): string[] {
-    return array.filter((v, i, a) => a.indexOf(v) === i);
   }
 
 }

@@ -471,7 +471,7 @@ export class GCGarble extends TaskStereotype {
         }
       }
     }
-    return $.unique(outgMessageFlows);
+    return this.getUniqueValuesOfArray(outgMessageFlows);
   }
 
   getGroupSecondElementId() {

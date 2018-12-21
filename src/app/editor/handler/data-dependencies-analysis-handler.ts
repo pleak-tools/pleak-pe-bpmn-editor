@@ -317,10 +317,10 @@ export class DataDependenciesAnalysisHandler {
             return obj.name === dO.businessObject.name.trim();
           });
           if (dataObjectAlreadyInList.length !== 0) {
-            dataObjectAlreadyInList[0].connections = this.getUniqueValuesOfArray(dataObjectAlreadyInList[0].connections.concat(this.getDataObjectsOfIncomingPathByInputElement(dO).map(a => a.businessObject.name.trim())));
+            dataObjectAlreadyInList[0].connections = this.validationHandler.getUniqueValuesOfArray(dataObjectAlreadyInList[0].connections.concat(this.getDataObjectsOfIncomingPathByInputElement(dO).map(a => a.businessObject.name.trim())));
           } else {
             if (dO.businessObject.name) {
-              dependencies.push({ name: dO.businessObject.name.trim(), connections: this.getUniqueValuesOfArray(this.getDataObjectsOfIncomingPathByInputElement(dO).map(a => a.businessObject.name.trim())) });
+              dependencies.push({ name: dO.businessObject.name.trim(), connections: this.validationHandler.getUniqueValuesOfArray(this.getDataObjectsOfIncomingPathByInputElement(dO).map(a => a.businessObject.name.trim())) });
             }
           }
         }
@@ -396,7 +396,7 @@ export class DataDependenciesAnalysisHandler {
     let messageFlowInputs = [];
     this.findIncomingPathDataObjects(incDataObjectIds, inputElement.incoming, inputElement.id, messageFlowInputs);
     let incDataObjects = [];
-    for (let id of this.getUniqueValuesOfArray(incDataObjectIds)) {
+    for (let id of this.validationHandler.getUniqueValuesOfArray(incDataObjectIds)) {
       incDataObjects.push(this.registry.get(id));
     }
     return incDataObjects;
@@ -527,11 +527,6 @@ export class DataDependenciesAnalysisHandler {
     if (a.name > b.name)
       return 1;
     return 0;
-  }
-
-  // Get unique values of an array
-  getUniqueValuesOfArray(array: string[]): string[] {
-    return array.filter((v, i, a) => a.indexOf(v) === i);
   }
 
 }
