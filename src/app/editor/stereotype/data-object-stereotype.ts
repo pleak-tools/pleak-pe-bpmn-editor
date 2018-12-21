@@ -15,7 +15,7 @@ export class DataObjectStereotype extends Stereotype {
   dataObjectHandler: DataObjectHandler;
 
   /** Wrappers to access dataObjectHandler functions*/
-  getDataObjectHandlerByDataObjectId(dataObjectId: String) {
+  getDataObjectHandlerByDataObjectId(dataObjectId: string) {
     return this.dataObjectHandler.getDataObjectHandlerByDataObjectId(dataObjectId);
   }
 

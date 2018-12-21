@@ -36,11 +36,11 @@ export class MessageFlowHandler {
   messageFlow: any;
 
   stereotypes: MessageFlowStereotype[] = [];
-  stereotypeSelector: String = null;
+  stereotypeSelector: string = null;
   stereotypeSelectorHidden: Boolean = false;
   tempStereotype: MessageFlowStereotype = null;
 
-  supportedStereotypes: String[] = [
+  supportedStereotypes: string[] = [
     "SecureChannel",
     "CommunicationProtection"
   ];
@@ -112,7 +112,7 @@ export class MessageFlowHandler {
       sType.loadStereotypeTemplateAndInitStereotypeSettings();
     }
   }
-  
+
   // Hide settings panels for all already added stereotypes
   terminateMessageFlowStereotypeSettings() {
     for (let sType of this.stereotypes) {
@@ -208,12 +208,12 @@ export class MessageFlowHandler {
 
   // Remove stereotype selector
   terminateMessageFlowStereotypeSelector() {
-    this.overlays.remove({id: this.stereotypeSelector});
+    this.overlays.remove({ id: this.stereotypeSelector });
     this.stereotypeSelector = null;
   }
 
   // Create and return new stereotype instance by name
-  createStereotypeByName(name: String) {
+  createStereotypeByName(name: string) {
     let st = null;
     if (name) {
       if (name == "SecureChannel") {
@@ -231,7 +231,7 @@ export class MessageFlowHandler {
   }
 
   // Start adding new stereotype to the messageFlow (open settings panel etc)
-  addStereotypeByName(name: String) {
+  addStereotypeByName(name: string) {
     if (this.tempStereotype == null) {
       let st = this.createStereotypeByName(name);
       st.isTempStereotype = true;
@@ -257,9 +257,9 @@ export class MessageFlowHandler {
   }
 
   // Remove stereotype from the messageFlow by stereotype name
-  removeStereotypeByName(name: String) {
+  removeStereotypeByName(name: string) {
     if (this.getMessageFlowStereotypeInstanceByName(name)) {
-      this.overlays.remove({id: this.getMessageFlowStereotypeInstanceByName(name).getLabel()});
+      this.overlays.remove({ id: this.getMessageFlowStereotypeInstanceByName(name).getLabel() });
       this.stereotypes = this.stereotypes.filter(obj => obj.getTitle() !== name);
       this.canvas.removeMarker(this.messageFlow.id, 'selected');
       delete this.messageFlow[(<any>name)];
@@ -267,7 +267,7 @@ export class MessageFlowHandler {
   }
 
   // Get stereotype instance of the messageFlow by stereotype name
-  getMessageFlowStereotypeInstanceByName(name: String) {
+  getMessageFlowStereotypeInstanceByName(name: string) {
     for (let sType of this.stereotypes) {
       if (sType.getTitle() == name) {
         return sType;
@@ -276,7 +276,7 @@ export class MessageFlowHandler {
   }
 
   // Add stereotype label to the messageFlow by stereotype name
-  addStereotypeLabelToElement(title: String) {
+  addStereotypeLabelToElement(title: string) {
     if (title != null) {
       let messageFlowTypeLabel = $(
         `<div class="stereotype-label" id="` + this.messageFlow.id + `-` + title + `-label" style="padding:5px; border-radius:2px">
@@ -344,7 +344,7 @@ export class MessageFlowHandler {
 
   /** Wrappers to access elementsHandler functions*/
 
-  getMessageFlowHandlerByMessageFlowId(messageFlowId: String) {
+  getMessageFlowHandlerByMessageFlowId(messageFlowId: string) {
     return this.elementsHandler.getMessageFlowHandlerByMessageFlowId(messageFlowId);
   }
 
@@ -352,7 +352,7 @@ export class MessageFlowHandler {
     return this.elementsHandler.getAllModelMessageFlowHandlers();
   }
 
-  updateModelContentVariable(xml: String) {
+  updateModelContentVariable(xml: string) {
     this.elementsHandler.updateModelContentVariable(xml);
   }
 

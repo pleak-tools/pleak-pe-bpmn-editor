@@ -7,7 +7,7 @@ import NavigatedViewer from 'bpmn-js/lib/NavigatedViewer';
 import { ElementsHandler } from "./handler/elements-handler";
 
 declare let $: any;
-declare function require(name:string);
+declare function require(name: string);
 let is = (element, type) => element.$instanceOf(type);
 
 let config = require('../../config.json');
@@ -23,14 +23,14 @@ export class EditorComponent implements OnInit {
     let pathname = window.location.pathname.split('/');
     if (pathname[2] === 'viewer') {
       this.modelId = pathname[3];
-       this.viewerType = 'public';
+      this.viewerType = 'public';
     } else {
       this.modelId = pathname[2];
       this.viewerType = 'private';
     }
     this.authService.authStatus.subscribe(status => {
       this.authenticated = status;
-      if (typeof(status) === "boolean") {
+      if (typeof (status) === "boolean") {
         this.getModel();
       }
     });
@@ -46,7 +46,7 @@ export class EditorComponent implements OnInit {
   private modelId;
   private viewerType;
 
-  private lastContent: String = '';
+  private lastContent: string = '';
 
   private fileId: Number = null;
   private file: any;
@@ -101,7 +101,7 @@ export class EditorComponent implements OnInit {
         self.file.user = response.user;
         self.file.md5Hash = response.md5Hash;
       },
-      () => {},
+      () => { },
       () => {
         self.openDiagram(self.file.content);
       }
@@ -136,7 +136,7 @@ export class EditorComponent implements OnInit {
     if ((this.authService.user && file.user) ? file.user.email === this.authService.user.email : false) { return true; }
     for (let pIx = 0; pIx < file.permissions.length; pIx++) {
       if (file.permissions[pIx].action.title === 'edit' &&
-      this.authService.user ? file.permissions[pIx].user.email === this.authService.user.email : false) {
+        this.authService.user ? file.permissions[pIx].user.email === this.authService.user.email : false) {
         return true;
       }
     }
@@ -192,11 +192,11 @@ export class EditorComponent implements OnInit {
       let zoomLevel = this.viewer.get('canvas').zoom();
       if (zoomLevel < 1.0) {
         if ($('.stereotype-label-color').css("color") != "rgb(0, 0, 255)") {
-          $('.stereotype-label-color').css('color','blue');
+          $('.stereotype-label-color').css('color', 'blue');
         }
       } else {
         if ($('.stereotype-label-color').css("color") != "rgb(0, 0, 139)") {
-          $('.stereotype-label-color').css('color','darkblue');
+          $('.stereotype-label-color').css('color', 'darkblue');
         }
       }
     });
@@ -243,7 +243,7 @@ export class EditorComponent implements OnInit {
                   self.lastContent = self.file.content;
                   self.fileId = data.id;
                 } else if (success.status === 401) {
-                   $('#loginModal').modal();
+                  $('#loginModal').modal();
                 }
               },
               fail => {

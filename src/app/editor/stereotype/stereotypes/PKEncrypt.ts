@@ -30,7 +30,7 @@ export class PKEncrypt extends TaskStereotype {
   getCurrentStereotypeSettings() {
     let key = this.settingsPanelContainer.find('#PKEncrypt-keySelect').val();
     let inputData = this.settingsPanelContainer.find('#PKEncrypt-inputDataSelect').val();
-    return {key: key, inputData: inputData};
+    return { key: key, inputData: inputData };
   }
 
   initStereotypePublicView() {
@@ -117,7 +117,7 @@ export class PKEncrypt extends TaskStereotype {
       this.initRemoveButton();
     }
   }
-  
+
   removeStereotype() {
     if (confirm('Are you sure you wish to remove the stereotype?')) {
       super.removeStereotype();
@@ -128,7 +128,7 @@ export class PKEncrypt extends TaskStereotype {
   }
 
   /** Simple disclosure analysis functions */
-  getDataObjectVisibilityStatus(dataObjectId: String) {
+  getDataObjectVisibilityStatus(dataObjectId: string) {
     // Inputs: public
     // Outputs: private
     let statuses = [];

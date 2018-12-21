@@ -30,7 +30,7 @@ export class PKDecrypt extends TaskStereotype {
   getCurrentStereotypeSettings() {
     let key = this.settingsPanelContainer.find('#PKDecrypt-keySelect').val();
     let ciphertext = this.settingsPanelContainer.find('#PKDecrypt-ciphertextSelect').val();
-    return {key: key, ciphertext: ciphertext};
+    return { key: key, ciphertext: ciphertext };
   }
 
   initStereotypePublicView() {
@@ -109,7 +109,7 @@ export class PKDecrypt extends TaskStereotype {
       this.initRemoveButton();
     }
   }
-  
+
   removeStereotype() {
     if (confirm('Are you sure you wish to remove the stereotype?')) {
       super.removeStereotype();
@@ -120,7 +120,7 @@ export class PKDecrypt extends TaskStereotype {
   }
 
   /** Simple disclosure analysis functions */
-  getDataObjectVisibilityStatus(dataObjectId: String) {
+  getDataObjectVisibilityStatus(dataObjectId: string) {
     // Inputs: if key - public, if cipherText - private
     // Outputs: public
     let statuses = [];
@@ -156,7 +156,7 @@ export class PKDecrypt extends TaskStereotype {
     return true;
   }
 
-  areInputsFromTaskWithStereotypeAccepted(taskId: String) {
+  areInputsFromTaskWithStereotypeAccepted(taskId: string) {
     // Accepted:
     // PKEncrypt
     // PKComputation
@@ -181,7 +181,7 @@ export class PKDecrypt extends TaskStereotype {
     }
   }
 
-  getKeyForEncryptedInput(inputId: String, taskId: String) {
+  getKeyForEncryptedInput(inputId: string, taskId: string) {
     let keys = [];
     for (let incTask of this.getTaskHandlerByTaskId(taskId).getTasksOfIncomingPath()) {
       if (this.isOneOfInputObjectsInTaskStereotypeOutputs(incTask, [this.registry.get(inputId)]) && this.getTaskHandlerByTaskId(taskId).getTaskStereotypeInstanceByName("PKDecrypt").areInputsFromTaskWithStereotypeAccepted(incTask)) {
@@ -205,7 +205,7 @@ export class PKDecrypt extends TaskStereotype {
     return $.unique(keys);
   }
 
-  getKeysFromIncomingPathOfTask(taskId: String) {
+  getKeysFromIncomingPathOfTask(taskId: string) {
     let keys = [];
     keys = keys.concat(this.getKeyForEncryptedInput(this.getSavedStereotypeSettings().ciphertext, taskId));
     return keys;

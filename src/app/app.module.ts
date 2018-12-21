@@ -6,7 +6,7 @@ import { HttpModule } from '@angular/http';
 import { AppComponent } from './app.component';
 import { EditorComponent } from './editor/editor.component';
 
-import { AuthService} from './auth/auth.service';
+import { AuthService } from './auth/auth.service';
 
 @NgModule({
   declarations: [

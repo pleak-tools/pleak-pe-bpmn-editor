@@ -32,7 +32,7 @@ export class SGXQuoteVerification extends TaskStereotype {
     let quote = this.settingsPanelContainer.find('#SGXQuoteVerification-quoteSelect').val();
     let certificate = this.settingsPanelContainer.find('#SGXQuoteVerification-certificateSelect').val();
     let revocationList = this.settingsPanelContainer.find('#SGXQuoteVerification-revocationListSelect').val();
-    return {quote: quote, certificate: certificate, revocationList: revocationList};
+    return { quote: quote, certificate: certificate, revocationList: revocationList };
   }
 
   initStereotypePublicView() {
@@ -121,7 +121,7 @@ export class SGXQuoteVerification extends TaskStereotype {
       this.initRemoveButton();
     }
   }
-  
+
   removeStereotype() {
     if (confirm('Are you sure you wish to remove the stereotype?')) {
       super.removeStereotype();
@@ -132,7 +132,7 @@ export class SGXQuoteVerification extends TaskStereotype {
   }
 
   /** Simple disclosure analysis functions */
-  getDataObjectVisibilityStatus(dataObjectId: String) {
+  getDataObjectVisibilityStatus(dataObjectId: string) {
     // Inputs: public
     // Outputs: public
     let statuses = [];
@@ -182,7 +182,7 @@ export class SGXQuoteVerification extends TaskStereotype {
     if (!this.taskHasInputElement(savedData.revocationList)) {
       this.addUniqueErrorToErrorsList(existingErrors, "SGXQuoteVerification error: revocationList object is missing", [this.task.id], []);
     } else {
-      if(!this.areInputObjectsDifferent()) {
+      if (!this.areInputObjectsDifferent()) {
         this.addUniqueErrorToErrorsList(existingErrors, "SGXQuoteVerification error: quote, certificate and revocation list must be different objects", [this.task.id], []);
       }
     }

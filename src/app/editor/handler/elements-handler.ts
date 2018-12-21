@@ -38,7 +38,7 @@ export class ElementsHandler {
     this.validationHandler = new ValidationHandler(this.viewer, this.diagram, this);
     // Import model from xml file
     this.viewer.importXML(this.diagram, () => {
-      this.viewer.get("moddle").fromXML(this.diagram, (err:any, definitions:any) => {
+      this.viewer.get("moddle").fromXML(this.diagram, (err: any, definitions: any) => {
         if (typeof definitions !== 'undefined') {
           // Add stereotype labels to elements based on xml labels
           this.viewer.importDefinitions(definitions, () => {
@@ -58,19 +58,19 @@ export class ElementsHandler {
 
           this.canvas.removeMarker(e.element.id, 'selected');
           // If there is some other element being edited than clicked one, terminate edit process
-          let beingEditedTasktHandler = this.taskHandlers.filter(function( obj ) {
+          let beingEditedTasktHandler = this.taskHandlers.filter(function (obj) {
             return obj.task != e.element.businessObject && (obj.beingEdited && obj.stereotypeSelector != null || obj.stereotypeSelectorHidden);
           });
           if (beingEditedTasktHandler.length > 0) {
             beingEditedTasktHandler[0].checkForUnsavedChanges();
           }
-          let beingEditedMessageFlowHandler = this.messageFlowHandlers.filter(function( obj ) {
+          let beingEditedMessageFlowHandler = this.messageFlowHandlers.filter(function (obj) {
             return obj.messageFlow != e.element.businessObject && (obj.beingEdited && obj.stereotypeSelector != null || obj.stereotypeSelectorHidden);
           });
           if (beingEditedMessageFlowHandler.length > 0) {
             beingEditedMessageFlowHandler[0].checkForUnsavedChanges();
           }
-          let beingEditedDataObjectHandler = this.dataObjectHandlers.filter(function( obj ) {
+          let beingEditedDataObjectHandler = this.dataObjectHandlers.filter(function (obj) {
             return obj.dataObject != e.element.businessObject && (obj.beingEdited && obj.stereotypeSelector != null || obj.stereotypeSelectorHidden);
           });
           if (beingEditedDataObjectHandler.length > 0) {
@@ -86,15 +86,15 @@ export class ElementsHandler {
 
           this.canvas.addMarker(e.element.id, 'selected');
           if (is(e.element.businessObject, 'bpmn:Task')) {
-            toBeEditedelementHandler = this.taskHandlers.filter(function( obj ) {
+            toBeEditedelementHandler = this.taskHandlers.filter(function (obj) {
               return obj.task == e.element.businessObject && obj.beingEdited == false;
             });
           } else if (is(e.element.businessObject, 'bpmn:MessageFlow')) {
-            toBeEditedelementHandler = this.messageFlowHandlers.filter(function( obj ) {
+            toBeEditedelementHandler = this.messageFlowHandlers.filter(function (obj) {
               return obj.messageFlow == e.element.businessObject && obj.beingEdited == false;
             });
           } else if (is(e.element.businessObject, 'bpmn:DataObjectReference') || is(e.element.businessObject, 'bpmn:DataStoreReference')) {
-            toBeEditedelementHandler = this.dataObjectHandlers.filter(function( obj ) {
+            toBeEditedelementHandler = this.dataObjectHandlers.filter(function (obj) {
               return obj.dataObject == e.element.businessObject && obj.beingEdited == false;
             });
           }
@@ -116,7 +116,7 @@ export class ElementsHandler {
     this.validationHandler = new ValidationHandler(this.viewer, this.diagram, this);
     // Import model from xml file
     this.viewer.importXML(this.diagram, () => {
-      this.viewer.get("moddle").fromXML(this.diagram, (err:any, definitions:any) => {
+      this.viewer.get("moddle").fromXML(this.diagram, (err: any, definitions: any) => {
         if (typeof definitions !== 'undefined') {
           // Add stereotype labels to elements based on xml labels
           this.viewer.importDefinitions(definitions, () => {
@@ -131,13 +131,13 @@ export class ElementsHandler {
 
   // Check if another element (compared to the input id) is being currently edited
   isAnotherTaskOrDataObjectBeingEdited(elementId: string) {
-    let beingEditedElementHandler = this.taskHandlers.filter(function( obj ) {
+    let beingEditedElementHandler = this.taskHandlers.filter(function (obj) {
       return obj.beingEdited;
     });
-    let beingEditedDataObjectHandler = this.dataObjectHandlers.filter(function( obj ) {
+    let beingEditedDataObjectHandler = this.dataObjectHandlers.filter(function (obj) {
       return obj.beingEdited;
     });
-    let beingEditedMessageFlowHandler = this.messageFlowHandlers.filter(function( obj ) {
+    let beingEditedMessageFlowHandler = this.messageFlowHandlers.filter(function (obj) {
       return obj.beingEdited;
     });
     if ((beingEditedElementHandler.length > 0 && beingEditedElementHandler[0].task.id !== elementId) || (beingEditedDataObjectHandler.length > 0 && beingEditedDataObjectHandler[0].dataObject.id !== elementId) || (beingEditedMessageFlowHandler.length > 0 && beingEditedMessageFlowHandler[0].messageFlow.id !== elementId)) {
@@ -197,33 +197,33 @@ export class ElementsHandler {
         let element = diagram.plane.bpmnElement;
         if (element.$type === "bpmn:Process") {
           if (element.flowElements) {
-            for (let node of element.flowElements.filter((e:any) => is(e, "bpmn:Task"))) {
+            for (let node of element.flowElements.filter((e: any) => is(e, "bpmn:Task"))) {
               this.taskHandlers.push(new TaskHandler(this, node));
             }
-            for (let node of element.flowElements.filter((e:any) => is(e, "bpmn:DataObjectReference"))) {
+            for (let node of element.flowElements.filter((e: any) => is(e, "bpmn:DataObjectReference"))) {
               this.dataObjectHandlers.push(new DataObjectHandler(this, node));
             }
-            for (let node of element.flowElements.filter((e:any) => is(e, "bpmn:DataStoreReference"))) {
+            for (let node of element.flowElements.filter((e: any) => is(e, "bpmn:DataStoreReference"))) {
               this.dataObjectHandlers.push(new DataObjectHandler(this, node));
             }
           }
         } else {
           for (let participant of element.participants) {
             if (participant.processRef && participant.processRef.flowElements) {
-              for (let node of participant.processRef.flowElements.filter((e:any) => is(e, "bpmn:Task"))) {
+              for (let node of participant.processRef.flowElements.filter((e: any) => is(e, "bpmn:Task"))) {
                 this.taskHandlers.push(new TaskHandler(this, node));
               }
-              for (let sprocess of participant.processRef.flowElements.filter((e:any) => is(e, "bpmn:SubProcess"))) {
+              for (let sprocess of participant.processRef.flowElements.filter((e: any) => is(e, "bpmn:SubProcess"))) {
                 if (sprocess.flowElements) {
-                  for (let node of sprocess.flowElements.filter((e:any) => is(e, "bpmn:Task"))) {
+                  for (let node of sprocess.flowElements.filter((e: any) => is(e, "bpmn:Task"))) {
                     this.taskHandlers.push(new TaskHandler(this, node));
                   }
                 }
               }
-              for (let node of participant.processRef.flowElements.filter((e:any) => is(e, "bpmn:DataObjectReference"))) {
+              for (let node of participant.processRef.flowElements.filter((e: any) => is(e, "bpmn:DataObjectReference"))) {
                 this.dataObjectHandlers.push(new DataObjectHandler(this, node));
               }
-              for (let node of participant.processRef.flowElements.filter((e:any) => is(e, "bpmn:DataStoreReference"))) {
+              for (let node of participant.processRef.flowElements.filter((e: any) => is(e, "bpmn:DataStoreReference"))) {
                 this.dataObjectHandlers.push(new DataObjectHandler(this, node));
               }
             }
@@ -231,7 +231,7 @@ export class ElementsHandler {
         }
         if (element.$type === "bpmn:Collaboration") {
           if (element.messageFlows) {
-            for (let node of element.messageFlows.filter((e:any) => is(e, "bpmn:MessageFlow"))) {
+            for (let node of element.messageFlows.filter((e: any) => is(e, "bpmn:MessageFlow"))) {
               this.messageFlowHandlers.push(new MessageFlowHandler(this, node));
             }
           }
@@ -241,7 +241,7 @@ export class ElementsHandler {
     });
   }
 
-  updateModelContentVariable(xml: String) {
+  updateModelContentVariable(xml: string) {
     if (xml) {
       this.parent.file.content = xml;
       if (this.parent.file.content != this.parent.lastContent) {
@@ -254,9 +254,9 @@ export class ElementsHandler {
   }
 
   // Get taskHandler instance of task by task id
-  getTaskHandlerByTaskId(taskId: String) {
+  getTaskHandlerByTaskId(taskId: string) {
     let taskHandler = null;
-    let taskHandlerWithTaskId = this.getAllModelTaskHandlers().filter(function( obj ) {
+    let taskHandlerWithTaskId = this.getAllModelTaskHandlers().filter(function (obj) {
       return obj.task.id == taskId;
     });
     if (taskHandlerWithTaskId.length > 0) {
@@ -271,9 +271,9 @@ export class ElementsHandler {
   }
 
   // Get messageFlowHandler instance of messageFlow by messageFlow id
-  getMessageFlowHandlerByMessageFlowId(messageFlowId: String) {
+  getMessageFlowHandlerByMessageFlowId(messageFlowId: string) {
     let messageFlowHandler = null;
-    let messageFlowHandlerWithMessageFlowId = this.getAllModelMessageFlowHandlers().filter(function( obj ) {
+    let messageFlowHandlerWithMessageFlowId = this.getAllModelMessageFlowHandlers().filter(function (obj) {
       return obj.messageFlow.id == messageFlowId;
     });
     if (messageFlowHandlerWithMessageFlowId.length > 0) {
@@ -288,9 +288,9 @@ export class ElementsHandler {
   }
 
   // Get dataObjectHandler instance of dataObject by dataObject id
-  getDataObjectHandlerByDataObjectId(dataObjectId: String) {
+  getDataObjectHandlerByDataObjectId(dataObjectId: string) {
     let dataObjectHandler = null;
-    let dataObjectHandlerWithMessageFlowId = this.getAllModelDataObjectHandlers().filter(function( obj ) {
+    let dataObjectHandlerWithMessageFlowId = this.getAllModelDataObjectHandlers().filter(function (obj) {
       return obj.dataObject.id == dataObjectId;
     });
     if (dataObjectHandlerWithMessageFlowId.length > 0) {
@@ -306,7 +306,7 @@ export class ElementsHandler {
 
   getDataObjectHandlersByDataObjectName(name: string) {
     let handlers = [];
-    let tmp = this.getAllModelDataObjectHandlers().filter( (obj)  => {
+    let tmp = this.getAllModelDataObjectHandlers().filter((obj) => {
       return obj.dataObject.name.trim() == name.trim();
     });
     if (tmp.length > 0) {
@@ -320,13 +320,13 @@ export class ElementsHandler {
   }
 
   areThereUnsavedChangesOnModel() {
-    let beingEditedElementHandler = this.taskHandlers.filter(function( obj ) {
+    let beingEditedElementHandler = this.taskHandlers.filter(function (obj) {
       return obj.beingEdited;
     });
-    let beingEditedDataObjectHandler = this.dataObjectHandlers.filter(function( obj ) {
+    let beingEditedDataObjectHandler = this.dataObjectHandlers.filter(function (obj) {
       return obj.beingEdited;
     });
-    let beingEditedMessageFlowHandler = this.messageFlowHandlers.filter(function( obj ) {
+    let beingEditedMessageFlowHandler = this.messageFlowHandlers.filter(function (obj) {
       return obj.beingEdited;
     });
     if (beingEditedElementHandler.length > 0) {

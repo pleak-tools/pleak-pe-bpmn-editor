@@ -63,7 +63,7 @@ export class SecureChannel extends MessageFlowStereotype {
     this.messageFlow.SecureChannel = JSON.stringify(this.getCurrentStereotypeSettings());
     return true;
   }
-  
+
   removeStereotype() {
     if (confirm('Are you sure you wish to remove the stereotype?')) {
       super.removeStereotype();

@@ -13,8 +13,8 @@ export class OTSend extends TaskStereotype {
     this.init();
   }
 
-  group: String = null;
-  selectedGroup: String = null;
+  group: string = null;
+  selectedGroup: string = null;
   OTSendAndEvaluateGroupsTasks: TaskStereotypeGroupObject[] = [];
 
   /** Functions inherited from TaskStereotype and Stereotype classes */
@@ -34,14 +34,14 @@ export class OTSend extends TaskStereotype {
   // groupId
   getCurrentStereotypeSettings() {
     let group = this.settingsPanelContainer.find('#OTSend-groupSelect').val();
-    return {groupId: group};
+    return { groupId: group };
   }
 
   getGroup() {
     return this.group;
   }
 
-  setGroup(name: String) {
+  setGroup(name: string) {
     this.group = name;
   }
 
@@ -68,7 +68,7 @@ export class OTSend extends TaskStereotype {
     if (this.selectedGroup != null) {
       if (this.getModelOTSendAndOTReceiveGroups().indexOf(this.selectedGroup) === -1) {
         // If selected group is new group that has no tasks in it yet, add current task into it so its outputs would be highlighted
-        this.OTSendAndEvaluateGroupsTasks.push({groupId: this.selectedGroup, taskId: this.task.id});
+        this.OTSendAndEvaluateGroupsTasks.push({ groupId: this.selectedGroup, taskId: this.task.id });
       }
       selectedGroupId = this.selectedGroup;
     } else if (this.getSavedStereotypeSettings() != null) {
@@ -128,7 +128,7 @@ export class OTSend extends TaskStereotype {
         }
       }
     }
-  
+
     this.settingsPanelContainer.find('#OTSend-groupSelect').html(groups);
     this.settingsPanelContainer.find('#OTSend-newGroup').html('');
     this.settingsPanelContainer.find('#OTSend-inputObject').html(inputObject);
@@ -152,7 +152,7 @@ export class OTSend extends TaskStereotype {
       let group = currentStereotypeSettings.groupId;
       if (group) {
         let tasks = this.getOTSendAndOTReceiveGroupTasks(group);
-        let taskAlreadyInGroup = tasks.filter(( obj ) => {
+        let taskAlreadyInGroup = tasks.filter((obj) => {
           return obj.id == self.task.id;
         });
         if (tasks.length === 2 && taskAlreadyInGroup.length !== 1) {
@@ -172,8 +172,8 @@ export class OTSend extends TaskStereotype {
           this.addStereotypeToElement();
         }
         this.setGroup(group);
-        this.OTSendAndEvaluateGroupsTasks = $.grep(this.OTSendAndEvaluateGroupsTasks, (el, idx) => {return el.taskId == this.task.id}, true);
-        this.OTSendAndEvaluateGroupsTasks.push({groupId: group, taskId: this.task.id});
+        this.OTSendAndEvaluateGroupsTasks = $.grep(this.OTSendAndEvaluateGroupsTasks, (el, idx) => { return el.taskId == this.task.id }, true);
+        this.OTSendAndEvaluateGroupsTasks.push({ groupId: group, taskId: this.task.id });
         for (let task of this.getOTSendAndOTReceiveGroupTasks(group)) {
           if (task.id == this.task.id) {
             task.businessObject.OTSend = JSON.stringify(currentStereotypeSettings);
@@ -215,10 +215,10 @@ export class OTSend extends TaskStereotype {
     for (let taskHandler of this.taskHandler.getAllModelTaskHandlers()) {
       for (let stereotype of taskHandler.stereotypes) {
         if (stereotype.getTitle() == "OTSend" && (<OTSend>stereotype).getGroup() != null) {
-          this.OTSendAndEvaluateGroupsTasks.push({groupId: (<OTSend>stereotype).getGroup(), taskId: stereotype.task.id});
+          this.OTSendAndEvaluateGroupsTasks.push({ groupId: (<OTSend>stereotype).getGroup(), taskId: stereotype.task.id });
         }
         if (stereotype.getTitle() == "OTReceive" && (<OTReceive>stereotype).getGroup() != null) {
-          this.OTSendAndEvaluateGroupsTasks.push({groupId: (<OTReceive>stereotype).getGroup(), taskId: stereotype.task.id});
+          this.OTSendAndEvaluateGroupsTasks.push({ groupId: (<OTReceive>stereotype).getGroup(), taskId: stereotype.task.id });
         }
       }
     }
@@ -246,7 +246,7 @@ export class OTSend extends TaskStereotype {
     this.settingsPanelContainer.off('change', '#OTSend-groupSelect');
   }
 
-  addOTSendGroup(group: String) {
+  addOTSendGroup(group: string) {
     if (group) {
       this.reloadStereotypeSettingsWithSelectedGroup(group);
       this.settingsPanelContainer.find('#OTSend-newGroup').val('');
@@ -260,9 +260,9 @@ export class OTSend extends TaskStereotype {
     }
   }
 
-  reloadStereotypeSettingsWithSelectedGroup(group: String) {
+  reloadStereotypeSettingsWithSelectedGroup(group: string) {
     // Create temporary object to save current stereotype group
-    let tmpObj = {groupId: this.getGroup()};
+    let tmpObj = { groupId: this.getGroup() };
     let currentGroupObj = $.extend({}, tmpObj);
 
     // Terminate current task stereotype settings
@@ -270,7 +270,7 @@ export class OTSend extends TaskStereotype {
 
     // Set selected group temporarily to new selected group to init stereotype settings based on new group
     this.selectedGroup = group;
-    
+
     if (currentGroupObj.groupId != null) {
       this.initAllElementStereotypesSettings();
     } else {
@@ -282,7 +282,7 @@ export class OTSend extends TaskStereotype {
     this.selectedGroup = null;
   }
 
-  highlightOTSendAndOTReceiveGroupMembersAndTheirInputsOutputs(group: String) {
+  highlightOTSendAndOTReceiveGroupMembersAndTheirInputsOutputs(group: string) {
 
     for (let i = 0; i < this.OTSendAndEvaluateGroupsTasks.length; i++) {
       let groupId = this.OTSendAndEvaluateGroupsTasks[i].groupId;
@@ -360,10 +360,10 @@ export class OTSend extends TaskStereotype {
     return difGroups;
   }
 
-  getOTSendAndOTReceiveGroupTasks(group: String) {
+  getOTSendAndOTReceiveGroupTasks(group: string) {
     let groupTasks = [];
     if (group) {
-      let groups = $.grep(this.OTSendAndEvaluateGroupsTasks, function(el, idx) {return el.groupId.trim() == group.trim()}, false);
+      let groups = $.grep(this.OTSendAndEvaluateGroupsTasks, function (el, idx) { return el.groupId.trim() == group.trim() }, false);
       for (let i = 0; i < groups.length; i++) {
         groupTasks.push(this.registry.get(groups[i].taskId));
       }
@@ -371,7 +371,7 @@ export class OTSend extends TaskStereotype {
     return groupTasks;
   }
 
-  getOTSendAndOTReceiveGroupInputOutputObjects(group: String) {
+  getOTSendAndOTReceiveGroupInputOutputObjects(group: string) {
     let objects = [];
     if (this.OTSendAndEvaluateGroupsTasks && group != null) {
       let allInputsOutputs = [];
@@ -382,14 +382,14 @@ export class OTSend extends TaskStereotype {
           allInputsOutputs.push(inputObj);
           allInputs.push(inputObj);
         }
-         for (let outputObj of this.getTaskOutputObjectsByTaskId(task.id)) {
+        for (let outputObj of this.getTaskOutputObjectsByTaskId(task.id)) {
           allInputsOutputs.push(outputObj);
           allOutputs.push(outputObj);
         }
       }
       for (let obj of allInputsOutputs) {
         if (allInputs.indexOf(obj) !== -1 && allOutputs.indexOf(obj) !== -1 && objects.indexOf(obj) === -1) {
-           objects.push(obj);
+          objects.push(obj);
         }
       }
     }
@@ -400,14 +400,14 @@ export class OTSend extends TaskStereotype {
     let groupTasks = this.getOTSendAndOTReceiveGroupTasks(this.getGroup());
     let groupTasksIds = groupTasks.map(a => a.id);
     if (groupTasksIds.length === 2) {
-      groupTasksIds.splice(groupTasksIds.indexOf(this.task.id),1);
+      groupTasksIds.splice(groupTasksIds.indexOf(this.task.id), 1);
       return groupTasksIds[0];
     }
     return null;
   }
 
   /** Simple disclosure analysis functions */
-  getDataObjectVisibilityStatus(dataObjectId: String) {
+  getDataObjectVisibilityStatus(dataObjectId: string) {
     // Inputs: public
     // Outputs: public
     let statuses = [];
@@ -474,7 +474,7 @@ export class OTSend extends TaskStereotype {
 
   areStereotypesCorrectlyConnected() {
     let messageFlowsConnenctingGroupTaskIds = $.grep(this.getMessageFlowsOfOutgoingPath(), (element) => {
-      return $.inArray(element, this.getTaskHandlerByTaskId(this.getGroupSecondElementId()).getTaskStereotypeInstanceByName("OTReceive").getMessageFlowsOfIncomingPath() ) !== -1;
+      return $.inArray(element, this.getTaskHandlerByTaskId(this.getGroupSecondElementId()).getTaskStereotypeInstanceByName("OTReceive").getMessageFlowsOfIncomingPath()) !== -1;
     });
     if (messageFlowsConnenctingGroupTaskIds.length !== 1) {
       return false;

@@ -3,7 +3,6 @@ import { TaskStereotype, TaskStereotypeGroupObject } from "../task-stereotype";
 import { TaskHandler } from "../../handler/task-handler";
 
 declare let $: any;
-let is = (element, type) => element.$instanceOf(type);
 
 export class SSComputation extends TaskStereotype {
 
@@ -12,8 +11,8 @@ export class SSComputation extends TaskStereotype {
     this.init();
   }
 
-  group: String = null;
-  selectedGroup: String = null;
+  group: string = null;
+  selectedGroup: string = null;
   SSComputationGroupsTasks: TaskStereotypeGroupObject[] = [];
 
   /** Functions inherited from TaskStereotype and Stereotype classes */
@@ -37,35 +36,35 @@ export class SSComputation extends TaskStereotype {
     let groupTasks = this.getSSComputationGroupTasks(group);
     if (groupTasks.length === 0 || groupTasks.length === 1 && groupTasks[0].id == this.task.id) {
       for (let i = 0; i < inputObjects.length; i++) {
-        inputs.push({id: i, inputs: [{id: inputObjects[i].id}]});
+        inputs.push({ id: i, inputs: [{ id: inputObjects[i].id }] });
       }
     } else {
       let savedInputs = this.getSSComputationGroupInputs(group);
       let taskInputs = this.getTaskInputObjects();
       for (let sInput of savedInputs) {
-        let selectedInput = $('#SSComputation-inputSelect-'+sInput.id).val();
+        let selectedInput = $('#SSComputation-inputSelect-' + sInput.id).val();
         if (this.taskHasInputElement(selectedInput)) {
           let newInputId = sInput.id;
           let newInputInputs = sInput.inputs;
           for (let tInput of taskInputs) {
-            newInputInputs = newInputInputs.filter(function( obj ) {
+            newInputInputs = newInputInputs.filter(function (obj) {
               return obj.id !== tInput.id;
             });
           }
-          newInputInputs.push({id: selectedInput})
+          newInputInputs.push({ id: selectedInput })
           newInputInputs = newInputInputs.sort(this.compareIds);
-          inputs.push({id: newInputId, inputs: newInputInputs});
+          inputs.push({ id: newInputId, inputs: newInputInputs });
         }
       }
     }
-    return {groupId: group, inputScript: inputScript, inputs: inputs};
+    return { groupId: group, inputScript: inputScript, inputs: inputs };
   }
 
   getGroup() {
     return this.group;
   }
 
-  setGroup(name: String) {
+  setGroup(name: string) {
     this.group = name;
   }
 
@@ -95,7 +94,7 @@ export class SSComputation extends TaskStereotype {
     if (this.selectedGroup != null) {
       if (SSComputationGroups.indexOf(this.selectedGroup) === -1) {
         // If selected group is new group that has no tasks in it yet, add current task into it so its inputs and outputs would be highlighted
-        this.SSComputationGroupsTasks.push({groupId: this.selectedGroup, taskId: this.task.id});
+        this.SSComputationGroupsTasks.push({ groupId: this.selectedGroup, taskId: this.task.id });
       }
       selectedGroupId = this.selectedGroup;
     } else if (this.getSavedStereotypeSettings() != null) {
@@ -165,7 +164,7 @@ export class SSComputation extends TaskStereotype {
 
           let inputSel = '';
           for (let taskInput of taskInputs) {
-            inputNames = inputNames.filter(function( obj ) {
+            inputNames = inputNames.filter(function (obj) {
               return obj.id !== taskInput.id;
             });
             let selected = "";
@@ -176,7 +175,7 @@ export class SSComputation extends TaskStereotype {
             }
             inputSel += '<option ' + selected + ' value="' + taskInput.id + '">' + taskInput.businessObject.name + '</option>';
           }
-          inputObjects += inputNamesStr.sort().toString() + ': ' + '<select class="form-control stereotype-option" id="SSComputation-inputSelect-' + groupInput.id +'">' + inputSel + '</select>';
+          inputObjects += inputNamesStr.sort().toString() + ': ' + '<select class="form-control stereotype-option" id="SSComputation-inputSelect-' + groupInput.id + '">' + inputSel + '</select>';
         }
         this.settingsPanelContainer.find('#SSComputation-inputObjects-title').text("Choose corresponding inputs");
       } else {
@@ -224,7 +223,7 @@ export class SSComputation extends TaskStereotype {
         }
       }
     }
-  
+
     this.settingsPanelContainer.find('#SSComputation-groupSelect').html(groups);
     this.settingsPanelContainer.find('#SSComputation-inputScript').val(inputScript);
     this.settingsPanelContainer.find('#SSComputation-inputObjects').html(inputObjects);
@@ -249,16 +248,16 @@ export class SSComputation extends TaskStereotype {
       let group = currentStereotypeSettings.groupId;
       if (group) {
         this.setGroup(group);
-        this.SSComputationGroupsTasks = $.grep(this.SSComputationGroupsTasks, (el, idx) => {return el.taskId == this.task.id}, true);
-        this.SSComputationGroupsTasks.push({groupId: group, taskId: this.task.id});
+        this.SSComputationGroupsTasks = $.grep(this.SSComputationGroupsTasks, (el, idx) => { return el.taskId == this.task.id }, true);
+        this.SSComputationGroupsTasks.push({ groupId: group, taskId: this.task.id });
         // Check if all selected inputs are different
         if (this.getSSComputationGroupTasks(group).length > 1) {
           let savedInputs = this.getSSComputationGroupInputs(group);
           let selectedInputs = [];
           for (let sInput of savedInputs) {
-            selectedInputs.push($('#SSComputation-inputSelect-'+sInput.id).val());
+            selectedInputs.push($('#SSComputation-inputSelect-' + sInput.id).val());
           }
-          let hasDuplicates = selectedInputs.some(function(item, idx) {
+          let hasDuplicates = selectedInputs.some(function (item, idx) {
             return selectedInputs.indexOf(item) != idx
           });
           if (hasDuplicates) {
@@ -300,15 +299,15 @@ export class SSComputation extends TaskStereotype {
           let newInputId = sInput.id;
           let newInputInputs = sInput.inputs;
           for (let tInput of taskInputs) {
-            newInputInputs = newInputInputs.filter(function( obj ) {
+            newInputInputs = newInputInputs.filter(function (obj) {
               return obj.id !== tInput.id;
             });
           }
           newInputInputs = newInputInputs.sort(this.compareIds);
-          inputs.push({id: newInputId, inputs: newInputInputs});
+          inputs.push({ id: newInputId, inputs: newInputInputs });
         }
         for (let task of this.getSSComputationGroupTasks(group)) {
-          task.businessObject.SSComputation = JSON.stringify({groupId: group, inputScript: inputScript, inputs: inputs});
+          task.businessObject.SSComputation = JSON.stringify({ groupId: group, inputScript: inputScript, inputs: inputs });
           this.getTaskHandlerByTaskId(task.id).getTaskStereotypeInstanceByName("SSComputation").loadAllSSComputationGroupsTasks();
         }
       }
@@ -333,7 +332,7 @@ export class SSComputation extends TaskStereotype {
     for (let taskHandler of this.taskHandler.getAllModelTaskHandlers()) {
       for (let stereotype of taskHandler.stereotypes) {
         if (stereotype.getTitle() == "SSComputation" && (<SSComputation>stereotype).getGroup() != null) {
-          this.SSComputationGroupsTasks.push({groupId: (<SSComputation>stereotype).getGroup(), taskId: stereotype.task.id});
+          this.SSComputationGroupsTasks.push({ groupId: (<SSComputation>stereotype).getGroup(), taskId: stereotype.task.id });
         }
       }
     }
@@ -361,7 +360,7 @@ export class SSComputation extends TaskStereotype {
     this.settingsPanelContainer.off('change', '#SSComputation-groupSelect');
   }
 
-  addSSComputationGroup(group: String) {
+  addSSComputationGroup(group: string) {
     if (group) {
       this.reloadStereotypeSettingsWithSelectedGroup(group);
       this.settingsPanelContainer.find('#SSComputation-newGroup').val('');
@@ -376,9 +375,9 @@ export class SSComputation extends TaskStereotype {
     }
   }
 
-  reloadStereotypeSettingsWithSelectedGroup(group: String) {
+  reloadStereotypeSettingsWithSelectedGroup(group: string) {
     // Create temporary object to save current stereotype group
-    let tmpObj = {groupId: this.getGroup()};
+    let tmpObj = { groupId: this.getGroup() };
     let currentGroupObj = $.extend({}, tmpObj);
 
     // Terminate current task stereotype settings
@@ -386,7 +385,7 @@ export class SSComputation extends TaskStereotype {
 
     // Set selected group temporarily to new selected group to init stereotype settings based on new group
     this.selectedGroup = group;
-    
+
     if (currentGroupObj.groupId != null) {
       this.initAllElementStereotypesSettings();
     } else {
@@ -398,7 +397,7 @@ export class SSComputation extends TaskStereotype {
     this.selectedGroup = null;
   }
 
-  highlightSSComputationGroupMembersAndTheirInputsOutputs(group: String) {
+  highlightSSComputationGroupMembersAndTheirInputsOutputs(group: string) {
 
     for (let i = 0; i < this.SSComputationGroupsTasks.length; i++) {
       let groupId = this.SSComputationGroupsTasks[i].groupId;
@@ -476,10 +475,10 @@ export class SSComputation extends TaskStereotype {
     return difGroups;
   }
 
-  getSSComputationGroupTasks(group: String) {
+  getSSComputationGroupTasks(group: string) {
     let groupTasks = [];
     if (group) {
-      let groups = $.grep(this.SSComputationGroupsTasks, function(el, idx) {return el.groupId.trim() == group.trim()}, false);
+      let groups = $.grep(this.SSComputationGroupsTasks, function (el, idx) { return el.groupId.trim() == group.trim() }, false);
       for (let i = 0; i < groups.length; i++) {
         groupTasks.push(this.registry.get(groups[i].taskId));
       }
@@ -487,7 +486,7 @@ export class SSComputation extends TaskStereotype {
     return groupTasks;
   }
 
-  getGroupOutputs(group: String) {
+  getGroupOutputs(group: string) {
     this.init();
     this.loadAllSSComputationGroupsTasks();
     let groupTasks = this.getSSComputationGroupTasks(group);
@@ -498,7 +497,7 @@ export class SSComputation extends TaskStereotype {
     return outputs;
   }
 
-  getSSComputationGroupInputOutputObjects(group: String) {
+  getSSComputationGroupInputOutputObjects(group: string) {
     let objects = [];
     if (this.SSComputationGroupsTasks && group != null) {
       let allInputsOutputs = [];
@@ -509,21 +508,21 @@ export class SSComputation extends TaskStereotype {
           allInputsOutputs.push(inputObj);
           allInputs.push(inputObj);
         }
-         for (let outputObj of this.getTaskOutputObjectsByTaskId(task.id)) {
+        for (let outputObj of this.getTaskOutputObjectsByTaskId(task.id)) {
           allInputsOutputs.push(outputObj);
           allOutputs.push(outputObj);
         }
       }
       for (let obj of allInputsOutputs) {
         if (allInputs.indexOf(obj) !== -1 && allOutputs.indexOf(obj) !== -1 && objects.indexOf(obj) === -1) {
-           objects.push(obj);
+          objects.push(obj);
         }
       }
     }
     return objects;
   }
 
-  getSSComputationGroupInputScript(group: String) {
+  getSSComputationGroupInputScript(group: string) {
     let script = "";
     if (group != null) {
       let groupTasks = this.getSSComputationGroupTasks(group);
@@ -531,7 +530,7 @@ export class SSComputation extends TaskStereotype {
         if (groupTasks[0].businessObject.SSComputation) {
           script = JSON.parse(groupTasks[0].businessObject.SSComputation).inputScript;
         }
-        } else {
+      } else {
         for (let groupTask of groupTasks) {
           if (groupTask.id != this.task.id) {
             script = JSON.parse(groupTask.businessObject.SSComputation).inputScript;
@@ -543,7 +542,7 @@ export class SSComputation extends TaskStereotype {
     return script;
   }
 
-  getSSComputationGroupInputs(group: String) {
+  getSSComputationGroupInputs(group: string) {
     let inputs = [];
     if (group != null) {
       let groupTasks = this.getSSComputationGroupTasks(group);
@@ -551,7 +550,7 @@ export class SSComputation extends TaskStereotype {
         if (groupTasks[0].businessObject.SSComputation) {
           inputs = JSON.parse(groupTasks[0].businessObject.SSComputation).inputs;
         }
-        } else {
+      } else {
         for (let groupTask of groupTasks) {
           if (groupTask.id != this.task.id) {
             inputs = JSON.parse(groupTask.businessObject.SSComputation).inputs;
@@ -563,7 +562,7 @@ export class SSComputation extends TaskStereotype {
     return inputs;
   }
 
-  getSSComputationGroupInputObjectsByShareGroupId(id: String) {
+  getSSComputationGroupInputObjectsByShareGroupId(id: string) {
     let objects = [];
     if (this.getSSComputationGroupInputs(this.getGroup())) {
       for (let inputs of this.getSSComputationGroupInputs(this.getGroup())) {
@@ -577,7 +576,7 @@ export class SSComputation extends TaskStereotype {
     return objects;
   }
 
-  compareIds(a,b) {
+  compareIds(a, b) {
     if (a.id < b.id)
       return -1;
     if (a.id > b.id)
@@ -586,7 +585,7 @@ export class SSComputation extends TaskStereotype {
   }
 
   /** Simple disclosure analysis functions */
-  getDataObjectVisibilityStatus(dataObjectId: String) {
+  getDataObjectVisibilityStatus(dataObjectId: string) {
     // Inputs: if from sharegroup with the same name - public, if from sharegroup with different names - private
     // Outputs: private
     let statuses = [];
@@ -597,9 +596,9 @@ export class SSComputation extends TaskStereotype {
         for (let inputs of allGroupInputs) {
           let sharesGroup = this.getSSComputationGroupInputObjectsByShareGroupId(inputs.id);
           if (sharesGroup.map(a => a.id).indexOf(dataObjectId) !== -1) {
-            if (sharesGroup.map(a => a.businessObject.name.trim()).every( (val, i, arr) => val === arr[0] )) {
+            if (sharesGroup.map(a => a.businessObject.name.trim()).every((val, i, arr) => val === arr[0])) {
               statuses.push("public-i");
-            } else if (!sharesGroup.map(a => a.businessObject.name.trim()).every( (val, i, arr) => val === arr[0] )) {
+            } else if (!sharesGroup.map(a => a.businessObject.name.trim()).every((val, i, arr) => val === arr[0])) {
               statuses.push("private-i");
             }
           }
@@ -629,7 +628,7 @@ export class SSComputation extends TaskStereotype {
     return true;
   }
 
-  areInputsFromTaskWithStereotypeAccepted(taskId: String) {
+  areInputsFromTaskWithStereotypeAccepted(taskId: string) {
     // Accepted:
     // SSSharing
     // SSComputation
@@ -691,7 +690,7 @@ export class SSComputation extends TaskStereotype {
               }
             }
           }
-        } else if (sharesGroup.map(a => a.businessObject.name.trim()).every( (val, i, arr) => val === arr[0])) {
+        } else if (sharesGroup.map(a => a.businessObject.name.trim()).every((val, i, arr) => val === arr[0])) {
           correcGroupInputsIds.push(inputs.id);
         }
       }
@@ -750,7 +749,7 @@ export class SSComputation extends TaskStereotype {
     if (allGroupInputs) {
       for (let inputs of allGroupInputs) {
         let sharesGroup = this.getSSComputationGroupInputObjectsByShareGroupId(inputs.id);
-        if (!sharesGroup.map(a => a.businessObject.name.trim()).every( (val, i, arr) => val === arr[0] )) {
+        if (!sharesGroup.map(a => a.businessObject.name.trim()).every((val, i, arr) => val === arr[0])) {
           if (!this.areNamesUnique(sharesGroup)) {
             return false;
           }

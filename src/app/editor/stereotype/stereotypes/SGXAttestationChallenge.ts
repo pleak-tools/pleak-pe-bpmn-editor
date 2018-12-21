@@ -13,8 +13,8 @@ export class SGXAttestationChallenge extends TaskStereotype {
     this.init();
   }
 
-  group: String = null;
-  selectedGroup: String = null;
+  group: string = null;
+  selectedGroup: string = null;
   SGXAttestationEnclaveAndEvaluateGroupsTasks: TaskStereotypeGroupObject[] = [];
 
   /** Functions inherited from TaskStereotype and Stereotype classes */
@@ -34,14 +34,14 @@ export class SGXAttestationChallenge extends TaskStereotype {
   // groupId
   getCurrentStereotypeSettings() {
     let group = this.settingsPanelContainer.find('#SGXAttestationChallenge-groupSelect').val();
-    return {groupId: group};
+    return { groupId: group };
   }
 
   getGroup() {
     return this.group;
   }
 
-  setGroup(name: String) {
+  setGroup(name: string) {
     this.group = name;
   }
 
@@ -69,7 +69,7 @@ export class SGXAttestationChallenge extends TaskStereotype {
     if (this.selectedGroup != null) {
       if (this.getModelSGXAttestationGroups().indexOf(this.selectedGroup) === -1) {
         // If selected group is new group that has no tasks in it yet, add current task into it so its outputs would be highlighted
-        this.SGXAttestationEnclaveAndEvaluateGroupsTasks.push({groupId: this.selectedGroup, taskId: this.task.id});
+        this.SGXAttestationEnclaveAndEvaluateGroupsTasks.push({ groupId: this.selectedGroup, taskId: this.task.id });
       }
       selectedGroupId = this.selectedGroup;
     } else if (this.getSavedStereotypeSettings() != null) {
@@ -127,7 +127,7 @@ export class SGXAttestationChallenge extends TaskStereotype {
         }
       }
     }
-  
+
     this.settingsPanelContainer.find('#SGXAttestationChallenge-groupSelect').html(groups);
     this.settingsPanelContainer.find('#SGXAttestationChallenge-newGroup').html('');
     this.settingsPanelContainer.find('#SGXAttestationChallenge-inputObject').html(inputObject);
@@ -152,7 +152,7 @@ export class SGXAttestationChallenge extends TaskStereotype {
       let group = currentStereotypeSettings.groupId;
       if (group) {
         let tasks = this.getSGXAttestationGroupTasks(group);
-        let taskAlreadyInGroup = tasks.filter(( obj ) => {
+        let taskAlreadyInGroup = tasks.filter((obj) => {
           return obj.id == self.task.id;
         });
         if (tasks.length === 2 && taskAlreadyInGroup.length !== 1) {
@@ -172,8 +172,8 @@ export class SGXAttestationChallenge extends TaskStereotype {
           this.addStereotypeToElement();
         }
         this.setGroup(group);
-        this.SGXAttestationEnclaveAndEvaluateGroupsTasks = $.grep(this.SGXAttestationEnclaveAndEvaluateGroupsTasks, (el, idx) => {return el.taskId == this.task.id}, true);
-        this.SGXAttestationEnclaveAndEvaluateGroupsTasks.push({groupId: group, taskId: this.task.id});
+        this.SGXAttestationEnclaveAndEvaluateGroupsTasks = $.grep(this.SGXAttestationEnclaveAndEvaluateGroupsTasks, (el, idx) => { return el.taskId == this.task.id }, true);
+        this.SGXAttestationEnclaveAndEvaluateGroupsTasks.push({ groupId: group, taskId: this.task.id });
         for (let task of this.getSGXAttestationGroupTasks(group)) {
           if (task.id == this.task.id) {
             task.businessObject.SGXAttestationChallenge = JSON.stringify(currentStereotypeSettings);
@@ -215,10 +215,10 @@ export class SGXAttestationChallenge extends TaskStereotype {
     for (let taskHandler of this.taskHandler.getAllModelTaskHandlers()) {
       for (let stereotype of taskHandler.stereotypes) {
         if (stereotype.getTitle() == "SGXAttestationChallenge" && (<SGXAttestationChallenge>stereotype).getGroup() != null) {
-          this.SGXAttestationEnclaveAndEvaluateGroupsTasks.push({groupId: (<SGXAttestationChallenge>stereotype).getGroup(), taskId: stereotype.task.id});
+          this.SGXAttestationEnclaveAndEvaluateGroupsTasks.push({ groupId: (<SGXAttestationChallenge>stereotype).getGroup(), taskId: stereotype.task.id });
         }
         if (stereotype.getTitle() == "SGXAttestationEnclave" && (<SGXAttestationEnclave>stereotype).getGroup() != null) {
-          this.SGXAttestationEnclaveAndEvaluateGroupsTasks.push({groupId: (<SGXAttestationEnclave>stereotype).getGroup(), taskId: stereotype.task.id});
+          this.SGXAttestationEnclaveAndEvaluateGroupsTasks.push({ groupId: (<SGXAttestationEnclave>stereotype).getGroup(), taskId: stereotype.task.id });
         }
       }
     }
@@ -246,7 +246,7 @@ export class SGXAttestationChallenge extends TaskStereotype {
     this.settingsPanelContainer.off('change', '#SGXAttestationChallenge-groupSelect');
   }
 
-  addSGXAttestationChallengeGroup(group: String) {
+  addSGXAttestationChallengeGroup(group: string) {
     if (group) {
       this.reloadStereotypeSettingsWithSelectedGroup(group);
       this.settingsPanelContainer.find('#SGXAttestationChallenge-newGroup').val('');
@@ -260,9 +260,9 @@ export class SGXAttestationChallenge extends TaskStereotype {
     }
   }
 
-  reloadStereotypeSettingsWithSelectedGroup(group: String) {
+  reloadStereotypeSettingsWithSelectedGroup(group: string) {
     // Create temporary object to save current stereotype group
-    let tmpObj = {groupId: this.getGroup()};
+    let tmpObj = { groupId: this.getGroup() };
     let currentGroupObj = $.extend({}, tmpObj);
 
     // Terminate current task stereotype settings
@@ -270,7 +270,7 @@ export class SGXAttestationChallenge extends TaskStereotype {
 
     // Set selected group temporarily to new selected group to init stereotype settings based on new group
     this.selectedGroup = group;
-    
+
     if (currentGroupObj.groupId != null) {
       this.initAllElementStereotypesSettings();
     } else {
@@ -282,7 +282,7 @@ export class SGXAttestationChallenge extends TaskStereotype {
     this.selectedGroup = null;
   }
 
-  highlightSGXAttestationGroupMembersAndTheirInputsOutputs(group: String) {
+  highlightSGXAttestationGroupMembersAndTheirInputsOutputs(group: string) {
 
     for (let i = 0; i < this.SGXAttestationEnclaveAndEvaluateGroupsTasks.length; i++) {
       let groupId = this.SGXAttestationEnclaveAndEvaluateGroupsTasks[i].groupId;
@@ -360,10 +360,10 @@ export class SGXAttestationChallenge extends TaskStereotype {
     return difGroups;
   }
 
-  getSGXAttestationGroupTasks(group: String) {
+  getSGXAttestationGroupTasks(group: string) {
     let groupTasks = [];
     if (group) {
-      let groups = $.grep(this.SGXAttestationEnclaveAndEvaluateGroupsTasks, function(el, idx) {return el.groupId.trim() == group.trim()}, false);
+      let groups = $.grep(this.SGXAttestationEnclaveAndEvaluateGroupsTasks, function (el, idx) { return el.groupId.trim() == group.trim() }, false);
       for (let i = 0; i < groups.length; i++) {
         groupTasks.push(this.registry.get(groups[i].taskId));
       }
@@ -371,7 +371,7 @@ export class SGXAttestationChallenge extends TaskStereotype {
     return groupTasks;
   }
 
-  getSGXAttestationGroupInputOutputObjects(group: String) {
+  getSGXAttestationGroupInputOutputObjects(group: string) {
     let objects = [];
     if (this.SGXAttestationEnclaveAndEvaluateGroupsTasks && group != null) {
       let allInputsOutputs = [];
@@ -382,14 +382,14 @@ export class SGXAttestationChallenge extends TaskStereotype {
           allInputsOutputs.push(inputObj);
           allInputs.push(inputObj);
         }
-         for (let outputObj of this.getTaskOutputObjectsByTaskId(task.id)) {
+        for (let outputObj of this.getTaskOutputObjectsByTaskId(task.id)) {
           allInputsOutputs.push(outputObj);
           allOutputs.push(outputObj);
         }
       }
       for (let obj of allInputsOutputs) {
         if (allInputs.indexOf(obj) !== -1 && allOutputs.indexOf(obj) !== -1 && objects.indexOf(obj) === -1) {
-           objects.push(obj);
+          objects.push(obj);
         }
       }
     }
@@ -400,14 +400,14 @@ export class SGXAttestationChallenge extends TaskStereotype {
     let groupTasks = this.getSGXAttestationGroupTasks(this.getGroup());
     let groupTasksIds = groupTasks.map(a => a.id);
     if (groupTasksIds.length === 2) {
-      groupTasksIds.splice(groupTasksIds.indexOf(this.task.id),1);
+      groupTasksIds.splice(groupTasksIds.indexOf(this.task.id), 1);
       return groupTasksIds[0];
     }
     return null;
   }
 
   /** Simple disclosure analysis functions */
-  getDataObjectVisibilityStatus(dataObjectId: String) {
+  getDataObjectVisibilityStatus(dataObjectId: string) {
     // Inputs: public
     // Outputs: public
     let statuses = [];

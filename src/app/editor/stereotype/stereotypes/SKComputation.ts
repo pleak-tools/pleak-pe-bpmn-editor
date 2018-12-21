@@ -31,10 +31,10 @@ export class SKComputation extends TaskStereotype {
     let inputScript = this.settingsPanelContainer.find('#SKComputation-inputScript').val();
     let inputTypes = [];
     for (let inputObject of this.getTaskInputObjects()) {
-      let type = $('#SKComputation-input-type-select-'+inputObject.id).val();
-      inputTypes.push({id: inputObject.id, type: type});
+      let type = $('#SKComputation-input-type-select-' + inputObject.id).val();
+      inputTypes.push({ id: inputObject.id, type: type });
     }
-    return {inputScript: inputScript, inputTypes: inputTypes};
+    return { inputScript: inputScript, inputTypes: inputTypes };
   }
 
   initStereotypePublicView() {
@@ -80,7 +80,7 @@ export class SKComputation extends TaskStereotype {
         selectedEncrypted = "selected";
       }
       inputObjects += '<li>' + inputObject.businessObject.name + '</li>';
-      inputObjects += '<select class="form-control stereotype-option" id="SKComputation-input-type-select-'+inputObject.id+'">';
+      inputObjects += '<select class="form-control stereotype-option" id="SKComputation-input-type-select-' + inputObject.id + '">';
       inputObjects += '<option ' + selectedPublic + ' value="public">Public</option>';
       inputObjects += '<option ' + selectedEncrypted + ' value="encrypted">Encrypted</option>';
       inputObjects += '</select>';
@@ -105,7 +105,7 @@ export class SKComputation extends TaskStereotype {
     if (this.areInputsAndOutputsNumbersCorrect()) {
       let flag = false;
       for (let inputObject of this.getTaskInputObjects()) {
-        let type = $('#SKComputation-input-type-select-'+inputObject.id).val();
+        let type = $('#SKComputation-input-type-select-' + inputObject.id).val();
         if (type == "encrypted") {
           flag = true;
         }
@@ -129,7 +129,7 @@ export class SKComputation extends TaskStereotype {
       this.initRemoveButton();
     }
   }
-  
+
   removeStereotype() {
     if (confirm('Are you sure you wish to remove the stereotype?')) {
       super.removeStereotype();
@@ -140,7 +140,7 @@ export class SKComputation extends TaskStereotype {
   }
 
   /** Simple disclosure analysis functions */
-  getDataObjectVisibilityStatus(dataObjectId: String) {
+  getDataObjectVisibilityStatus(dataObjectId: string) {
     // Inputs: if encrypted - private, if public - public
     // Outputs: private
     let statuses = [];
@@ -170,13 +170,13 @@ export class SKComputation extends TaskStereotype {
     // Outputs: exactly 1
     let numberOfInputs = this.getTaskInputObjects().length;
     let numberOfOutputs = this.getTaskOutputObjects().length;
-    if (numberOfInputs <1 || numberOfOutputs != 1) {
+    if (numberOfInputs < 1 || numberOfOutputs != 1) {
       return false;
     }
     return true;
   }
 
-  areInputsFromTaskWithStereotypeAccepted(taskId: String) {
+  areInputsFromTaskWithStereotypeAccepted(taskId: string) {
     // Accepted:
     // SKEncrypt
     // SKComputation
@@ -209,7 +209,7 @@ export class SKComputation extends TaskStereotype {
     let savedData = this.getSavedStereotypeSettings();
     if (savedData.inputTypes && inputObjects.length > 0) {
       for (let inputObject of inputObjects) {
-        let matchingInputs = savedData.inputTypes.filter(function( obj ) {
+        let matchingInputs = savedData.inputTypes.filter(function (obj) {
           return obj.id === inputObject.id;
         });
         if (matchingInputs.length === 1) {
@@ -222,7 +222,7 @@ export class SKComputation extends TaskStereotype {
     return encryptedInputObjects;
   }
 
-  getKeyForEncryptedInput(inputId: String, taskId: String) {
+  getKeyForEncryptedInput(inputId: string, taskId: string) {
     let keys = [];
     for (let incTask of this.getTaskHandlerByTaskId(taskId).getTasksOfIncomingPath()) {
       if (this.isOneOfInputObjectsInTaskStereotypeOutputs(incTask, [this.registry.get(inputId)]) && this.getTaskHandlerByTaskId(taskId).getTaskStereotypeInstanceByName("SKComputation").areInputsFromTaskWithStereotypeAccepted(incTask)) {
@@ -246,7 +246,7 @@ export class SKComputation extends TaskStereotype {
     return $.unique(keys);
   }
 
-  getKeysFromIncomingPathOfTask(taskId: String) {
+  getKeysFromIncomingPathOfTask(taskId: string) {
     let keys = [];
     for (let encryptedInput of this.getTaskEncryptedInputs()) {
       keys = keys.concat(this.getKeyForEncryptedInput(encryptedInput.id, taskId));

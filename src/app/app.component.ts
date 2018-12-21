@@ -5,24 +5,24 @@ import { AuthService } from "../app/auth/auth.service";
   selector: 'app-root',
   templateUrl: './app.component.html'
 })
-export class AppComponent implements OnInit{
+export class AppComponent implements OnInit {
   constructor(private authService: AuthService) {
     this.authService.authStatus.subscribe(status => {
       this.authenticated = status;
     });
   }
-  
+
   authenticated: Boolean;
 
   isAuthenticated() {
     return this.authenticated;
   }
 
-  setUserEmail(value: String) {
+  setUserEmail(value: string) {
     this.authService.setLoginCredentialsEmail(value);
   }
 
-  setUserPassword(value: String) {
+  setUserPassword(value: string) {
     this.authService.setLoginCredentialsPassword(value);
   }
 

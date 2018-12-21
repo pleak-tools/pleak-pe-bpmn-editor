@@ -15,10 +15,10 @@ export class SGXAttestationEnclave extends TaskStereotype {
     this.init();
   }
 
-  group: String = null;
-  SGXgroup: String = null;
-  selectedGroup: String = null;
-  selectedSGXGroup: String = null;
+  group: string = null;
+  SGXgroup: string = null;
+  selectedGroup: string = null;
+  selectedSGXGroup: string = null;
   SGXAttestationEnclaveAndEvaluateGroupsTasks: TaskStereotypeGroupObject[] = [];
   SGXComputationGroupsTasks: TaskStereotypeGroupObject[] = [];
   groupsTempInfo: any = null;
@@ -42,7 +42,7 @@ export class SGXAttestationEnclave extends TaskStereotype {
   getCurrentStereotypeSettings() {
     let group = this.settingsPanelContainer.find('#SGXAttestationEnclave-groupSelect').val();
     let SGXGroup = this.settingsPanelContainer.find('#SGXAttestationEnclave-SGXComputation-groupSelect').val();
-    return {groupId: group, SGXgroupId: SGXGroup}
+    return { groupId: group, SGXgroupId: SGXGroup }
   }
 
   getGroup() {
@@ -53,11 +53,11 @@ export class SGXAttestationEnclave extends TaskStereotype {
     return this.SGXgroup;
   }
 
-  setGroup(name: String) {
+  setGroup(name: string) {
     this.group = name;
   }
 
-  setSGXGroup(name: String) {
+  setSGXGroup(name: string) {
     this.SGXgroup = name;
   }
 
@@ -88,7 +88,7 @@ export class SGXAttestationEnclave extends TaskStereotype {
     if (this.selectedGroup != null) {
       if (this.getModelSGXAttestationGroups().indexOf(this.selectedGroup) === -1) {
         // If selected group is new group that has no tasks in it yet, add current task into it so its outputs would be highlighted
-        this.SGXAttestationEnclaveAndEvaluateGroupsTasks.push({groupId: this.selectedGroup, taskId: this.task.id});
+        this.SGXAttestationEnclaveAndEvaluateGroupsTasks.push({ groupId: this.selectedGroup, taskId: this.task.id });
       }
       selectedGroupId = this.selectedGroup;
     } else if (this.getSavedStereotypeSettings() != null) {
@@ -101,7 +101,7 @@ export class SGXAttestationEnclave extends TaskStereotype {
     if (this.selectedSGXGroup != null) {
       if (this.selectedSGXGroup != "" && this.getModelSGXComputationGroups().indexOf(this.selectedSGXGroup) === -1) {
         // If selected group is new group that has no tasks in it yet, add current task into it so its outputs would be highlighted
-        this.SGXComputationGroupsTasks.push({groupId: this.selectedSGXGroup, taskId: this.task.id});
+        this.SGXComputationGroupsTasks.push({ groupId: this.selectedSGXGroup, taskId: this.task.id });
       }
       selectedSGXGroupId = this.selectedSGXGroup;
     } else if (this.getSavedStereotypeSettings() != null) {
@@ -210,7 +210,7 @@ export class SGXAttestationEnclave extends TaskStereotype {
         }
       }
     }
-  
+
     this.settingsPanelContainer.find('#SGXAttestationEnclave-groupSelect').html(groups);
     this.settingsPanelContainer.find('#SGXAttestationEnclave-SGXComputation-groupSelect').html(SGXgroups);
     this.settingsPanelContainer.find('#SGXAttestationEnclave-newGroup').html('');
@@ -243,7 +243,7 @@ export class SGXAttestationEnclave extends TaskStereotype {
       let SGXGroup = currentStereotypeSettings.SGXgroupId;
       if (group) {
         let tasks = this.getSGXAttestationGroupTasks(group);
-        let taskAlreadyInGroup = tasks.filter(( obj ) => {
+        let taskAlreadyInGroup = tasks.filter((obj) => {
           return obj.id == self.task.id;
         });
         if (tasks.length === 2 && taskAlreadyInGroup.length !== 1) {
@@ -264,11 +264,11 @@ export class SGXAttestationEnclave extends TaskStereotype {
         }
         this.setGroup(group);
         this.setSGXGroup(SGXGroup);
-        this.SGXAttestationEnclaveAndEvaluateGroupsTasks = $.grep(this.SGXAttestationEnclaveAndEvaluateGroupsTasks, (el, idx) => {return el.taskId == this.task.id}, true);
-        this.SGXAttestationEnclaveAndEvaluateGroupsTasks.push({groupId: group, taskId: this.task.id});
+        this.SGXAttestationEnclaveAndEvaluateGroupsTasks = $.grep(this.SGXAttestationEnclaveAndEvaluateGroupsTasks, (el, idx) => { return el.taskId == this.task.id }, true);
+        this.SGXAttestationEnclaveAndEvaluateGroupsTasks.push({ groupId: group, taskId: this.task.id });
         if (SGXGroup != "") {
-          this.SGXComputationGroupsTasks = $.grep(this.SGXComputationGroupsTasks, (el, idx) => {return el.taskId == this.task.id}, true);
-          this.SGXComputationGroupsTasks.push({groupId: SGXGroup, taskId: this.task.id});
+          this.SGXComputationGroupsTasks = $.grep(this.SGXComputationGroupsTasks, (el, idx) => { return el.taskId == this.task.id }, true);
+          this.SGXComputationGroupsTasks.push({ groupId: SGXGroup, taskId: this.task.id });
         }
         for (let task of this.getSGXAttestationGroupTasks(group)) {
           if (task.id == this.task.id) {
@@ -312,10 +312,10 @@ export class SGXAttestationEnclave extends TaskStereotype {
     for (let taskHandler of this.taskHandler.getAllModelTaskHandlers()) {
       for (let stereotype of taskHandler.stereotypes) {
         if (stereotype.getTitle() == "SGXAttestationEnclave" && (<SGXAttestationEnclave>stereotype).getGroup() != null) {
-          this.SGXAttestationEnclaveAndEvaluateGroupsTasks.push({groupId: (<SGXAttestationEnclave>stereotype).getGroup(), taskId: stereotype.task.id});
+          this.SGXAttestationEnclaveAndEvaluateGroupsTasks.push({ groupId: (<SGXAttestationEnclave>stereotype).getGroup(), taskId: stereotype.task.id });
         }
         if (stereotype.getTitle() == "SGXAttestationChallenge" && (<SGXAttestationChallenge>stereotype).getGroup() != null) {
-          this.SGXAttestationEnclaveAndEvaluateGroupsTasks.push({groupId: (<SGXAttestationChallenge>stereotype).getGroup(), taskId: stereotype.task.id});
+          this.SGXAttestationEnclaveAndEvaluateGroupsTasks.push({ groupId: (<SGXAttestationChallenge>stereotype).getGroup(), taskId: stereotype.task.id });
         }
       }
     }
@@ -326,13 +326,13 @@ export class SGXAttestationEnclave extends TaskStereotype {
     for (let taskHandler of this.taskHandler.getAllModelTaskHandlers()) {
       for (let stereotype of taskHandler.stereotypes) {
         if (stereotype.getTitle() == "SGXComputation" && (<SGXComputation>stereotype).getGroup() != null) {
-          this.SGXComputationGroupsTasks.push({groupId: (<SGXComputation>stereotype).getGroup(), taskId: stereotype.task.id});
+          this.SGXComputationGroupsTasks.push({ groupId: (<SGXComputation>stereotype).getGroup(), taskId: stereotype.task.id });
         }
         if (stereotype.getTitle() == "SGXProtect" && (<SGXProtect>stereotype).getGroup() != null) {
-          this.SGXComputationGroupsTasks.push({groupId: (<SGXProtect>stereotype).getGroup(), taskId: stereotype.task.id});
+          this.SGXComputationGroupsTasks.push({ groupId: (<SGXProtect>stereotype).getGroup(), taskId: stereotype.task.id });
         }
         if (stereotype.getTitle() == "SGXAttestationEnclave" && (<SGXAttestationEnclave>stereotype).getSGXGroup() != null && (<SGXAttestationEnclave>stereotype).getSGXGroup() != "") {
-          this.SGXComputationGroupsTasks.push({groupId: (<SGXAttestationEnclave>stereotype).getSGXGroup(), taskId: stereotype.task.id});
+          this.SGXComputationGroupsTasks.push({ groupId: (<SGXAttestationEnclave>stereotype).getSGXGroup(), taskId: stereotype.task.id });
         }
       }
     }
@@ -370,7 +370,7 @@ export class SGXAttestationEnclave extends TaskStereotype {
     this.settingsPanelContainer.off('change', '#SGXAttestationEnclave-SGXComputation-groupSelect');
   }
 
-  addSGXAttestationEnclaveGroup(group: String) {
+  addSGXAttestationEnclaveGroup(group: string) {
     this.settingsPanelContainer.find('.form-group').removeClass('has-error');
     this.settingsPanelContainer.find('.help-block').hide();
     if (group) {
@@ -386,7 +386,7 @@ export class SGXAttestationEnclave extends TaskStereotype {
     }
   }
 
-  addSGXComputationGroup(group: String) {
+  addSGXComputationGroup(group: string) {
     this.settingsPanelContainer.find('.form-group').removeClass('has-error');
     this.settingsPanelContainer.find('.help-block').hide();
     if (group) {
@@ -402,9 +402,9 @@ export class SGXAttestationEnclave extends TaskStereotype {
     }
   }
 
-  reloadStereotypeSettingsWithSelectedGroup(group: String) {
+  reloadStereotypeSettingsWithSelectedGroup(group: string) {
     // Create temporary object to save current stereotype group
-    let tmpObj = {groupId: this.getGroup(), SGXGroupId: this.getSGXGroup()};
+    let tmpObj = { groupId: this.getGroup(), SGXGroupId: this.getSGXGroup() };
     let currentGroupObj = $.extend({}, tmpObj);
     if (!this.groupsTempInfo) {
       this.groupsTempInfo = currentGroupObj;
@@ -421,13 +421,13 @@ export class SGXAttestationEnclave extends TaskStereotype {
     this.reloadtStereotypeSettings();
   }
 
-  reloadStereotypeSettingsWithSelectedSGXGroup(SGXGroup: String) {
+  reloadStereotypeSettingsWithSelectedSGXGroup(SGXGroup: string) {
     // Create temporary object to save current stereotype group
     let tmpObj = null;
     if (this.groupsTempInfo) {
-      tmpObj = {groupId: this.groupsTempInfo.groupId, SGXGroupId: this.groupsTempInfo.SGXGroupId};
+      tmpObj = { groupId: this.groupsTempInfo.groupId, SGXGroupId: this.groupsTempInfo.SGXGroupId };
     } else {
-      tmpObj = {groupId: this.getGroup(), SGXGroupId: this.getSGXGroup()};
+      tmpObj = { groupId: this.getGroup(), SGXGroupId: this.getSGXGroup() };
     }
     let currentGroupObj = $.extend({}, tmpObj);
     this.groupsTempInfo = currentGroupObj;
@@ -451,7 +451,7 @@ export class SGXAttestationEnclave extends TaskStereotype {
     this.selectedSGXGroup = null;
   }
 
-  highlightSGXAttestationGroupMembersAndTheirInputsOutputs(group: String) {
+  highlightSGXAttestationGroupMembersAndTheirInputsOutputs(group: string) {
     for (let i = 0; i < this.SGXAttestationEnclaveAndEvaluateGroupsTasks.length; i++) {
       let groupId = this.SGXAttestationEnclaveAndEvaluateGroupsTasks[i].groupId;
       let taskId = this.SGXAttestationEnclaveAndEvaluateGroupsTasks[i].taskId;
@@ -510,7 +510,7 @@ export class SGXAttestationEnclave extends TaskStereotype {
     }
   }
 
-  highlightSGXComputationGroupMembersAndTheirInputsOutputs(group: String) {
+  highlightSGXComputationGroupMembersAndTheirInputsOutputs(group: string) {
     for (let i = 0; i < this.SGXComputationGroupsTasks.length; i++) {
       let groupId = this.SGXComputationGroupsTasks[i].groupId;
       let taskId = this.SGXComputationGroupsTasks[i].taskId;
@@ -569,7 +569,7 @@ export class SGXAttestationEnclave extends TaskStereotype {
     }
   }
 
-  getSGXComputationGroupInputOutputObjects(group: String) {
+  getSGXComputationGroupInputOutputObjects(group: string) {
     let objects = [];
     if (this.SGXComputationGroupsTasks && group != null) {
       let allInputsOutputs = [];
@@ -604,10 +604,10 @@ export class SGXAttestationEnclave extends TaskStereotype {
     return difGroups;
   }
 
-  getSGXAttestationGroupTasks(group: String) {
+  getSGXAttestationGroupTasks(group: string) {
     let groupTasks = [];
     if (group) {
-      let groups = $.grep(this.SGXAttestationEnclaveAndEvaluateGroupsTasks, function(el, idx) {return el.groupId.trim() == group.trim()}, false);
+      let groups = $.grep(this.SGXAttestationEnclaveAndEvaluateGroupsTasks, function (el, idx) { return el.groupId.trim() == group.trim() }, false);
       for (let i = 0; i < groups.length; i++) {
         groupTasks.push(this.registry.get(groups[i].taskId));
       }
@@ -625,10 +625,10 @@ export class SGXAttestationEnclave extends TaskStereotype {
     return difGroups;
   }
 
-  getSGXComputationGroupTasks(group: String) {
+  getSGXComputationGroupTasks(group: string) {
     let groupTasks = [];
     if (group) {
-      let groups = $.grep(this.SGXComputationGroupsTasks, function(el, idx) {return el.groupId.trim() == group.trim()}, false);
+      let groups = $.grep(this.SGXComputationGroupsTasks, function (el, idx) { return el.groupId.trim() == group.trim() }, false);
       for (let i = 0; i < groups.length; i++) {
         groupTasks.push(this.registry.get(groups[i].taskId));
       }
@@ -636,7 +636,7 @@ export class SGXAttestationEnclave extends TaskStereotype {
     return groupTasks;
   }
 
-  getSGXAttestationGroupInputOutputObjects(group: String) {
+  getSGXAttestationGroupInputOutputObjects(group: string) {
     let objects = [];
     if (this.SGXAttestationEnclaveAndEvaluateGroupsTasks && group != null) {
       let allInputsOutputs = [];
@@ -647,14 +647,14 @@ export class SGXAttestationEnclave extends TaskStereotype {
           allInputsOutputs.push(inputObj);
           allInputs.push(inputObj);
         }
-         for (let outputObj of this.getTaskOutputObjectsByTaskId(task.id)) {
+        for (let outputObj of this.getTaskOutputObjectsByTaskId(task.id)) {
           allInputsOutputs.push(outputObj);
           allOutputs.push(outputObj);
         }
       }
       for (let obj of allInputsOutputs) {
         if (allInputs.indexOf(obj) !== -1 && allOutputs.indexOf(obj) !== -1 && objects.indexOf(obj) === -1) {
-           objects.push(obj);
+          objects.push(obj);
         }
       }
     }
@@ -665,14 +665,14 @@ export class SGXAttestationEnclave extends TaskStereotype {
     let groupTasks = this.getSGXAttestationGroupTasks(this.getGroup());
     let groupTasksIds = groupTasks.map(a => a.id);
     if (groupTasksIds.length === 2) {
-      groupTasksIds.splice(groupTasksIds.indexOf(this.task.id),1);
+      groupTasksIds.splice(groupTasksIds.indexOf(this.task.id), 1);
       return groupTasksIds[0];
     }
     return null;
   }
 
   /** Simple disclosure analysis functions */
-  getDataObjectVisibilityStatus(dataObjectId: String) {
+  getDataObjectVisibilityStatus(dataObjectId: string) {
     // Inputs: public
     // Outputs: public
     let statuses = [];

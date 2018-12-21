@@ -7,8 +7,8 @@ declare let $: any;
 let is = (element, type) => element.$instanceOf(type);
 
 interface PKPrivateGroupDataObject {
-    groupId: String;
-    dataObjectId: String;
+  groupId: string;
+  dataObjectId: string;
 }
 
 export class PKPrivate extends DataObjectStereotype {
@@ -18,8 +18,8 @@ export class PKPrivate extends DataObjectStereotype {
     this.init();
   }
 
-  group: String = null;
-  selectedGroup: String = null;
+  group: string = null;
+  selectedGroup: string = null;
   PKPublicAndPrivateGroupsDataObjects: PKPrivateGroupDataObject[] = [];
 
   /** Functions inherited from DataObjectStereotype and Stereotype classes */
@@ -39,14 +39,14 @@ export class PKPrivate extends DataObjectStereotype {
   // groupId
   getCurrentStereotypeSettings() {
     let group = this.settingsPanelContainer.find('#PKPrivate-groupSelect').val();
-    return {groupId: group};
+    return { groupId: group };
   }
 
   getGroup() {
     return this.group;
   }
 
-  setGroup(name: String) {
+  setGroup(name: string) {
     this.group = name;
   }
 
@@ -72,7 +72,7 @@ export class PKPrivate extends DataObjectStereotype {
     if (this.selectedGroup != null) {
       if (this.getModelPKPublicAndPKPrivateGroups().indexOf(this.selectedGroup) === -1) {
         // If selected group is new group that has no dataObjects in it yet, add current dataObject into it so its outputs would be highlighted
-        this.PKPublicAndPrivateGroupsDataObjects.push({groupId: this.selectedGroup, dataObjectId: this.dataObject.id});
+        this.PKPublicAndPrivateGroupsDataObjects.push({ groupId: this.selectedGroup, dataObjectId: this.dataObject.id });
       }
       selectedGroupId = this.selectedGroup;
     } else if (this.getSavedStereotypeSettings() != null) {
@@ -115,7 +115,7 @@ export class PKPrivate extends DataObjectStereotype {
         }
       }
     }
-  
+
     this.settingsPanelContainer.find('#PKPrivate-dataObjectName').text(this.dataObject.name);
     this.settingsPanelContainer.find('#PKPrivate-groupSelect').html(groups);
     this.settingsPanelContainer.find('#PKPrivate-newGroup').html('');
@@ -132,7 +132,7 @@ export class PKPrivate extends DataObjectStereotype {
     this.selectedGroup = null;
   }
 
-  getGroupPKPrivateElementName(group: String) {
+  getGroupPKPrivateElementName(group: string) {
     let dataObjects = this.getPKPublicAndPKPrivateGroupObjects(group);
     if (dataObjects.length > 0) {
       for (let dataObject of dataObjects) {
@@ -150,7 +150,7 @@ export class PKPrivate extends DataObjectStereotype {
     let group = currentStereotypeSettings.groupId;
     if (group) {
       let dataObjects = this.getPKPublicAndPKPrivateGroupObjects(group);
-      let dataObjectAlreadyInGroup = dataObjects.filter(( obj ) => {
+      let dataObjectAlreadyInGroup = dataObjects.filter((obj) => {
         return obj.id == self.dataObject.id;
       });
       if (dataObjects.length === 2 && dataObjectAlreadyInGroup.length !== 1) {
@@ -172,12 +172,12 @@ export class PKPrivate extends DataObjectStereotype {
         this.addStereotypeToElement();
       }
       this.setGroup(group);
-      this.PKPublicAndPrivateGroupsDataObjects = $.grep(this.PKPublicAndPrivateGroupsDataObjects, (el, idx) => {return el.dataObjectId == this.dataObject.id}, true);
-      this.PKPublicAndPrivateGroupsDataObjects.push({groupId: group, dataObjectId: this.dataObject.id});
+      this.PKPublicAndPrivateGroupsDataObjects = $.grep(this.PKPublicAndPrivateGroupsDataObjects, (el, idx) => { return el.dataObjectId == this.dataObject.id }, true);
+      this.PKPublicAndPrivateGroupsDataObjects.push({ groupId: group, dataObjectId: this.dataObject.id });
       for (let dataObject of this.getPKPublicAndPKPrivateGroupObjects(group)) {
         if (dataObject.id == this.dataObject.id) {
-            dataObject.businessObject.PKPrivate = JSON.stringify(currentStereotypeSettings);
-          }
+          dataObject.businessObject.PKPrivate = JSON.stringify(currentStereotypeSettings);
+        }
       }
       this.settingsPanelContainer.find('.form-group').removeClass('has-error');
       this.settingsPanelContainer.find('.help-block').hide();
@@ -209,10 +209,10 @@ export class PKPrivate extends DataObjectStereotype {
     for (let dataObjectHandler of this.dataObjectHandler.getAllModelDataObjectHandlers()) {
       for (let stereotype of dataObjectHandler.stereotypes) {
         if (stereotype.getTitle() == "PKPrivate" && (<PKPrivate>stereotype).getGroup() != null) {
-          this.PKPublicAndPrivateGroupsDataObjects.push({groupId: (<PKPrivate>stereotype).getGroup(), dataObjectId: stereotype.dataObject.id});
+          this.PKPublicAndPrivateGroupsDataObjects.push({ groupId: (<PKPrivate>stereotype).getGroup(), dataObjectId: stereotype.dataObject.id });
         }
         if (stereotype.getTitle() == "PKPublic" && (<PKPublic>stereotype).getGroup() != null) {
-          this.PKPublicAndPrivateGroupsDataObjects.push({groupId: (<PKPublic>stereotype).getGroup(), dataObjectId: stereotype.dataObject.id});
+          this.PKPublicAndPrivateGroupsDataObjects.push({ groupId: (<PKPublic>stereotype).getGroup(), dataObjectId: stereotype.dataObject.id });
         }
       }
     }
@@ -240,7 +240,7 @@ export class PKPrivate extends DataObjectStereotype {
     this.settingsPanelContainer.off('change', '#PKPrivate-groupSelect');
   }
 
-  addPKPrivateGroup(group: String) {
+  addPKPrivateGroup(group: string) {
     if (group) {
       this.reloadStereotypeSettingsWithSelectedGroup(group);
       this.settingsPanelContainer.find('#PKPrivate-newGroup').val('');
@@ -254,9 +254,9 @@ export class PKPrivate extends DataObjectStereotype {
     }
   }
 
-  reloadStereotypeSettingsWithSelectedGroup(group: String) {
+  reloadStereotypeSettingsWithSelectedGroup(group: string) {
     // Create temporary object to save current stereotype group
-    let tmpObj = {groupId: this.getGroup()};
+    let tmpObj = { groupId: this.getGroup() };
     let currentGroupObj = $.extend({}, tmpObj);
 
     // Terminate current dataObject stereotype settings
@@ -264,7 +264,7 @@ export class PKPrivate extends DataObjectStereotype {
 
     // Set selected group temporarily to new selected group to init stereotype settings based on new group
     this.selectedGroup = group;
-    
+
     if (currentGroupObj.groupId != null) {
       this.initAllElementStereotypesSettings();
     } else {
@@ -276,7 +276,7 @@ export class PKPrivate extends DataObjectStereotype {
     this.selectedGroup = null;
   }
 
-  highlightPKPublicAndPKPrivateGroupMembersAndTheirInputsOutputs(group: String) {
+  highlightPKPublicAndPKPrivateGroupMembersAndTheirInputsOutputs(group: string) {
     for (let i = 0; i < this.PKPublicAndPrivateGroupsDataObjects.length; i++) {
       let groupId = this.PKPublicAndPrivateGroupsDataObjects[i].groupId;
       let dataObjectId = this.PKPublicAndPrivateGroupsDataObjects[i].dataObjectId;
@@ -305,10 +305,10 @@ export class PKPrivate extends DataObjectStereotype {
     return difGroups;
   }
 
-  getPKPublicAndPKPrivateGroupObjects(group: String) {
+  getPKPublicAndPKPrivateGroupObjects(group: string) {
     let groupDataObjects = [];
     if (group) {
-      let groups = $.grep(this.PKPublicAndPrivateGroupsDataObjects, function(el, idx) {return el.groupId.trim() == group.trim()}, false);
+      let groups = $.grep(this.PKPublicAndPrivateGroupsDataObjects, function (el, idx) { return el.groupId.trim() == group.trim() }, false);
       for (let i = 0; i < groups.length; i++) {
         groupDataObjects.push(this.registry.get(groups[i].dataObjectId));
       }
@@ -320,7 +320,7 @@ export class PKPrivate extends DataObjectStereotype {
     let groupDataObjects = this.getPKPublicAndPKPrivateGroupObjects(this.getGroup());
     let groupDataObjectsIds = groupDataObjects.map(a => a.id);
     if (groupDataObjectsIds.length === 2) {
-      groupDataObjectsIds.splice(groupDataObjectsIds.indexOf(this.dataObject.id),1);
+      groupDataObjectsIds.splice(groupDataObjectsIds.indexOf(this.dataObject.id), 1);
       return groupDataObjectsIds[0];
     }
     return null;

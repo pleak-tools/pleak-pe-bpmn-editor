@@ -5,15 +5,15 @@ import { Subject } from "rxjs/Subject";
 import { Observable } from "rxjs/Observable";
 
 declare let $: any;
-declare function require(name:string);
+declare function require(name: string);
 
 let jwt_decode = require('jwt-decode');
 
 let config = require('../../config.json');
 
 interface LoginCredentials {
-  email: String,
-  password: String
+  email: string,
+  password: string
 }
 
 @Injectable()
@@ -37,11 +37,11 @@ export class AuthService {
     return this.user.email;
   }
 
-  setLoginCredentialsEmail(value: String) {
+  setLoginCredentialsEmail(value: string) {
     this.loginCredentials.email = value;
   }
 
-  setLoginCredentialsPassword(value: String) {
+  setLoginCredentialsPassword(value: string) {
     this.loginCredentials.password = value;
   }
 
@@ -90,7 +90,7 @@ export class AuthService {
       }
     );
   }
-  
+
   loginREST(user: LoginCredentials) {
     this.http.post(config.backend.host + '/rest/auth/login', user, this.loadRequestOptions()).subscribe(
       success => {
@@ -121,7 +121,7 @@ export class AuthService {
         this.user = null;
         this.authStatusChanged(false);
         this.hideLogoutLoading();
-      } 
+      }
     );
   }
 
@@ -136,7 +136,7 @@ export class AuthService {
   };
 
   loginSuccess() {
-    $('#loginLoading').fadeOut("slow", function() {
+    $('#loginLoading').fadeOut("slow", function () {
       $('#loginForm').trigger('reset').show();
       $('#loginForm .help-block').hide();
       $('#loginForm .form-group').removeClass('has-error');
@@ -149,7 +149,7 @@ export class AuthService {
   };
 
   loginError(code: Number) {
-    $('#loginLoading').fadeOut("slow", function() {
+    $('#loginLoading').fadeOut("slow", function () {
       $('#loginForm .help-block').hide();
       $('#loginForm .form-group').addClass('has-error');
       $('#loginForm').show();
@@ -177,7 +177,7 @@ export class AuthService {
   };
 
   hideLogoutLoading() {
-    $('#logoutLoading').fadeOut("slow", function() {
+    $('#logoutLoading').fadeOut("slow", function () {
       $('#logoutText').show();
     });
     $('#logoutModal').modal('hide');

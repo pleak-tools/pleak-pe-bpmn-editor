@@ -30,7 +30,7 @@ export class SSSharing extends TaskStereotype {
   getCurrentStereotypeSettings() {
     let treshold = Number(this.settingsPanelContainer.find('#SSSharing-treshold').val());
     let computationParties = Number(this.settingsPanelContainer.find('#SSSharing-computationParties').val());
-    return {treshold: treshold, computationParties: computationParties};
+    return { treshold: treshold, computationParties: computationParties };
   }
 
   initStereotypePublicView() {
@@ -107,7 +107,7 @@ export class SSSharing extends TaskStereotype {
       this.initRemoveButton();
     }
   }
-  
+
   removeStereotype() {
     if (confirm('Are you sure you wish to remove the stereotype?')) {
       super.removeStereotype();
@@ -118,7 +118,7 @@ export class SSSharing extends TaskStereotype {
   }
 
   /** Simple disclosure analysis functions */
-  getDataObjectVisibilityStatus(dataObjectId: String) {
+  getDataObjectVisibilityStatus(dataObjectId: string) {
     // Inputs: public
     // Outputs: private
     let statuses = [];

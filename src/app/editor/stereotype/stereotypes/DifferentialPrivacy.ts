@@ -31,13 +31,13 @@ export class DifferentialPrivacy extends TaskStereotype {
   getCurrentStereotypeSettings() {
     let inputScript = this.settingsPanelContainer.find('#DifferentialPrivacy-inputScript').val();
     let delta = this.settingsPanelContainer.find('#DifferentialPrivacy-delta').val();
-    let epsilons = $("input[name='epsilons\\[\\]']").map(function() {
+    let epsilons = $("input[name='epsilons\\[\\]']").map(function () {
       let input = $(this).data('input');
       let output = $(this).data('output');
       let epsilon = $(this).val();
-      return {input: input, output: output, epsilon: epsilon};
+      return { input: input, output: output, epsilon: epsilon };
     }).get();
-    return {inputScript: inputScript, delta: delta, epsilons: epsilons};
+    return { inputScript: inputScript, delta: delta, epsilons: epsilons };
   }
 
   initStereotypePublicView() {
@@ -77,7 +77,7 @@ export class DifferentialPrivacy extends TaskStereotype {
       for (let outputObj of this.getTaskOutputObjects()) {
         let epsilon = "";
         if (epsilons) {
-          let epsilonObj = epsilons.filter(function( obj ) {
+          let epsilonObj = epsilons.filter(function (obj) {
             return obj.input == inputObj.businessObject.id && obj.output == outputObj.businessObject.id;
           });
           if (epsilonObj.length > 0) {
@@ -105,11 +105,11 @@ export class DifferentialPrivacy extends TaskStereotype {
 
   saveStereotypeSettings() {
     if (this.areInputsAndOutputsNumbersCorrect()) {
-      let epsilons = $("input[name='epsilons\\[\\]']").map(function() {
+      let epsilons = $("input[name='epsilons\\[\\]']").map(function () {
         let input = $(this).data('input');
         let output = $(this).data('output');
         let epsilon = $(this).val();
-        return {input: input, output: output, epsilon: epsilon};
+        return { input: input, output: output, epsilon: epsilon };
       }).get();
       let flag = false;
       for (let i = 0; i < epsilons.length; i++) {
@@ -137,7 +137,7 @@ export class DifferentialPrivacy extends TaskStereotype {
       this.initRemoveButton();
     }
   }
-  
+
   removeStereotype() {
     if (confirm('Are you sure you wish to remove the stereotype?')) {
       super.removeStereotype();
@@ -148,7 +148,7 @@ export class DifferentialPrivacy extends TaskStereotype {
   }
 
   /** Simple disclosure analysis functions */
-  getDataObjectVisibilityStatus(dataObjectId: String) {
+  getDataObjectVisibilityStatus(dataObjectId: string) {
     // Inputs: public
     // Outputs: public
     let statuses = [];
