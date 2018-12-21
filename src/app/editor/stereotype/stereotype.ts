@@ -216,4 +216,9 @@ export class Stereotype {
     this.validationHandler.addUniqueErrorToErrorsList(errors, error, ids, highlight);
   }
 
+  // Get unique values of an array
+  getUniqueValuesOfArray(array: string[]): string[] {
+    return this.validationHandler.getUniqueValuesOfArray(array);
+  }
+
 }

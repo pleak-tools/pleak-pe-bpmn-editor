@@ -469,7 +469,7 @@ export class OTReceive extends TaskStereotype {
         }
       }
     }
-    return $.unique(incMessageFlows);
+    return this.getUniqueValuesOfArray(incMessageFlows);
   }
 
   areStereotypesCorrectlyConnected() {

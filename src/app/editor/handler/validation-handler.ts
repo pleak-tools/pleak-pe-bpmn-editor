@@ -395,7 +395,7 @@ export class ValidationHandler {
         }
       }
     }
-    return $.unique(problematicTasks);
+    return this.getUniqueValuesOfArray(problematicTasks);
   }
 
   // Check if the value is a number
@@ -736,7 +736,7 @@ export class ValidationHandler {
         }
       }
     }
-    return $.unique(incTasks);
+    return this.getUniqueValuesOfArray(incTasks);
   }
 
   // Return all tasks from the outgoing path of task
@@ -760,7 +760,7 @@ export class ValidationHandler {
         }
       }
     }
-    return $.unique(outgTasks);
+    return this.getUniqueValuesOfArray(outgTasks);
   }
 
   // Return all (first) tasks from the incoming path of element
@@ -784,7 +784,7 @@ export class ValidationHandler {
         }
       }
     }
-    return $.unique(incTasks);
+    return this.getUniqueValuesOfArray(incTasks);
   }
 
   // Return all (first) tasks from the outgoing path of element
@@ -808,7 +808,7 @@ export class ValidationHandler {
         }
       }
     }
-    return $.unique(outgTasks);
+    return this.getUniqueValuesOfArray(outgTasks);
   }
 
   // Return all exclusive gateways from the incoming path of element
@@ -832,7 +832,7 @@ export class ValidationHandler {
         }
       }
     }
-    return $.unique(incTasks);
+    return this.getUniqueValuesOfArray(incTasks);
   }
 
   // Return all StartEvent and IntermediateEvent elements from the incoming path of task
@@ -842,7 +842,7 @@ export class ValidationHandler {
     if (task) {
       this.findIncomingPathStartAndIntermediateEvents(events, task.incoming, task.id, tasks);
     }
-    return $.unique(events);
+    return this.getUniqueValuesOfArray(events);
   }
 
   // Return all paths from the process of current task
@@ -855,7 +855,7 @@ export class ValidationHandler {
       let uniqueRelations = [];
       let paths = [];
 
-      for (let task of $.unique(this.getTasksOfOutgoingPathByInputElement(startEventElementsOfCurrentTaskProcess[j]))) {
+      for (let task of this.getUniqueValuesOfArray(this.getTasksOfOutgoingPathByInputElement(startEventElementsOfCurrentTaskProcess[j]))) {
         for (let firstIncomingTask of this.getFirstTasksOfIncomingPathOfInputElement(this.registry.get(task).businessObject)) {
           relations.push({ key: task, parent: firstIncomingTask });
         }
@@ -950,6 +950,11 @@ export class ValidationHandler {
       return true;
     }
     return false;
+  }
+
+  // Get unique values of an array
+  getUniqueValuesOfArray(array: string[]): string[] {
+    return array.filter((v, i, a) => a.indexOf(v) === i);
   }
 
   /* */

@@ -469,7 +469,7 @@ export class GCEvaluate extends TaskStereotype {
         }
       }
     }
-    return $.unique(incMessageFlows);
+    return this.getUniqueValuesOfArray(incMessageFlows);
   }
 
   getGroupSecondElementId() {

@@ -192,7 +192,7 @@ export class SKDecrypt extends TaskStereotype {
         }
       }
     }
-    return $.unique(keys);
+    return this.getUniqueValuesOfArray(keys);
   }
 
   getKeysFromIncomingPathOfTask(taskId: string) {

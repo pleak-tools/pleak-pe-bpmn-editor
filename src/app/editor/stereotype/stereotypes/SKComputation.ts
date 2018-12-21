@@ -243,7 +243,7 @@ export class SKComputation extends TaskStereotype {
         }
       }
     }
-    return $.unique(keys);
+    return this.getUniqueValuesOfArray(keys);
   }
 
   getKeysFromIncomingPathOfTask(taskId: string) {
@@ -262,7 +262,7 @@ export class SKComputation extends TaskStereotype {
     let keys = this.getKeysForAllTaskEncryptedInputs();
     let keysNames = [];
     if (keys) {
-      keysNames = $.unique(keys.map(a => a.businessObject.name.trim()));
+      keysNames = this.getUniqueValuesOfArray(keys.map(a => a.businessObject.name.trim()));
     }
     if (keysNames.length > 1) {
       return false;

@@ -469,7 +469,7 @@ export class OTSend extends TaskStereotype {
         }
       }
     }
-    return $.unique(outgMessageFlows);
+    return this.getUniqueValuesOfArray(outgMessageFlows);
   }
 
   areStereotypesCorrectlyConnected() {
