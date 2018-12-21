@@ -87,7 +87,7 @@ export class AddSSReconstruction extends TaskStereotype {
   }
 
   /** Simple disclosure analysis functions */
-  getDataObjectVisibilityStatus(dataObjectId: String) {
+  getDataObjectVisibilityStatus(dataObjectId: string) {
     // Inputs: private
     // Outputs: public
     let statuses = [];
@@ -118,7 +118,7 @@ export class AddSSReconstruction extends TaskStereotype {
     return true;
   }
 
-  areInputsFromTaskWithStereotypeAccepted(taskId: String) {
+  areInputsFromTaskWithStereotypeAccepted(taskId: string) {
     // Accepted:
     // AddSSharing
     // AddSSComputation

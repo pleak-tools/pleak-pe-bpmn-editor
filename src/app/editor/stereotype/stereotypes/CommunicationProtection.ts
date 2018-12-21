@@ -63,7 +63,7 @@ export class CommunicationProtection extends MessageFlowStereotype {
     this.messageFlow.CommunicationProtection = JSON.stringify(this.getCurrentStereotypeSettings());
     return true;
   }
-  
+
   removeStereotype() {
     if (confirm('Are you sure you wish to remove the stereotype?')) {
       super.removeStereotype();

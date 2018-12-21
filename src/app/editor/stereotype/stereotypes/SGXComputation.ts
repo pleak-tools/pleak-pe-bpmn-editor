@@ -14,8 +14,8 @@ export class SGXComputation extends TaskStereotype {
     this.init();
   }
 
-  group: String = null;
-  selectedGroup: String = null;
+  group: string = null;
+  selectedGroup: string = null;
   SGXComputationGroupsTasks: TaskStereotypeGroupObject[] = [];
 
   /** Functions inherited from TaskStereotype and Stereotype classes */
@@ -48,25 +48,25 @@ export class SGXComputation extends TaskStereotype {
       inputScriptType = "stereotype";
       inputScriptContents = this.settingsPanelContainer.find('#SGXComputation-inputStereotypeSelect').val();
     }
-    inputScript = {type: inputScriptType, contents: inputScriptContents};
+    inputScript = { type: inputScriptType, contents: inputScriptContents };
     let inputTypes = [];
     let outputTypes = [];
     for (let inputObject of this.getTaskInputObjects()) {
-      let type = $('#SGXComputation-input-type-select-'+inputObject.id).val();
-      inputTypes.push({id: inputObject.id, type: type});
+      let type = $('#SGXComputation-input-type-select-' + inputObject.id).val();
+      inputTypes.push({ id: inputObject.id, type: type });
     }
     for (let outputObject of this.getTaskOutputObjects()) {
-      let type = $('#SGXComputation-output-type-select-'+outputObject.id).val();
-      outputTypes.push({id: outputObject.id, type: type});
+      let type = $('#SGXComputation-output-type-select-' + outputObject.id).val();
+      outputTypes.push({ id: outputObject.id, type: type });
     }
-    return {groupId: group, inputScript: inputScript, inputTypes: inputTypes, outputTypes: outputTypes};
+    return { groupId: group, inputScript: inputScript, inputTypes: inputTypes, outputTypes: outputTypes };
   }
 
   getGroup() {
     return this.group;
   }
 
-  setGroup(name: String) {
+  setGroup(name: string) {
     this.group = name;
   }
 
@@ -98,7 +98,7 @@ export class SGXComputation extends TaskStereotype {
     if (this.selectedGroup != null) {
       if (this.getModelSGXComputationGroups().indexOf(this.selectedGroup) === -1) {
         // If selected group is new group that has no tasks in it yet, add current task into it so its inputs and outputs would be highlighted
-        this.SGXComputationGroupsTasks.push({groupId: this.selectedGroup, taskId: this.task.id});
+        this.SGXComputationGroupsTasks.push({ groupId: this.selectedGroup, taskId: this.task.id });
       }
       selectedGroupId = this.selectedGroup;
     } else if (this.getSavedStereotypeSettings() != null) {
@@ -168,52 +168,52 @@ export class SGXComputation extends TaskStereotype {
     }
 
     for (let inputObject of this.getTaskInputObjects()) {
-        let selectedPublic = "";
-        let selectedPrivate = "";
-        if (inputTypes !== null) {
-          for (let inputType of inputTypes) {
-            if (inputType.id == inputObject.id) {
-              if (inputType.type == "public") {
-                selectedPublic = "selected";
-              }
-              if (inputType.type == "private") {
-                selectedPrivate = "selected";
-              }
+      let selectedPublic = "";
+      let selectedPrivate = "";
+      if (inputTypes !== null) {
+        for (let inputType of inputTypes) {
+          if (inputType.id == inputObject.id) {
+            if (inputType.type == "public") {
+              selectedPublic = "selected";
+            }
+            if (inputType.type == "private") {
+              selectedPrivate = "selected";
             }
           }
-        } else {
-          selectedPrivate = "selected";
         }
-        inputObjects += '<li>' + inputObject.businessObject.name + '</li>';
-        inputObjects += '<select class="form-control stereotype-option" id="SGXComputation-input-type-select-'+inputObject.id+'">';
-        inputObjects += '<option ' + selectedPublic + ' value="public">Public</option>';
-        inputObjects += '<option ' + selectedPrivate + ' value="private">SGXPrivate</option>';
-        inputObjects += '</select>';
+      } else {
+        selectedPrivate = "selected";
       }
+      inputObjects += '<li>' + inputObject.businessObject.name + '</li>';
+      inputObjects += '<select class="form-control stereotype-option" id="SGXComputation-input-type-select-' + inputObject.id + '">';
+      inputObjects += '<option ' + selectedPublic + ' value="public">Public</option>';
+      inputObjects += '<option ' + selectedPrivate + ' value="private">SGXPrivate</option>';
+      inputObjects += '</select>';
+    }
 
-      for (let outputObject of this.getTaskOutputObjects()) {
-        let selectedPublic = "";
-        let selectedPrivate = "";
-        if (outputTypes !== null) {
-          for (let outputType of outputTypes) {
-            if (outputType.id == outputObject.id) {
-              if (outputType.type == "public") {
-                selectedPublic = "selected";
-              }
-              if (outputType.type == "private") {
-                selectedPrivate = "selected";
-              }
+    for (let outputObject of this.getTaskOutputObjects()) {
+      let selectedPublic = "";
+      let selectedPrivate = "";
+      if (outputTypes !== null) {
+        for (let outputType of outputTypes) {
+          if (outputType.id == outputObject.id) {
+            if (outputType.type == "public") {
+              selectedPublic = "selected";
+            }
+            if (outputType.type == "private") {
+              selectedPrivate = "selected";
             }
           }
-        } else {
-          selectedPrivate = "selected";
         }
-        outputObjects += '<li>' + outputObject.businessObject.name + '</li>';
-        outputObjects += '<select class="form-control stereotype-option" id="SGXComputation-output-type-select-'+outputObject.id+'">';
-        outputObjects += '<option ' + selectedPublic + ' value="public">Public</option>';
-        outputObjects += '<option ' + selectedPrivate + ' value="private">SGXPrivate</option>';
-        outputObjects += '</select>';
+      } else {
+        selectedPrivate = "selected";
       }
+      outputObjects += '<li>' + outputObject.businessObject.name + '</li>';
+      outputObjects += '<select class="form-control stereotype-option" id="SGXComputation-output-type-select-' + outputObject.id + '">';
+      outputObjects += '<option ' + selectedPublic + ' value="public">Public</option>';
+      outputObjects += '<option ' + selectedPrivate + ' value="private">SGXPrivate</option>';
+      outputObjects += '</select>';
+    }
 
     let taskObjs = "";
     if (selectedGroupId !== null) {
@@ -277,7 +277,7 @@ export class SGXComputation extends TaskStereotype {
       if (group) {
         let flag = false;
         for (let inputObject of this.getTaskInputObjects()) {
-          let type = $('#SGXComputation-input-type-select-'+inputObject.id).val();
+          let type = $('#SGXComputation-input-type-select-' + inputObject.id).val();
           if (type == "private") {
             flag = true;
           }
@@ -292,8 +292,8 @@ export class SGXComputation extends TaskStereotype {
           this.addStereotypeToElement();
         }
         this.setGroup(group);
-        this.SGXComputationGroupsTasks = $.grep(this.SGXComputationGroupsTasks, (el, idx) => {return el.taskId == this.task.id}, true);
-        this.SGXComputationGroupsTasks.push({groupId: group, taskId: this.task.id});
+        this.SGXComputationGroupsTasks = $.grep(this.SGXComputationGroupsTasks, (el, idx) => { return el.taskId == this.task.id }, true);
+        this.SGXComputationGroupsTasks.push({ groupId: group, taskId: this.task.id });
         for (let task of this.getSGXComputationGroupTasks(group)) {
           if (task.id == this.task.id) {
             task.businessObject.SGXComputation = JSON.stringify(currentStereotypeSettings);
@@ -335,13 +335,13 @@ export class SGXComputation extends TaskStereotype {
     for (let taskHandler of this.taskHandler.getAllModelTaskHandlers()) {
       for (let stereotype of taskHandler.stereotypes) {
         if (stereotype.getTitle() == "SGXComputation" && (<SGXComputation>stereotype).getGroup() != null) {
-          this.SGXComputationGroupsTasks.push({groupId: (<SGXComputation>stereotype).getGroup(), taskId: stereotype.task.id});
+          this.SGXComputationGroupsTasks.push({ groupId: (<SGXComputation>stereotype).getGroup(), taskId: stereotype.task.id });
         }
         if (stereotype.getTitle() == "SGXProtect" && (<SGXProtect>stereotype).getGroup() != null) {
-          this.SGXComputationGroupsTasks.push({groupId: (<SGXProtect>stereotype).getGroup(), taskId: stereotype.task.id});
+          this.SGXComputationGroupsTasks.push({ groupId: (<SGXProtect>stereotype).getGroup(), taskId: stereotype.task.id });
         }
         if (stereotype.getTitle() == "SGXAttestationEnclave" && (<SGXAttestationEnclave>stereotype).getSGXGroup() != null && (<SGXAttestationEnclave>stereotype).getSGXGroup() != "") {
-          this.SGXComputationGroupsTasks.push({groupId: (<SGXAttestationEnclave>stereotype).getSGXGroup(), taskId: stereotype.task.id});
+          this.SGXComputationGroupsTasks.push({ groupId: (<SGXAttestationEnclave>stereotype).getSGXGroup(), taskId: stereotype.task.id });
         }
       }
     }
@@ -392,7 +392,7 @@ export class SGXComputation extends TaskStereotype {
     this.settingsPanelContainer.off('click', '#SGXComputation-inputScriptType-stereotype');
   }
 
-  addSGXComputationGroup(group: String) {
+  addSGXComputationGroup(group: string) {
     if (group) {
       this.reloadStereotypeSettingsWithSelectedGroup(group);
       this.settingsPanelContainer.find('#SGXComputation-newGroup').val('');
@@ -407,9 +407,9 @@ export class SGXComputation extends TaskStereotype {
     }
   }
 
-  reloadStereotypeSettingsWithSelectedGroup(group: String) {
+  reloadStereotypeSettingsWithSelectedGroup(group: string) {
     // Create temporary object to save current stereotype group
-    let tmpObj = {groupId: this.getGroup()};
+    let tmpObj = { groupId: this.getGroup() };
     let currentGroupObj = $.extend({}, tmpObj);
 
     // Terminate current task stereotype settings
@@ -429,7 +429,7 @@ export class SGXComputation extends TaskStereotype {
     this.selectedGroup = null;
   }
 
-  highlightSGXComputationGroupMembersAndTheirInputsOutputs(group: String) {
+  highlightSGXComputationGroupMembersAndTheirInputsOutputs(group: string) {
 
     for (let i = 0; i < this.SGXComputationGroupsTasks.length; i++) {
       let groupId = this.SGXComputationGroupsTasks[i].groupId;
@@ -507,10 +507,10 @@ export class SGXComputation extends TaskStereotype {
     return difGroups;
   }
 
-  getSGXComputationGroupTasks(group: String) {
+  getSGXComputationGroupTasks(group: string) {
     let groupTasks = [];
     if (group) {
-      let groups = $.grep(this.SGXComputationGroupsTasks, function(el, idx) {return el.groupId.trim() == group.trim()}, false);
+      let groups = $.grep(this.SGXComputationGroupsTasks, function (el, idx) { return el.groupId.trim() == group.trim() }, false);
       for (let i = 0; i < groups.length; i++) {
         groupTasks.push(this.registry.get(groups[i].taskId));
       }
@@ -518,7 +518,7 @@ export class SGXComputation extends TaskStereotype {
     return groupTasks;
   }
 
-  getSGXComputationGroupInputOutputObjects(group: String) {
+  getSGXComputationGroupInputOutputObjects(group: string) {
     let objects = [];
     if (this.SGXComputationGroupsTasks && group != null) {
       let allInputsOutputs = [];
@@ -529,14 +529,14 @@ export class SGXComputation extends TaskStereotype {
           allInputsOutputs.push(inputObj);
           allInputs.push(inputObj);
         }
-         for (let outputObj of this.getTaskOutputObjectsByTaskId(task.id)) {
+        for (let outputObj of this.getTaskOutputObjectsByTaskId(task.id)) {
           allInputsOutputs.push(outputObj);
           allOutputs.push(outputObj);
         }
       }
       for (let obj of allInputsOutputs) {
         if (allInputs.indexOf(obj) !== -1 && allOutputs.indexOf(obj) !== -1 && objects.indexOf(obj) === -1) {
-           objects.push(obj);
+          objects.push(obj);
         }
       }
     }
@@ -564,7 +564,7 @@ export class SGXComputation extends TaskStereotype {
   }
 
   /** Simple disclosure analysis functions */
-  getDataObjectVisibilityStatus(dataObjectId: String) {
+  getDataObjectVisibilityStatus(dataObjectId: string) {
     // Inputs: if SGXPrivate - private, if public - public
     // Outputs: if SGXPrivate - private, if public - public
     let statuses = [];
@@ -607,13 +607,13 @@ export class SGXComputation extends TaskStereotype {
     // Outputs: exactly 1
     let numberOfInputs = this.getTaskInputObjects().length;
     let numberOfOutputs = this.getTaskOutputObjects().length;
-    if (numberOfInputs <1 || numberOfOutputs != 1) {
+    if (numberOfInputs < 1 || numberOfOutputs != 1) {
       return false;
     }
     return true;
   }
 
-  areInputsFromTaskWithStereotypeAccepted(taskId: String) {
+  areInputsFromTaskWithStereotypeAccepted(taskId: string) {
     // Accepted:
     // SGXComputation
     // SGXProtect
@@ -648,7 +648,7 @@ export class SGXComputation extends TaskStereotype {
     let savedData = this.getSavedStereotypeSettings();
     if (savedData.inputTypes && inputObjects.length > 0) {
       for (let inputObject of inputObjects) {
-        let matchingInputs = savedData.inputTypes.filter(function( obj ) {
+        let matchingInputs = savedData.inputTypes.filter(function (obj) {
           return obj.id === inputObject.id;
         });
         if (matchingInputs.length === 1) {
@@ -661,7 +661,7 @@ export class SGXComputation extends TaskStereotype {
     return privateInputObjects;
   }
 
-  getTypeOfInput(inputId: String, taskId: String) {
+  getTypeOfInput(inputId: string, taskId: string) {
     for (let incTask of this.getTaskHandlerByTaskId(taskId).getTasksOfIncomingPath()) {
       if (this.isOneOfInputObjectsInTaskStereotypeOutputs(incTask, [this.registry.get(inputId)]) && this.getTaskHandlerByTaskId(taskId).getTaskStereotypeInstanceByName("SGXComputation").areInputsFromTaskWithStereotypeAccepted(incTask)) {
         let incTaskOutputElementsNames = this.getTaskHandlerByTaskId(incTask).getTaskOutputObjects().map(a => a.businessObject.name.trim());
@@ -680,10 +680,10 @@ export class SGXComputation extends TaskStereotype {
     return null;
   }
 
-  getTypesFromIncomingPathOfTask(taskId: String) {
+  getTypesFromIncomingPathOfTask(taskId: string) {
     let types = [];
     for (let privateInput of this.getTaskPrivateInputs()) {
-      types.push({inputId: privateInput.id, type: this.getTypeOfInput(privateInput.id, taskId)});
+      types.push({ inputId: privateInput.id, type: this.getTypeOfInput(privateInput.id, taskId) });
     }
     return types;
   }

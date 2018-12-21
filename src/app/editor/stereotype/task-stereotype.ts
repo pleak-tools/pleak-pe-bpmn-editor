@@ -3,8 +3,8 @@ import { TaskHandler } from "../handler/task-handler";
 import { Stereotype } from "./stereotype";
 
 export interface TaskStereotypeGroupObject {
-  groupId: String;
-  taskId: String;
+  groupId: string;
+  taskId: string;
 }
 
 export class TaskStereotype extends Stereotype {
@@ -22,20 +22,20 @@ export class TaskStereotype extends Stereotype {
   validationHandler: ValidationHandler;
 
   /** Functions for all subclasses (stereotypes) */
-  getTaskInputObjectsByTaskId(taskId: String) {
+  getTaskInputObjectsByTaskId(taskId: string) {
     return this.getTaskHandlerByTaskId(taskId).getTaskInputObjects()
   }
 
-  getTaskOutputObjectsByTaskId(taskId: String) {
+  getTaskOutputObjectsByTaskId(taskId: string) {
     return this.getTaskHandlerByTaskId(taskId).getTaskOutputObjects();
   }
 
   /** Wrappers to access taskHandler functions */
-  getTaskHandlerByTaskId(taskId: String) {
+  getTaskHandlerByTaskId(taskId: string) {
     return this.taskHandler.getTaskHandlerByTaskId(taskId);
   }
 
-  getMessageFlowHandlerByMessageFlowId(messageFlowId: String) {
+  getMessageFlowHandlerByMessageFlowId(messageFlowId: string) {
     return this.taskHandler.getMessageFlowHandlerByMessageFlowId(messageFlowId);
   }
 
@@ -59,7 +59,7 @@ export class TaskStereotype extends Stereotype {
     this.taskHandler.removeTaskInputsOutputsHighlights();
   }
 
-  addStereotypeToTheListOfGroupStereotypesOnModel(stereotype: String) {
+  addStereotypeToTheListOfGroupStereotypesOnModel(stereotype: string) {
     this.taskHandler.addStereotypeToTheListOfGroupStereotypesOnModel(stereotype);
   }
 
@@ -87,7 +87,7 @@ export class TaskStereotype extends Stereotype {
     return this.validationHandler.areNamesUnique(array);
   }
 
-  areTasksParallel(taskIds: String[]) {
+  areTasksParallel(taskIds: string[]) {
     return this.validationHandler.areTasksParallel(taskIds);
   }
 
@@ -99,15 +99,15 @@ export class TaskStereotype extends Stereotype {
     return this.taskHandler.getTaskOutputObjectsBasedOnTaskStereotype();
   }
 
-  isOneOfInputObjectsInTaskStereotypeOutputs(taskId: String, inputObjects: any[]) {
+  isOneOfInputObjectsInTaskStereotypeOutputs(taskId: string, inputObjects: any[]) {
     return this.validationHandler.isOneOfInputObjectsInTaskStereotypeOutputs(taskId, inputObjects);
   }
 
-  taskHasInputElement(elementId: String) {
+  taskHasInputElement(elementId: string) {
     return this.validationHandler.taskHasInputElement(this.task.id, elementId);
   }
 
-  taskHasOutputElement(elementId: String) {
+  taskHasOutputElement(elementId: string) {
     return this.validationHandler.taskHasOutputElement(this.task.id, elementId);
   }
 
@@ -119,15 +119,15 @@ export class TaskStereotype extends Stereotype {
     return this.validationHandler.getTasksOfOutgoingPathByInputElement(this.task);
   }
 
-  taskIsInIncomingPath(taskId: String) {
+  taskIsInIncomingPath(taskId: string) {
     return this.validationHandler.taskIsInIncomingPathOfTask(taskId, this.task.id);
   }
 
-  taskIsInOutgoingPath(taskId: String) {
+  taskIsInOutgoingPath(taskId: string) {
     return this.validationHandler.taskIsInOutgoingPathOfTask(taskId, this.task.id);
   }
 
-  taskHasStereotype(task: any, stereotype: String) {
+  taskHasStereotype(task: any, stereotype: string) {
     return this.validationHandler.taskHasStereotype(task, stereotype);
   }
 

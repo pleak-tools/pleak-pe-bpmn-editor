@@ -14,8 +14,8 @@ export class SGXProtect extends TaskStereotype {
     this.init();
   }
 
-  group: String = null;
-  selectedGroup: String = null;
+  group: string = null;
+  selectedGroup: string = null;
   SGXProtectGroupsTasks: TaskStereotypeGroupObject[] = [];
 
   /** Functions inherited from TaskStereotype and Stereotype classes */
@@ -35,14 +35,14 @@ export class SGXProtect extends TaskStereotype {
   // groupId
   getCurrentStereotypeSettings() {
     let group = this.settingsPanelContainer.find('#SGXProtect-groupSelect').val();
-    return {groupId: group};
+    return { groupId: group };
   }
 
   getGroup() {
     return this.group;
   }
 
-  setGroup(name: String) {
+  setGroup(name: string) {
     this.group = name;
   }
 
@@ -69,7 +69,7 @@ export class SGXProtect extends TaskStereotype {
     if (this.selectedGroup != null) {
       if (this.getModelSGXProtectGroups().indexOf(this.selectedGroup) === -1) {
         // If selected group is new group that has no tasks in it yet, add current task into it so its inputs and outputs would be highlighted
-        this.SGXProtectGroupsTasks.push({groupId: this.selectedGroup, taskId: this.task.id});
+        this.SGXProtectGroupsTasks.push({ groupId: this.selectedGroup, taskId: this.task.id });
       }
       selectedGroupId = this.selectedGroup;
     } else if (this.getSavedStereotypeSettings() != null) {
@@ -166,8 +166,8 @@ export class SGXProtect extends TaskStereotype {
           this.addStereotypeToElement();
         }
         this.setGroup(group);
-        this.SGXProtectGroupsTasks = $.grep(this.SGXProtectGroupsTasks, (el, idx) => {return el.taskId == this.task.id}, true);
-        this.SGXProtectGroupsTasks.push({groupId: group, taskId: this.task.id});
+        this.SGXProtectGroupsTasks = $.grep(this.SGXProtectGroupsTasks, (el, idx) => { return el.taskId == this.task.id }, true);
+        this.SGXProtectGroupsTasks.push({ groupId: group, taskId: this.task.id });
         this.task.SGXProtect = JSON.stringify(currentStereotypeSettings);
         this.settingsPanelContainer.find('.form-group').removeClass('has-error');
         this.settingsPanelContainer.find('.help-block').hide();
@@ -205,13 +205,13 @@ export class SGXProtect extends TaskStereotype {
     for (let taskHandler of this.taskHandler.getAllModelTaskHandlers()) {
       for (let stereotype of taskHandler.stereotypes) {
         if (stereotype.getTitle() == "SGXProtect" && (<SGXProtect>stereotype).getGroup() != null) {
-          this.SGXProtectGroupsTasks.push({groupId: (<SGXProtect>stereotype).getGroup(), taskId: stereotype.task.id});
+          this.SGXProtectGroupsTasks.push({ groupId: (<SGXProtect>stereotype).getGroup(), taskId: stereotype.task.id });
         }
         if (stereotype.getTitle() == "SGXComputation" && (<SGXComputation>stereotype).getGroup() != null) {
-            this.SGXProtectGroupsTasks.push({groupId: (<SGXComputation>stereotype).getGroup(), taskId: stereotype.task.id});
-          }
+          this.SGXProtectGroupsTasks.push({ groupId: (<SGXComputation>stereotype).getGroup(), taskId: stereotype.task.id });
+        }
         if (stereotype.getTitle() == "SGXAttestationEnclave" && (<SGXAttestationEnclave>stereotype).getSGXGroup() != null && (<SGXAttestationEnclave>stereotype).getSGXGroup() != "") {
-          this.SGXProtectGroupsTasks.push({groupId: (<SGXAttestationEnclave>stereotype).getSGXGroup(), taskId: stereotype.task.id});
+          this.SGXProtectGroupsTasks.push({ groupId: (<SGXAttestationEnclave>stereotype).getSGXGroup(), taskId: stereotype.task.id });
         }
       }
     }
@@ -239,7 +239,7 @@ export class SGXProtect extends TaskStereotype {
     this.settingsPanelContainer.off('change', '#SGXProtect-groupSelect');
   }
 
-  addSGXProtectGroup(group: String) {
+  addSGXProtectGroup(group: string) {
     if (group) {
       this.reloadStereotypeSettingsWithSelectedGroup(group);
       this.settingsPanelContainer.find('#SGXProtect-newGroup').val('');
@@ -253,9 +253,9 @@ export class SGXProtect extends TaskStereotype {
     }
   }
 
-  reloadStereotypeSettingsWithSelectedGroup(group: String) {
+  reloadStereotypeSettingsWithSelectedGroup(group: string) {
     // Create temporary object to save current stereotype group
-    let tmpObj = {groupId: this.getGroup()};
+    let tmpObj = { groupId: this.getGroup() };
     let currentGroupObj = $.extend({}, tmpObj);
 
     // Terminate current task stereotype settings
@@ -275,7 +275,7 @@ export class SGXProtect extends TaskStereotype {
     this.selectedGroup = null;
   }
 
-  highlightSGXProtectGroupMembersAndTheirInputsOutputs(group: String) {
+  highlightSGXProtectGroupMembersAndTheirInputsOutputs(group: string) {
 
     for (let i = 0; i < this.SGXProtectGroupsTasks.length; i++) {
       let groupId = this.SGXProtectGroupsTasks[i].groupId;
@@ -353,10 +353,10 @@ export class SGXProtect extends TaskStereotype {
     return difGroups;
   }
 
-  getSGXProtectGroupTasks(group: String) {
+  getSGXProtectGroupTasks(group: string) {
     let groupTasks = [];
     if (group) {
-      let groups = $.grep(this.SGXProtectGroupsTasks, function(el, idx) {return el.groupId.trim() == group.trim()}, false);
+      let groups = $.grep(this.SGXProtectGroupsTasks, function (el, idx) { return el.groupId.trim() == group.trim() }, false);
       for (let i = 0; i < groups.length; i++) {
         groupTasks.push(this.registry.get(groups[i].taskId));
       }
@@ -364,7 +364,7 @@ export class SGXProtect extends TaskStereotype {
     return groupTasks;
   }
 
-  getSGXProtectGroupInputOutputObjects(group: String) {
+  getSGXProtectGroupInputOutputObjects(group: string) {
     let objects = [];
     if (this.SGXProtectGroupsTasks && group != null) {
       let allInputsOutputs = [];
@@ -375,14 +375,14 @@ export class SGXProtect extends TaskStereotype {
           allInputsOutputs.push(inputObj);
           allInputs.push(inputObj);
         }
-         for (let outputObj of this.getTaskOutputObjectsByTaskId(task.id)) {
+        for (let outputObj of this.getTaskOutputObjectsByTaskId(task.id)) {
           allInputsOutputs.push(outputObj);
           allOutputs.push(outputObj);
         }
       }
       for (let obj of allInputsOutputs) {
         if (allInputs.indexOf(obj) !== -1 && allOutputs.indexOf(obj) !== -1 && objects.indexOf(obj) === -1) {
-           objects.push(obj);
+          objects.push(obj);
         }
       }
     }
@@ -410,7 +410,7 @@ export class SGXProtect extends TaskStereotype {
   }
 
   /** Simple disclosure analysis functions */
-  getDataObjectVisibilityStatus(dataObjectId: String) {
+  getDataObjectVisibilityStatus(dataObjectId: string) {
     // Inputs: public
     // Outputs: private
     let statuses = [];

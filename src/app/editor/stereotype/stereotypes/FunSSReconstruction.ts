@@ -76,7 +76,7 @@ export class FunSSReconstruction extends TaskStereotype {
       this.initRemoveButton();
     }
   }
-  
+
   removeStereotype() {
     if (confirm('Are you sure you wish to remove the stereotype?')) {
       super.removeStereotype();
@@ -87,7 +87,7 @@ export class FunSSReconstruction extends TaskStereotype {
   }
 
   /** Simple disclosure analysis functions */
-  getDataObjectVisibilityStatus(dataObjectId: String) {
+  getDataObjectVisibilityStatus(dataObjectId: string) {
     // Inputs: private
     // Outputs: public
     let statuses = [];
@@ -118,7 +118,7 @@ export class FunSSReconstruction extends TaskStereotype {
     return true;
   }
 
-  areInputsFromTaskWithStereotypeAccepted(taskId: String) {
+  areInputsFromTaskWithStereotypeAccepted(taskId: string) {
     // Accepted:
     // FunSSSharing
     if (taskId) {

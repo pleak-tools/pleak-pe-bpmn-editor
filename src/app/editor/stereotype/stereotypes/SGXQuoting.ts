@@ -30,7 +30,7 @@ export class SGXQuoting extends TaskStereotype {
   getCurrentStereotypeSettings() {
     let challenge = this.settingsPanelContainer.find('#SGXQuoting-challengeSelect').val();
     let measurement = this.settingsPanelContainer.find('#SGXQuoting-measurementSelect').val();
-    return {challenge: challenge, measurement: measurement};
+    return { challenge: challenge, measurement: measurement };
   }
 
   initStereotypePublicView() {
@@ -110,7 +110,7 @@ export class SGXQuoting extends TaskStereotype {
       this.initRemoveButton();
     }
   }
-  
+
   removeStereotype() {
     if (confirm('Are you sure you wish to remove the stereotype?')) {
       super.removeStereotype();
@@ -121,7 +121,7 @@ export class SGXQuoting extends TaskStereotype {
   }
 
   /** Simple disclosure analysis functions */
-  getDataObjectVisibilityStatus(dataObjectId: String) {
+  getDataObjectVisibilityStatus(dataObjectId: string) {
     // Inputs: public
     // Outputs: public
     let statuses = [];

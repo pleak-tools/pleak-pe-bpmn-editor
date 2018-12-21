@@ -66,11 +66,11 @@ export class TaskHandler {
   task: any;
 
   stereotypes: TaskStereotype[] = [];
-  stereotypeSelector: String = null;
+  stereotypeSelector: string = null;
   stereotypeSelectorHidden: Boolean = false;
   tempStereotype: TaskStereotype = null;
 
-  supportedStereotypes: String[] = [
+  supportedStereotypes: string[] = [
     "PKEncrypt",
     "PKDecrypt",
     "PKComputation",
@@ -217,7 +217,7 @@ export class TaskHandler {
       sType.loadStereotypeTemplateAndInitStereotypeSettings();
     }
   }
-  
+
   // Hide settings panels for all already added stereotypes
   terminateTaskStereotypeSettings() {
     for (let sType of this.stereotypes) {
@@ -614,12 +614,12 @@ export class TaskHandler {
 
   // Remove stereotype selector
   terminateTaskStereotypeSelector() {
-    this.overlays.remove({id: this.stereotypeSelector});
+    this.overlays.remove({ id: this.stereotypeSelector });
     this.stereotypeSelector = null;
   }
 
   // Create and return new stereotype instance by name
-  createStereotypeByName(name: String) {
+  createStereotypeByName(name: string) {
     let st = null;
     if (name) {
       if (name == "PKEncrypt") {
@@ -697,7 +697,7 @@ export class TaskHandler {
   }
 
   // Start adding new stereotype to the task (open settings panel etc)
-  addStereotypeByName(name: String) {
+  addStereotypeByName(name: string) {
     if (this.tempStereotype == null) {
       let st = this.createStereotypeByName(name);
       st.isTempStereotype = true;
@@ -723,9 +723,9 @@ export class TaskHandler {
   }
 
   // Remove stereotype from the task by stereotype name
-  removeStereotypeByName(name: String) {
+  removeStereotypeByName(name: string) {
     if (this.getTaskStereotypeInstanceByName(name)) {
-      this.overlays.remove({id: this.getTaskStereotypeInstanceByName(name).getLabel()});
+      this.overlays.remove({ id: this.getTaskStereotypeInstanceByName(name).getLabel() });
       this.stereotypes = this.stereotypes.filter(obj => obj.getTitle() !== name);
       this.canvas.removeMarker(this.task.id, 'selected');
       delete this.task[(<any>name)];
@@ -733,7 +733,7 @@ export class TaskHandler {
   }
 
   // Return stereotype instance of the task by stereotype name
-  getTaskStereotypeInstanceByName(name: String) {
+  getTaskStereotypeInstanceByName(name: string) {
     for (let sType of this.stereotypes) {
       if (sType.getTitle() == name) {
         return sType;
@@ -747,7 +747,7 @@ export class TaskHandler {
     let stereotypesOnTaskNames = this.stereotypes.map(a => a.getTitle());
     let bottomPosition = 0;
     if (stereotypesOnTaskNames.length > 1) {
-      bottomPosition = stereotypesOnTaskNames.indexOf(title)*-14;
+      bottomPosition = stereotypesOnTaskNames.indexOf(title) * -14;
     }
     if (title != null) {
       let taskTypeLabel = $(
@@ -850,7 +850,7 @@ export class TaskHandler {
       }
       for (let obj of allInputsOutputs) {
         if (allInputs.indexOf(obj) !== -1 && allOutputs.indexOf(obj) !== -1 && objects.indexOf(obj) === -1) {
-           objects.push(obj);
+          objects.push(obj);
         }
       }
     }
@@ -878,7 +878,7 @@ export class TaskHandler {
 
   /** Wrappers to access elementsHandler functions*/
 
-  getTaskHandlerByTaskId(taskId: String) {
+  getTaskHandlerByTaskId(taskId: string) {
     return this.elementsHandler.getTaskHandlerByTaskId(taskId);
   }
 
@@ -886,7 +886,7 @@ export class TaskHandler {
     return this.elementsHandler.getAllModelTaskHandlers();
   }
 
-  getMessageFlowHandlerByMessageFlowId(messageFlowId: String) {
+  getMessageFlowHandlerByMessageFlowId(messageFlowId: string) {
     return this.elementsHandler.getMessageFlowHandlerByMessageFlowId(messageFlowId);
   }
 
@@ -904,15 +904,15 @@ export class TaskHandler {
 
   /** Wrappers to access validationHandler functions*/
 
-  addStereotypeToTheListOfGroupStereotypesOnModel(stereotype: String) {
+  addStereotypeToTheListOfGroupStereotypesOnModel(stereotype: string) {
     this.validationHandler.addStereotypeToTheListOfGroupStereotypesOnModel(stereotype);
   }
 
-  addLaneOrPoolToTheListOfModelLanesAndPools(layer: String) {
+  addLaneOrPoolToTheListOfModelLanesAndPools(layer: string) {
     this.validationHandler.addLaneOrPoolToTheListOfModelLanesAndPools(layer);
   }
 
-  loadTaskOntoParentLaneOrPool(parentId: String, taskId: String) {
+  loadTaskOntoParentLaneOrPool(parentId: string, taskId: string) {
     this.validationHandler.loadTaskOntoParentLaneOrPool(parentId, taskId);
   }
 

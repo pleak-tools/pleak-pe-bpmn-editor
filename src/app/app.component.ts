@@ -28,7 +28,7 @@ export class AppComponent implements OnInit {
 
     this.authService.authStatus.subscribe(status => {
       this.authenticated = status;
-      if (typeof(status) === 'boolean') {
+      if (typeof (status) === 'boolean') {
         this.loadModel();
       }
     });
@@ -53,11 +53,11 @@ export class AppComponent implements OnInit {
     return this.authenticated;
   }
 
-  setUserEmail(value: String) {
+  setUserEmail(value: string) {
     this.authService.setLoginCredentialsEmail(value);
   }
 
-  setUserPassword(value: String) {
+  setUserPassword(value: string) {
     this.authService.setLoginCredentialsPassword(value);
   }
 
@@ -78,7 +78,7 @@ export class AppComponent implements OnInit {
 
   loadModel() {
 
-    this.http.get(config.backend.host + '/rest/directories/files/' + (this.viewerType === 'public' ? 'public/' : '') + this.modelId, {headers: {'JSON-Web-Token': localStorage.jwt || ''}}).subscribe(
+    this.http.get(config.backend.host + '/rest/directories/files/' + (this.viewerType === 'public' ? 'public/' : '') + this.modelId, { headers: { 'JSON-Web-Token': localStorage.jwt || '' } }).subscribe(
 
       (response: any) => {
 
@@ -98,9 +98,9 @@ export class AppComponent implements OnInit {
   saveModel() {
 
     const requestItem = Object.assign({}, this.file);
-    Object.assign(requestItem, {content: this.editorService.getModel()});
+    Object.assign(requestItem, { content: this.editorService.getModel() });
 
-    this.http.put(config.backend.host + '/rest/directories/files/' + this.modelId, requestItem, {headers: {'JSON-Web-Token': localStorage.jwt || ''}}).subscribe(
+    this.http.put(config.backend.host + '/rest/directories/files/' + this.modelId, requestItem, { headers: { 'JSON-Web-Token': localStorage.jwt || '' } }).subscribe(
       (response: any) => {
         this.file = response;
         this.canSave = false;
@@ -108,7 +108,7 @@ export class AppComponent implements OnInit {
         localStorage.setItem('lastModifiedFileId', `"${response.id}"`);
         localStorage.setItem('lastModified', `"${(new Date()).getTime()}"`);
 
-        this.toastr.success('Model saved', '', {disableTimeOut: true});
+        this.toastr.success('Model saved', '', { disableTimeOut: true });
       },
       () => {
         this.toastr.warning('Error saving model');
@@ -121,13 +121,13 @@ export class AppComponent implements OnInit {
   }
 
   private getPermissions(id: number) {
-    this.http.get(config.backend.host + '/rest/directories/files/' + id, {headers: {'JSON-Web-Token': localStorage.jwt || ''}}).subscribe(
+    this.http.get(config.backend.host + '/rest/directories/files/' + id, { headers: { 'JSON-Web-Token': localStorage.jwt || '' } }).subscribe(
       (response: any) => {
         this.file.permissions = response.permissions;
         this.file.user = response.user;
         this.file.md5Hash = response.md5Hash;
       },
-      () => {},
+      () => { },
       () => {
         this.editorService.loadModel(this.file.content, this.canEdit());
       }
@@ -141,7 +141,7 @@ export class AppComponent implements OnInit {
     if ((this.authService.user && file.user) ? file.user.email === this.authService.user.email : false) { return true; }
     for (let pIx = 0; pIx < file.permissions.length; pIx++) {
       if (file.permissions[pIx].action.title === 'edit' &&
-      this.authService.user ? file.permissions[pIx].user.email === this.authService.user.email : false) {
+        this.authService.user ? file.permissions[pIx].user.email === this.authService.user.email : false) {
         return true;
       }
     }

@@ -76,7 +76,7 @@ export class FunSSSharing extends TaskStereotype {
       this.initRemoveButton();
     }
   }
-  
+
   removeStereotype() {
     if (confirm('Are you sure you wish to remove the stereotype?')) {
       super.removeStereotype();
@@ -87,7 +87,7 @@ export class FunSSSharing extends TaskStereotype {
   }
 
   /** Simple disclosure analysis functions */
-  getDataObjectVisibilityStatus(dataObjectId: String) {
+  getDataObjectVisibilityStatus(dataObjectId: string) {
     // Inputs: public
     // Outputs: private
     let statuses = [];

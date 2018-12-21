@@ -66,11 +66,11 @@ export class EditorComponent {
       let zoomLevel = this.viewer.get('canvas').zoom();
       if (zoomLevel < 1.0) {
         if ($('.stereotype-label-color').css("color") != "rgb(0, 0, 255)") {
-          $('.stereotype-label-color').css('color','blue');
+          $('.stereotype-label-color').css('color', 'blue');
         }
       } else {
         if ($('.stereotype-label-color').css("color") != "rgb(0, 0, 139)") {
-          $('.stereotype-label-color').css('color','darkblue');
+          $('.stereotype-label-color').css('color', 'darkblue');
         }
       }
     });

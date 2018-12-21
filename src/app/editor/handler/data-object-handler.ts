@@ -42,11 +42,11 @@ export class DataObjectHandler {
   dataObjectType: string;
 
   stereotypes: DataObjectStereotype[] = [];
-  stereotypeSelector: String = null;
+  stereotypeSelector: string = null;
   stereotypeSelectorHidden: Boolean = false;
   tempStereotype: DataObjectStereotype = null;
 
-  supportedStereotypes: String[] = [
+  supportedStereotypes: string[] = [
     "PKPublic",
     "PKPrivate"
   ];
@@ -245,7 +245,7 @@ export class DataObjectHandler {
       sType.loadStereotypeTemplateAndInitStereotypeSettings();
     }
   }
-  
+
   // Hide settings panels for all already added stereotypes
   terminateDataObjectStereotypeSettings() {
     for (let sType of this.stereotypes) {
@@ -340,12 +340,12 @@ export class DataObjectHandler {
 
   // Remove stereotype selector
   terminateDataObjectStereotypeSelector() {
-    this.overlays.remove({id: this.stereotypeSelector});
+    this.overlays.remove({ id: this.stereotypeSelector });
     this.stereotypeSelector = null;
   }
 
   // Create and return new stereotype instance by name
-  createStereotypeByName(name: String) {
+  createStereotypeByName(name: string) {
     let st = null;
     if (name) {
       if (name == "PKPublic") {
@@ -363,7 +363,7 @@ export class DataObjectHandler {
   }
 
   // Start adding new stereotype to the dataObject (open settings panel etc)
-  addStereotypeByName(name: String) {
+  addStereotypeByName(name: string) {
     if (this.tempStereotype == null) {
       let st = this.createStereotypeByName(name);
       st.isTempStereotype = true;
@@ -389,9 +389,9 @@ export class DataObjectHandler {
   }
 
   // Remove stereotype from the dataObject by stereotype name
-  removeStereotypeByName(name: String) {
+  removeStereotypeByName(name: string) {
     if (this.getDataObjectStereotypeInstanceByName(name)) {
-      this.overlays.remove({id: this.getDataObjectStereotypeInstanceByName(name).getLabel()});
+      this.overlays.remove({ id: this.getDataObjectStereotypeInstanceByName(name).getLabel() });
       this.stereotypes = this.stereotypes.filter(obj => obj.getTitle() !== name);
       this.canvas.removeMarker(this.dataObject.id, 'selected');
       delete this.dataObject[(<any>name)];
@@ -399,7 +399,7 @@ export class DataObjectHandler {
   }
 
   // Get stereotype instance of the dataObject by stereotype name
-  getDataObjectStereotypeInstanceByName(name: String) {
+  getDataObjectStereotypeInstanceByName(name: string) {
     for (let sType of this.stereotypes) {
       if (sType.getTitle() == name) {
         return sType;
@@ -408,7 +408,7 @@ export class DataObjectHandler {
   }
 
   // Add stereotype label to the dataObject by stereotype name
-  addStereotypeLabelToElement(title: String) {
+  addStereotypeLabelToElement(title: string) {
     if (title != null) {
       let dataObjectTypeLabel = $(
         `<div class="stereotype-label" id="` + this.dataObject.id + `-` + title + `-label" style="padding:5px; border-radius:2px">
@@ -446,7 +446,7 @@ export class DataObjectHandler {
 
   /** Wrappers to access elementsHandler functions*/
 
-  getDataObjectHandlerByDataObjectId(dataObjectId: String) {
+  getDataObjectHandlerByDataObjectId(dataObjectId: string) {
     return this.elementsHandler.getDataObjectHandlerByDataObjectId(dataObjectId);
   }
 

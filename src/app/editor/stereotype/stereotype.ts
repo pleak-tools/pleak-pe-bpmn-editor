@@ -4,7 +4,7 @@ import { ValidationHandler, ValidationErrorObject } from '../handler/validation-
 declare let $: any;
 let is = (element, type) => element.$instanceOf(type);
 
-declare function require(name:string);
+declare function require(name: string);
 let config = require('../../../config.json');
 
 export class Stereotype {
@@ -33,7 +33,7 @@ export class Stereotype {
   validationHandler: ValidationHandler;
 
   title: string;
-  label: String;
+  label: string;
   settingsPanelContainer: any;
   isTempStereotype: boolean = false;
 
@@ -42,7 +42,7 @@ export class Stereotype {
     return this.title;
   }
 
-  setLabel(label: String) {
+  setLabel(label: string) {
     this.label = label;
   }
 
@@ -83,7 +83,7 @@ export class Stereotype {
   }
 
   // Activated by elementHandler on click events (or manually)
-  initStereotypePublicView() {}
+  initStereotypePublicView() { }
 
   // Activated by elementHandler on click events (or manually)
   initStereotypeSettings() {
@@ -111,7 +111,7 @@ export class Stereotype {
     $('#stereotype-options').prepend(currentPanel);
     $('#sidebar').scrollTop(0);
     currentPanel.addClass('highlight');
-    setTimeout(function() { currentPanel.removeClass('highlight'); },1000);
+    setTimeout(function () { currentPanel.removeClass('highlight'); }, 1000);
   }
 
   // Activated by elementHandler on click events (or manually)
@@ -135,7 +135,7 @@ export class Stereotype {
     this.elementHandler.tempStereotype = null;
   }
 
-  saveStereotypeSettings() {}
+  saveStereotypeSettings() { }
 
   removeStereotype() {
     this.terminateStereotypeEditProcess();
@@ -175,11 +175,11 @@ export class Stereotype {
     );
   }
 
-  checkForErrors(existingErrors: ValidationErrorObject[]) {}
+  checkForErrors(existingErrors: ValidationErrorObject[]) { }
 
-  getCurrentStereotypeSettings() {};
+  getCurrentStereotypeSettings() { };
 
-  getSavedStereotypeSettings() {};
+  getSavedStereotypeSettings() { };
 
   areThereUnsavedChanges() {
     let currentSettings = JSON.stringify(this.getCurrentStereotypeSettings());
@@ -212,7 +212,7 @@ export class Stereotype {
   }
 
   /** Wrappers to access validationHandler functions */
-  addUniqueErrorToErrorsList(errors: ValidationErrorObject[], error: String, ids: String[], highlight: String[]) {
+  addUniqueErrorToErrorsList(errors: ValidationErrorObject[], error: string, ids: string[], highlight: string[]) {
     this.validationHandler.addUniqueErrorToErrorsList(errors, error, ids, highlight);
   }
 

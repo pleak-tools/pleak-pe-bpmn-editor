@@ -82,7 +82,7 @@ export class OpenConfidentiality extends TaskStereotype {
       this.initRemoveButton();
     }
   }
-  
+
   removeStereotype() {
     if (confirm('Are you sure you wish to remove the stereotype?')) {
       super.removeStereotype();
@@ -93,7 +93,7 @@ export class OpenConfidentiality extends TaskStereotype {
   }
 
   /** Simple disclosure analysis functions */
-  getDataObjectVisibilityStatus(dataObjectId: String) {
+  getDataObjectVisibilityStatus(dataObjectId: string) {
     // Inputs: private
     // Outputs: public
     let statuses = [];
@@ -124,7 +124,7 @@ export class OpenConfidentiality extends TaskStereotype {
     return true;
   }
 
-  areInputsFromTaskWithStereotypeAccepted(taskId: String) {
+  areInputsFromTaskWithStereotypeAccepted(taskId: string) {
     // Accepted:
     // ProtectConfidentiality
     // PETComputation
@@ -139,7 +139,7 @@ export class OpenConfidentiality extends TaskStereotype {
     return false;
   }
 
-  getTypeOfInput(inputId: String, taskId: String) {
+  getTypeOfInput(inputId: string, taskId: string) {
     for (let incTask of this.getTaskHandlerByTaskId(taskId).getTasksOfIncomingPath()) {
       if (this.isOneOfInputObjectsInTaskStereotypeOutputs(incTask, [this.registry.get(inputId)]) && this.getTaskHandlerByTaskId(taskId).getTaskStereotypeInstanceByName("OpenConfidentiality").areInputsFromTaskWithStereotypeAccepted(incTask)) {
         let incTaskOutputElementsNames = this.getTaskHandlerByTaskId(incTask).getTaskOutputObjects().map(a => a.businessObject.name.trim());
@@ -158,10 +158,10 @@ export class OpenConfidentiality extends TaskStereotype {
     return null;
   }
 
-  getTypesFromIncomingPathOfTask(taskId: String) {
+  getTypesFromIncomingPathOfTask(taskId: string) {
     let types = [];
     for (let privateInput of this.getTaskInputObjects()) {
-      types.push({inputId: privateInput.id, type: this.getTypeOfInput(privateInput.id, taskId)});
+      types.push({ inputId: privateInput.id, type: this.getTypeOfInput(privateInput.id, taskId) });
     }
     return types;
   }

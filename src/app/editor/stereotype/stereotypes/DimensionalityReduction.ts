@@ -30,7 +30,7 @@ export class DimensionalityReduction extends TaskStereotype {
   getCurrentStereotypeSettings() {
     let data = this.settingsPanelContainer.find('#DimensionalityReduction-dataSelect').val();
     let projectionMatrix = this.settingsPanelContainer.find('#DimensionalityReduction-projectionMatrixSelect').val();
-    return {data: data, projectionMatrix: projectionMatrix};
+    return { data: data, projectionMatrix: projectionMatrix };
   }
 
   initStereotypePublicView() {
@@ -110,7 +110,7 @@ export class DimensionalityReduction extends TaskStereotype {
       this.initRemoveButton();
     }
   }
-  
+
   removeStereotype() {
     if (confirm('Are you sure you wish to remove the stereotype?')) {
       super.removeStereotype();
@@ -121,7 +121,7 @@ export class DimensionalityReduction extends TaskStereotype {
   }
 
   /** Simple disclosure analysis functions */
-  getDataObjectVisibilityStatus(dataObjectId: String) {
+  getDataObjectVisibilityStatus(dataObjectId: string) {
     // Inputs: public
     // Outputs: public
     let statuses = [];

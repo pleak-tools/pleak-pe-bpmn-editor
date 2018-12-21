@@ -33,14 +33,14 @@ export class PETComputation extends TaskStereotype {
     let inputTypes = [];
     let outputTypes = [];
     for (let inputObject of this.getTaskInputObjects()) {
-      let type = $('#PETComputation-input-type-select-'+inputObject.id).val();
-      inputTypes.push({id: inputObject.id, type: type});
+      let type = $('#PETComputation-input-type-select-' + inputObject.id).val();
+      inputTypes.push({ id: inputObject.id, type: type });
     }
     for (let outputObject of this.getTaskOutputObjects()) {
-      let type = $('#PETComputation-output-type-select-'+outputObject.id).val();
-      outputTypes.push({id: outputObject.id, type: type});
+      let type = $('#PETComputation-output-type-select-' + outputObject.id).val();
+      outputTypes.push({ id: outputObject.id, type: type });
     }
-    return {inputScript: inputScript, inputTypes: inputTypes, outputTypes: outputTypes};
+    return { inputScript: inputScript, inputTypes: inputTypes, outputTypes: outputTypes };
   }
 
   initStereotypePublicView() {
@@ -96,7 +96,7 @@ export class PETComputation extends TaskStereotype {
         }
       }
       inputObjects += '<li>' + inputObject.businessObject.name + '</li>';
-      inputObjects += '<select class="form-control stereotype-option" id="PETComputation-input-type-select-'+inputObject.id+'">';
+      inputObjects += '<select class="form-control stereotype-option" id="PETComputation-input-type-select-' + inputObject.id + '">';
       inputObjects += '<option ' + selectedPublic + ' value="public">Public</option>';
       inputObjects += '<option ' + selectedPrivate + ' value="private">Private</option>';
       inputObjects += '</select>';
@@ -124,7 +124,7 @@ export class PETComputation extends TaskStereotype {
         }
       }
       outputObjects += '<li>' + outputObject.businessObject.name + '</li>';
-      outputObjects += '<select class="form-control stereotype-option" id="PETComputation-output-type-select-'+outputObject.id+'">';
+      outputObjects += '<select class="form-control stereotype-option" id="PETComputation-output-type-select-' + outputObject.id + '">';
       outputObjects += '<option ' + selectedPublic + ' value="public">Public</option>';
       outputObjects += '<option ' + selectedPrivate + ' value="private">Private</option>';
       outputObjects += '</select>';
@@ -156,7 +156,7 @@ export class PETComputation extends TaskStereotype {
       this.initRemoveButton();
     }
   }
-  
+
   removeStereotype() {
     if (confirm('Are you sure you wish to remove the stereotype?')) {
       super.removeStereotype();
@@ -167,7 +167,7 @@ export class PETComputation extends TaskStereotype {
   }
 
   /** Simple disclosure analysis functions */
-  getDataObjectVisibilityStatus(dataObjectId: String) {
+  getDataObjectVisibilityStatus(dataObjectId: string) {
     // Inputs: if encrypted - private, if public - public
     // Outputs: private
     let statuses = [];
@@ -208,7 +208,7 @@ export class PETComputation extends TaskStereotype {
     return true;
   }
 
-  areInputsFromTaskWithStereotypeAccepted(taskId: String) {
+  areInputsFromTaskWithStereotypeAccepted(taskId: string) {
     // Accepted:
     // ProtectConfidentiality
     // PETComputation
@@ -229,7 +229,7 @@ export class PETComputation extends TaskStereotype {
     let savedData = this.getSavedStereotypeSettings();
     if (savedData.inputTypes && inputObjects.length > 0) {
       for (let inputObject of inputObjects) {
-        let matchingInputs = savedData.inputTypes.filter(function( obj ) {
+        let matchingInputs = savedData.inputTypes.filter(function (obj) {
           return obj.id === inputObject.id;
         });
         if (matchingInputs.length === 1) {
@@ -248,7 +248,7 @@ export class PETComputation extends TaskStereotype {
     let savedData = this.getSavedStereotypeSettings();
     if (savedData.outputTypes && outputObjects.length > 0) {
       for (let outputObject of outputObjects) {
-        let matchingOutputs = savedData.outputTypes.filter(function( obj ) {
+        let matchingOutputs = savedData.outputTypes.filter(function (obj) {
           return obj.id === outputObject.id;
         });
         if (matchingOutputs.length === 1) {
@@ -261,7 +261,7 @@ export class PETComputation extends TaskStereotype {
     return privateOutputObjects;
   }
 
-  getTypeOfInput(inputId: String, taskId: String) {
+  getTypeOfInput(inputId: string, taskId: string) {
     for (let incTask of this.getTaskHandlerByTaskId(taskId).getTasksOfIncomingPath()) {
       if (this.isOneOfInputObjectsInTaskStereotypeOutputs(incTask, [this.registry.get(inputId)]) && this.getTaskHandlerByTaskId(taskId).getTaskStereotypeInstanceByName("PETComputation").areInputsFromTaskWithStereotypeAccepted(incTask)) {
         let incTaskOutputElementsNames = this.getTaskHandlerByTaskId(incTask).getTaskOutputObjects().map(a => a.businessObject.name.trim());
@@ -280,10 +280,10 @@ export class PETComputation extends TaskStereotype {
     return null;
   }
 
-  getTypesFromIncomingPathOfTask(taskId: String) {
+  getTypesFromIncomingPathOfTask(taskId: string) {
     let types = [];
     for (let privateInput of this.getTaskPrivateInputs()) {
-      types.push({inputId: privateInput.id, type: this.getTypeOfInput(privateInput.id, taskId)});
+      types.push({ inputId: privateInput.id, type: this.getTypeOfInput(privateInput.id, taskId) });
     }
     return types;
   }

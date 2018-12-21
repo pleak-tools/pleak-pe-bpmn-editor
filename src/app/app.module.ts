@@ -5,7 +5,7 @@ import { FormsModule } from '@angular/forms';
 
 import { AppComponent } from './app.component';
 
-import { AuthService} from './auth/auth.service';
+import { AuthService } from './auth/auth.service';
 import { EditorModule } from './editor/editor.module';
 import { HttpClientModule } from '@angular/common/http';
 import { ToastrModule } from 'ngx-toastr';
