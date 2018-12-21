@@ -3,7 +3,7 @@ import { Stereotype } from "./stereotype";
 
 export class MessageFlowStereotype extends Stereotype {
 
-  constructor(title: String, messageFlowHandler: MessageFlowHandler) {
+  constructor(title: string, messageFlowHandler: MessageFlowHandler) {
     super(title, messageFlowHandler);
 
     this.messageFlow = messageFlowHandler.messageFlow;

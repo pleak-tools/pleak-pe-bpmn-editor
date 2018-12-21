@@ -743,7 +743,7 @@ export class TaskHandler {
   }
 
   // Add stereotype label to the task by stereotype name
-  addStereotypeLabelToElement(title: String) {
+  addStereotypeLabelToElement(title: string) {
     let stereotypesOnTaskNames = this.stereotypes.map(a => a.getTitle());
     let bottomPosition = 0;
     if (stereotypesOnTaskNames.length > 1) {

@@ -4,7 +4,6 @@ import { ElementsHandler } from "./elements-handler";
 import { ValidationHandler } from './validation-handler';
 
 declare let $: any;
-let is = (element, type) => element.$instanceOf(type);
 
 export class DataDependenciesAnalysisHandler {
 
@@ -82,28 +81,28 @@ export class DataDependenciesAnalysisHandler {
     table += '<table class="table" style="text-align:center">';
     table += '<tr><th style="background-color:#f5f5f5; text-align:center;">#</th>';
     for (let c = 0; c < columns; c++) {
-      table += '<th style="background-color:#f5f5f5; text-align:center;" class="dd-col-h dd-c-'+c+'">' + uniqueDataObjectNames[c] + '</th>';
+      table += '<th style="background-color:#f5f5f5; text-align:center;" class="dd-col-h dd-c-' + c + '">' + uniqueDataObjectNames[c] + '</th>';
     }
     table += '</tr>';
     for (let r = 0; r < rows; r++) {
-      table += '<tr><td style="background-color:#f5f5f5;" class="dd-row-h dd-r-'+r+'"><b>' + uniqueDataObjectNames[r] + '</b></td>';
+      table += '<tr><td style="background-color:#f5f5f5;" class="dd-row-h dd-r-' + r + '"><b>' + uniqueDataObjectNames[r] + '</b></td>';
       for (let c = 0; c < columns; c++) {
         let value = '?';
         if (uniqueDataObjectNames[r] != uniqueDataObjectNames[c]) {
-          let related = dependencies.filter( (obj)  => {
+          let related = dependencies.filter((obj) => {
             return obj.row == uniqueDataObjectNames[r] && obj.col == uniqueDataObjectNames[c];
           });
           if (related.length === 1) {
             value = related[0].value;
-            $(document).off('click', '.dd-'+r+'-'+c);
-            $(document).on('click', '.dd-'+r+'-'+c, (e) => {
+            $(document).off('click', '.dd-' + r + '-' + c);
+            $(document).on('click', '.dd-' + r + '-' + c, (e) => {
               this.initDataDepenenciesResultTableHiglights(related[0], r, c);
             });
           }
         } else {
           value = '#';
         }
-        table += '<td class="dd-v dd-'+r+'-'+c+' dd-col">'+value+'</td>';
+        table += '<td class="dd-v dd-' + r + '-' + c + ' dd-col">' + value + '</td>';
       }
       table += '</tr>';
     }
@@ -127,8 +126,8 @@ export class DataDependenciesAnalysisHandler {
       this.canvas.removeMarker(dataObjectId, 'highlight-dd-output');
       this.canvas.removeMarker(dataObjectId, 'highlight-dd-between');
     }
-    $(document).find('.dd-col-h, .dd-row-h').css('background-color','#f5f5f5').css('color','black');
-    $(document).find('.dd-col, .dd-row').css('background-color','white').css('color','black');
+    $(document).find('.dd-col-h, .dd-row-h').css('background-color', '#f5f5f5').css('color', 'black');
+    $(document).find('.dd-col, .dd-row').css('background-color', 'white').css('color', 'black');
     $(document).find('#dataDependenciesAnalysisReportModal').find('.modal-dialog').removeClass('dd-transparent');
   }
 
@@ -160,7 +159,7 @@ export class DataDependenciesAnalysisHandler {
           value = 'D';
         }
         if (uniqueDataObjectNames[r] != uniqueDataObjectNames[c]) {
-          let hasRelations = dependencies.filter(( obj ) => {
+          let hasRelations = dependencies.filter((obj) => {
             return obj.name === uniqueDataObjectNames[r];
           });
           if (hasRelations.length !== 0) {
@@ -172,7 +171,7 @@ export class DataDependenciesAnalysisHandler {
           }
         }
         if (value == "D") {
-          directConnections.push({key: uniqueDataObjectNames[r], parent: uniqueDataObjectNames[c]});
+          directConnections.push({ key: uniqueDataObjectNames[r], parent: uniqueDataObjectNames[c] });
         }
       }
     }
@@ -184,8 +183,8 @@ export class DataDependenciesAnalysisHandler {
     let directDependencies = [];
 
     for (let dependency of rawDependencies) {
-      let path = {input: dependency.parent, output: dependency.key, between: []};
-      directDependencies.push({row: dependency.key, col: dependency.parent, value: 'D', path: path});
+      let path = { input: dependency.parent, output: dependency.key, between: [] };
+      directDependencies.push({ row: dependency.key, col: dependency.parent, value: 'D', path: path });
     }
     return directDependencies;
   }
@@ -199,7 +198,7 @@ export class DataDependenciesAnalysisHandler {
     let pathsNotConsideringGroupRelations = [];
 
     for (let dataObjectName of uniqueDataObjectNames) {
-      directConnectionsParents.push({key: dataObjectName, parent: 'none'});
+      directConnectionsParents.push({ key: dataObjectName, parent: 'none' });
     }
 
     this.validationHandler.buildPaths(this.getDirectDataDependenciesRaw(true).concat(directConnectionsParents), 'none', '', pathsConsideringGroupRelations);
@@ -208,39 +207,39 @@ export class DataDependenciesAnalysisHandler {
     for (let r = 0; r < uniqueDataObjectNames.length; r++) {
       for (let c = 0; c < uniqueDataObjectNames.length; c++) {
         if (uniqueDataObjectNames[r] != uniqueDataObjectNames[c]) {
-          let hasPath = pathsConsideringGroupRelations.filter( obj  => {
+          let hasPath = pathsConsideringGroupRelations.filter(obj => {
             return obj.indexOf(uniqueDataObjectNames[r]) !== -1 && obj.indexOf(uniqueDataObjectNames[c]) !== -1;
           });
           for (let path of hasPath) {
             let i1 = path.indexOf(uniqueDataObjectNames[r]);
             let i2 = path.indexOf(uniqueDataObjectNames[c]);
-            let subpath = path.slice(i1,i2+1);
-            let betweenNames = subpath.slice(1,subpath.length-1);
-            if (i2-i1 > 1) {
+            let subpath = path.slice(i1, i2 + 1);
+            let betweenNames = subpath.slice(1, subpath.length - 1);
+            if (i2 - i1 > 1) {
               let value = 'I';
-              let alreadyAdded = inDirectConnections.filter( (obj)  => {
+              let alreadyAdded = inDirectConnections.filter((obj) => {
                 return obj.row == uniqueDataObjectNames[c] && obj.col == uniqueDataObjectNames[r];
               });
-              let isDirectConnection = directDependencies.filter( (obj)  => {
+              let isDirectConnection = directDependencies.filter((obj) => {
                 return obj.row == uniqueDataObjectNames[c] && obj.col == uniqueDataObjectNames[r];
               });
               if (isDirectConnection.length === 0) {
-              if (alreadyAdded.length === 0) {
-                inDirectConnections.push({row: uniqueDataObjectNames[c], col: uniqueDataObjectNames[r], value: value, path: {input: subpath[0], output: subpath[subpath.length-1], between: betweenNames}});
-              } else {
-                let hasPath_2 = pathsNotConsideringGroupRelations.filter( obj  => {
-                  return obj.indexOf(uniqueDataObjectNames[r]) !== -1 && obj.indexOf(uniqueDataObjectNames[c]) !== -1;
-                });
-                for (let path_2 of hasPath_2) {
-                  let i1_2 = path_2.indexOf(uniqueDataObjectNames[r]);
-                  let i2_2 = path_2.indexOf(uniqueDataObjectNames[c]);
-                  let subpath_2 = path_2.slice(i1_2,i2_2+1);
-                  let betweenNames_2 = subpath_2.slice(1,subpath_2.length-1);
-                  if (i2_2-i1_2 > 1) {
-                    alreadyAdded[0].path = {input: alreadyAdded[0].path.input, output: alreadyAdded[0].path.output, between: betweenNames_2};
+                if (alreadyAdded.length === 0) {
+                  inDirectConnections.push({ row: uniqueDataObjectNames[c], col: uniqueDataObjectNames[r], value: value, path: { input: subpath[0], output: subpath[subpath.length - 1], between: betweenNames } });
+                } else {
+                  let hasPath_2 = pathsNotConsideringGroupRelations.filter(obj => {
+                    return obj.indexOf(uniqueDataObjectNames[r]) !== -1 && obj.indexOf(uniqueDataObjectNames[c]) !== -1;
+                  });
+                  for (let path_2 of hasPath_2) {
+                    let i1_2 = path_2.indexOf(uniqueDataObjectNames[r]);
+                    let i2_2 = path_2.indexOf(uniqueDataObjectNames[c]);
+                    let subpath_2 = path_2.slice(i1_2, i2_2 + 1);
+                    let betweenNames_2 = subpath_2.slice(1, subpath_2.length - 1);
+                    if (i2_2 - i1_2 > 1) {
+                      alreadyAdded[0].path = { input: alreadyAdded[0].path.input, output: alreadyAdded[0].path.output, between: betweenNames_2 };
+                    }
                   }
                 }
-              }
               }
             }
           }
@@ -261,21 +260,21 @@ export class DataDependenciesAnalysisHandler {
     for (let r = 0; r < rows; r++) {
       for (let c = 0; c < columns; c++) {
         if (uniqueDataObjectNames[r] != uniqueDataObjectNames[c]) {
-          let isDirectConnection = directDependencies.filter( (obj)  => {
+          let isDirectConnection = directDependencies.filter((obj) => {
             return obj.row == uniqueDataObjectNames[c] && obj.col == uniqueDataObjectNames[r];
           });
           if (isDirectConnection.length === 0) {
-            let isInDirectConnection = inDirectDependencies.filter( (obj)  => {
+            let isInDirectConnection = inDirectDependencies.filter((obj) => {
               return obj.row == uniqueDataObjectNames[c] && obj.col == uniqueDataObjectNames[r];
             });
             if (isInDirectConnection.length === 0) {
-              let path = {input: uniqueDataObjectNames[r], output: uniqueDataObjectNames[c], between: []};
-              dependencies.push({row: uniqueDataObjectNames[c], col: uniqueDataObjectNames[r], value: '-', path: path});
+              let path = { input: uniqueDataObjectNames[r], output: uniqueDataObjectNames[c], between: [] };
+              dependencies.push({ row: uniqueDataObjectNames[c], col: uniqueDataObjectNames[r], value: '-', path: path });
             }
           }
         } else {
-          let path = {input: null, output: null, between: []};
-          dependencies.push({row: uniqueDataObjectNames[c], col: uniqueDataObjectNames[r], value: '#', path: path});
+          let path = { input: null, output: null, between: [] };
+          dependencies.push({ row: uniqueDataObjectNames[c], col: uniqueDataObjectNames[r], value: '#', path: path });
         }
       }
     }
@@ -285,11 +284,11 @@ export class DataDependenciesAnalysisHandler {
   initDataDepenenciesResultTableHiglights(clickedDataObject: any, row: number, col: number): void {
     this.removeModelDependencyHiglights();
     $(document).find('#dataDependenciesAnalysisReportModal').find('.modal-dialog').addClass('dd-transparent');
-    $(document).find('.dd-col-h, .dd-row-h').css('background-color','#f5f5f5').css('color','black');
-    $(document).find('.dd-col, .dd-row').css('background-color','white').css('color','black');
-    $(document).find('.dd-c-'+col).css('background-color','springgreen').css('color','white');
-    $(document).find('.dd-r-'+row).css('background-color','lightcoral').css('color','white');
-    $(document).find('.dd-'+row+'-'+col).css('background-color','deepskyblue').css('color','white');
+    $(document).find('.dd-col-h, .dd-row-h').css('background-color', '#f5f5f5').css('color', 'black');
+    $(document).find('.dd-col, .dd-row').css('background-color', 'white').css('color', 'black');
+    $(document).find('.dd-c-' + col).css('background-color', 'springgreen').css('color', 'white');
+    $(document).find('.dd-r-' + row).css('background-color', 'lightcoral').css('color', 'white');
+    $(document).find('.dd-' + row + '-' + col).css('background-color', 'deepskyblue').css('color', 'white');
 
     let inputs = this.elementsHandler.getDataObjectHandlersByDataObjectName(clickedDataObject.path.input);
     for (let input of inputs) {
@@ -316,14 +315,14 @@ export class DataDependenciesAnalysisHandler {
       for (let parentTask of dataObjectHandler.getDataObjectIncomingParentTasks()) {
         let parentOutputs = this.elementsHandler.getTaskHandlerByTaskId(parentTask.id).getTaskOutputObjects();
         for (let dO of parentOutputs) {
-          let dataObjectAlreadyInList = dependencies.filter(( obj ) => {
+          let dataObjectAlreadyInList = dependencies.filter((obj) => {
             return obj.name === dO.businessObject.name.trim();
           });
           if (dataObjectAlreadyInList.length !== 0) {
-            dataObjectAlreadyInList[0].connections = $.unique(dataObjectAlreadyInList[0].connections.concat(this.getDataObjectsOfIncomingPathByInputElement(dO).map(a=>a.businessObject.name.trim())));
+            dataObjectAlreadyInList[0].connections = this.getUniqueValuesOfArray(dataObjectAlreadyInList[0].connections.concat(this.getDataObjectsOfIncomingPathByInputElement(dO).map(a => a.businessObject.name.trim())));
           } else {
             if (dO.businessObject.name) {
-              dependencies.push({name: dO.businessObject.name.trim(), connections: $.unique(this.getDataObjectsOfIncomingPathByInputElement(dO).map(a=>a.businessObject.name.trim()))});
+              dependencies.push({ name: dO.businessObject.name.trim(), connections: this.getUniqueValuesOfArray(this.getDataObjectsOfIncomingPathByInputElement(dO).map(a => a.businessObject.name.trim())) });
             }
           }
         }
@@ -399,7 +398,7 @@ export class DataDependenciesAnalysisHandler {
     let messageFlowInputs = [];
     this.findIncomingPathDataObjects(incDataObjectIds, inputElement.incoming, inputElement.id, messageFlowInputs);
     let incDataObjects = [];
-    for (let id of $.unique(incDataObjectIds)) {
+    for (let id of this.getUniqueValuesOfArray(incDataObjectIds)) {
       incDataObjects.push(this.registry.get(id));
     }
     return incDataObjects;
@@ -448,9 +447,9 @@ export class DataDependenciesAnalysisHandler {
         this.findIncomingPathDataObjects(incDataObjects, input.source, sourceInputId, messageFlowInputs);
       }
       if (input.type === "bpmn:StartEvent" || input.type === "bpmn:IntermediateCatchEvent") {
-          for (let element of input.incoming) {
-            this.findIncomingPathDataObjects(incDataObjects, element, sourceInputId, messageFlowInputs);
-          }
+        for (let element of input.incoming) {
+          this.findIncomingPathDataObjects(incDataObjects, element, sourceInputId, messageFlowInputs);
+        }
       }
       for (let element of input) {
         if (element.type === "bpmn:MessageFlow") {
@@ -530,6 +529,11 @@ export class DataDependenciesAnalysisHandler {
     if (a.name > b.name)
       return 1;
     return 0;
+  }
+
+  // Get unique values of an array
+  getUniqueValuesOfArray(array: string[]): string[] {
+    return array.filter((v, i, a) => a.indexOf(v) === i);
   }
 
 }
