@@ -9,7 +9,7 @@ export interface TaskStereotypeGroupObject {
 
 export class TaskStereotype extends Stereotype {
 
-  constructor(title: String, taskHandler: TaskHandler) {
+  constructor(title: string, taskHandler: TaskHandler) {
     super(title, taskHandler);
 
     this.task = taskHandler.task;

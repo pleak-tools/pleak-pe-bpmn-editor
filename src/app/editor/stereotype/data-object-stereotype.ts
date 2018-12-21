@@ -4,7 +4,7 @@ import { Stereotype } from "./stereotype";
 
 export class DataObjectStereotype extends Stereotype {
 
-  constructor(title: String, dataObjectHandler: DataObjectHandler) {
+  constructor(title: string, dataObjectHandler: DataObjectHandler) {
     super(title, dataObjectHandler);
 
     this.dataObject = dataObjectHandler.dataObject;

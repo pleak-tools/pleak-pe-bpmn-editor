@@ -9,7 +9,7 @@ let config = require('../../../config.json');
 
 export class Stereotype {
 
-  constructor(title: String, elementHandler: any) {
+  constructor(title: string, elementHandler: any) {
     this.viewer = elementHandler.viewer;
     this.registry = this.viewer.get('elementRegistry');
     this.eventBus = this.viewer.get('eventBus');
@@ -32,7 +32,7 @@ export class Stereotype {
   elementHandler: any;
   validationHandler: ValidationHandler;
 
-  title: String;
+  title: string;
   label: String;
   settingsPanelContainer: any;
   isTempStereotype: boolean = false;
