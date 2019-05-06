@@ -8,7 +8,7 @@ let is = (element, type) => element.$instanceOf(type);
 
 export class SimpleDisclosureAnalysisHandler {
 
-  constructor(viewer: Viewer, diagram: string, elementsHandler: ElementsHandler, validationHandler: ValidationHandler, getSimpleDisclosureData, getSimpleDisclosureReportColumnGroups, getListOfModelUniqueDataObjects) {
+  constructor(viewer: Viewer, diagram: string, elementsHandler: ElementsHandler, validationHandler: ValidationHandler) {
     this.viewer = viewer;
     this.registry = this.viewer.get('elementRegistry');
     this.eventBus = this.viewer.get('eventBus');
@@ -19,14 +19,6 @@ export class SimpleDisclosureAnalysisHandler {
     this.analysisPanel = validationHandler.analysisPanel;
     this.successPanel = validationHandler.successPanel;
     this.dtoOwners = {};
-    if(getSimpleDisclosureData)
-      this.getSimpleDisclosureData = getSimpleDisclosureData;
-
-    if(getSimpleDisclosureReportColumnGroups)
-      this.getSimpleDisclosureReportColumnGroups = getSimpleDisclosureReportColumnGroups;
-
-    if(getListOfModelUniqueDataObjects)      
-      this.getListOfModelUniqueDataObjects = getListOfModelUniqueDataObjects;
   }
 
   viewer: Viewer;
@@ -125,6 +117,41 @@ export class SimpleDisclosureAnalysisHandler {
       } else if (visibilityData.length === 0) {
         visibility = "V";
       }
+
+      let registry = this.registry;
+      visibilityObj.owner = dataObjectObj.owner;
+      if (visibility == "V" && !!dataObjectObj.visibleTo.find(x => x == dataObjectObj.owner)) {
+        let isInitialOwner = false;
+        let isDtoInputFound = false;
+        for (var i in registry._elements) {
+          var node = registry._elements[i].element;
+          if ((is(node.businessObject, 'bpmn:Task'))) {
+            if (node.businessObject.dataOutputAssociations && node.businessObject.dataOutputAssociations.length) {
+              node.businessObject.dataOutputAssociations.forEach(x => {
+                if (x.targetRef.id == dataObjectObj.id) {
+                  isInitialOwner = true;
+                }
+              });
+              if (isInitialOwner) {
+                break;
+              }
+            }
+          }
+          if (is(node.businessObject, 'bpmn:DataObjectReference') &&
+            (node.businessObject.id == dataObjectObj.id) &&
+            node.incoming && node.incoming.length) {
+            isDtoInputFound = true;
+          }
+        }
+
+        if (isInitialOwner || !isDtoInputFound) {
+          visibility = "O";
+        }
+        else {
+          visibility = "V";
+        }
+      }
+
       visibilityObj.visibility = visibility;
       resultData.push(visibilityObj);
     }
@@ -316,32 +343,36 @@ export class SimpleDisclosureAnalysisHandler {
   // Format and sort simple disclosure report data objects groups data
   getSimpleDisclosureReportColumnGroups(): any[] {
     let getSimpleDisclosureDataMatrix = this.getSimpleDisclosureDataMatrix();
-    let modelParticipants = this.getListOfModelLanesAndPoolsObjects();
-    let simpleDisclosureReportColumnGroupsRawData = this.getSimpleDisclosureReportColumnGroupsRaw();
     let formattedDataObjectsGroupData = [];
 
-    for (let rawDataObjectsGroup of simpleDisclosureReportColumnGroupsRawData) {
-      let visibilityData = [];
-      for (let participant of modelParticipants) {
-        let visibility = [];
-        for (let dataObject of rawDataObjectsGroup.dataObjects) {
-          let visibilityInfoExists = getSimpleDisclosureDataMatrix.filter((obj) => {
-            return obj.visibleTo == participant.id && obj.name == dataObject;
-          });
-          if (visibilityInfoExists.length !== 0) {
-            visibility.push(visibilityInfoExists[0].visibility);
-          }
-        }
-        let visibilityValue = "-";
-        if (visibility.indexOf("V") !== -1) {
-          visibilityValue = "V";
-        } else if (visibility.indexOf("H") !== -1 && visibility.indexOf("V") === -1) {
-          visibilityValue = "H";
-        }
-        visibilityData.push({ visibleTo: participant.id, visibility: visibilityValue });
+    let grouped = [];
+    for (let i = 0; i < getSimpleDisclosureDataMatrix.length; i++) {
+      let existingDto = grouped.find(x => x.name == getSimpleDisclosureDataMatrix[i].name);
+      if (getSimpleDisclosureDataMatrix[i].visibleTo != getSimpleDisclosureDataMatrix[i].owner &&
+        getSimpleDisclosureDataMatrix[i].visibility == "O") {
+        getSimpleDisclosureDataMatrix[i].visibility = "V";
       }
-      formattedDataObjectsGroupData.push({ name: rawDataObjectsGroup.name, visibility: visibilityData });
+
+      if (existingDto) {
+        existingDto.visibility.push({
+          visibility: getSimpleDisclosureDataMatrix[i].visibility,
+          visibleTo: getSimpleDisclosureDataMatrix[i].visibleTo
+        });
+      }
+      else {
+        // let visibility = getSimpleDisclosureDataMatrix[i].visibleTo != getSimpleDisclosureDataMatrix[i].owner && 
+        // getSimpleDisclosureDataMatrix[i].visibility == "O";
+        grouped.push({
+          name: getSimpleDisclosureDataMatrix[i].name,
+          visibility: [{
+            visibility: getSimpleDisclosureDataMatrix[i].visibility,
+            visibleTo: getSimpleDisclosureDataMatrix[i].visibleTo
+          }]
+        });
+      }
     }
+
+    formattedDataObjectsGroupData = grouped;
 
     return formattedDataObjectsGroupData.sort(function (a, b) {
       var nameA = a.name.toLowerCase(), nameB = b.name.toLowerCase();
@@ -429,7 +460,7 @@ export class SimpleDisclosureAnalysisHandler {
       table += '</tr>';
     }
     table += '</tabel>';
-    $('#simple-legend').text('V = visible, H = hidden, MF = MessageFlow, S = SecureChannel');
+    $('#simple-legend').text('V = visible, H = hidden, O = owner, MF = MessageFlow, S = SecureChannel');
     $('#simpleDisclosureReportModal').find('#report-table').html('').html(table);
     $('#simpleDisclosureReportModal').find('#simpleDisclosureReportTitle').text('').text(this.elementsHandler.parent.file.title);
     $('#simpleDisclosureReportModal').find('#simpleDisclosureReportType').text(' - Simple disclosure analysis report');
@@ -465,21 +496,42 @@ export class SimpleDisclosureAnalysisHandler {
   }
 
   // Return list of data objects (unique by their name)
-  public getListOfModelUniqueDataObjects(): any[] {
+  getListOfModelUniqueDataObjects(): any[] {
     let dataObjectHandlers = this.elementsHandler.getAllModelDataObjectHandlers();
     let uniqueDataObjectsByName = [];
     for (let dataObjectHandler of dataObjectHandlers) {
       let visibleTo = this.validationHandler.getUniqueValuesOfArray(dataObjectHandler.getLanesAndPoolsDataObjectIsVisibleTo());
       let visibility = dataObjectHandler.getVisibilityStatus();
+      let owner = null;
+
+      let registry = this.registry;
+      for (var i in registry._elements) {
+        if (registry._elements[i].element.type == "bpmn:Participant") {
+          let curPart = registry._elements[i].element;
+
+          for (var j = 0; j < curPart.children.length; j++) {
+            if (curPart.children[j].type == "bpmn:DataObjectReference" &&
+              curPart.children[j].businessObject &&
+              dataObjectHandler.dataObject.id == curPart.children[j].businessObject.id) {
+                this.dtoOwners[dataObjectHandler.dataObject.name] = curPart.id;
+              owner = curPart.id;
+              break;
+            }
+          }
+        }
+      }
+
       if (dataObjectHandler.dataObject.name) {
         let dataObjectAlreadyAdded = uniqueDataObjectsByName.filter((obj) => {
-          return obj.name.trim() == dataObjectHandler.dataObject.name.trim();
+          return obj.id == dataObjectHandler.dataObject.id;
         });
         if (dataObjectAlreadyAdded.length > 0) {
+          dataObjectAlreadyAdded[0].id = dataObjectHandler.dataObject.id;
+          dataObjectAlreadyAdded[0].owner = owner;
           dataObjectAlreadyAdded[0].visibleTo = this.validationHandler.getUniqueValuesOfArray(dataObjectAlreadyAdded[0].visibleTo.concat(visibleTo));
           dataObjectAlreadyAdded[0].visibility = this.validationHandler.getUniqueValuesOfArray(dataObjectAlreadyAdded[0].visibility.concat(visibility));
         } else {
-          uniqueDataObjectsByName.push({ name: dataObjectHandler.dataObject.name.trim(), visibleTo: visibleTo, visibility: visibility });
+          uniqueDataObjectsByName.push({ id: dataObjectHandler.dataObject.id, name: dataObjectHandler.dataObject.name.trim(), owner: owner, visibleTo: visibleTo, visibility: visibility });
         }
       }
     }
