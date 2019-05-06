@@ -7,16 +7,20 @@ import { AppComponent } from './app.component';
 import { EditorComponent } from './editor/editor.component';
 
 import { AuthService } from './auth/auth.service';
+import { AppRoutingModule } from './editor/app-routing.module';
+import { ExportComponent } from './editor/export/export.component';
 
 @NgModule({
   declarations: [
     AppComponent,
-    EditorComponent
+    EditorComponent,
+    ExportComponent
   ],
   imports: [
     BrowserModule,
     FormsModule,
-    HttpModule
+    HttpModule,
+    AppRoutingModule
   ],
   providers: [AuthService],
   bootstrap: [AppComponent]

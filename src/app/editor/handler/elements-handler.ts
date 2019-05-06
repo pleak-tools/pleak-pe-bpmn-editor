@@ -35,79 +35,82 @@ export class ElementsHandler {
   dataObjectHandlers: DataObjectHandler[] = [];
 
   init() {
-    this.validationHandler = new ValidationHandler(this.viewer, this.diagram, this);
-    // Import model from xml file
-    this.viewer.importXML(this.diagram, () => {
-      this.viewer.get("moddle").fromXML(this.diagram, (err: any, definitions: any) => {
-        if (typeof definitions !== 'undefined') {
-          // Add stereotype labels to elements based on xml labels
-          this.viewer.importDefinitions(definitions, () => {
-            this.createElementHandlerInstances(definitions).then(() => {
-              this.validationHandler.init().then(() => {
-                $('#stereotype-options').html('');
-                $('#analyze-diagram').addClass('active');
+    return new Promise((resolve) => {
+      this.validationHandler = new ValidationHandler(this.viewer, this.diagram, this);
+      // Import model from xml file
+      this.viewer.importXML(this.diagram, () => {
+        this.viewer.get("moddle").fromXML(this.diagram, (err: any, definitions: any) => {
+          if (typeof definitions !== 'undefined') {
+            // Add stereotype labels to elements based on xml labels
+            this.viewer.importDefinitions(definitions, () => {
+              this.createElementHandlerInstances(definitions).then(() => {
+                this.validationHandler.init().then(() => {
+                  $('#stereotype-options').html('');
+                  $('#analyze-diagram').addClass('active');
+                  resolve();
+                });
               });
             });
-          });
-        }
-      });
-      // Add click event listener to init and terminate stereotype processes
-      this.eventBus.on('element.click', (e) => {
-
-        if (is(e.element.businessObject, 'bpmn:Task') || is(e.element.businessObject, 'bpmn:DataObjectReference') || is(e.element.businessObject, 'bpmn:DataStoreReference') || is(e.element.businessObject, 'bpmn:MessageFlow')) {
-
-          this.canvas.removeMarker(e.element.id, 'selected');
-          // If there is some other element being edited than clicked one, terminate edit process
-          let beingEditedTasktHandler = this.taskHandlers.filter(function (obj) {
-            return obj.task != e.element.businessObject && (obj.beingEdited && obj.stereotypeSelector != null || obj.stereotypeSelectorHidden);
-          });
-          if (beingEditedTasktHandler.length > 0) {
-            beingEditedTasktHandler[0].checkForUnsavedChanges();
           }
-          let beingEditedMessageFlowHandler = this.messageFlowHandlers.filter(function (obj) {
-            return obj.messageFlow != e.element.businessObject && (obj.beingEdited && obj.stereotypeSelector != null || obj.stereotypeSelectorHidden);
-          });
-          if (beingEditedMessageFlowHandler.length > 0) {
-            beingEditedMessageFlowHandler[0].checkForUnsavedChanges();
-          }
-          let beingEditedDataObjectHandler = this.dataObjectHandlers.filter(function (obj) {
-            return obj.dataObject != e.element.businessObject && (obj.beingEdited && obj.stereotypeSelector != null || obj.stereotypeSelectorHidden);
-          });
-          if (beingEditedDataObjectHandler.length > 0) {
-            beingEditedDataObjectHandler[0].checkForUnsavedChanges();
-          }
+        });
+        // Add click event listener to init and terminate stereotype processes
+        this.eventBus.on('element.click', (e) => {
 
-        }
+          if (is(e.element.businessObject, 'bpmn:Task') || is(e.element.businessObject, 'bpmn:DataObjectReference') || is(e.element.businessObject, 'bpmn:DataStoreReference') || is(e.element.businessObject, 'bpmn:MessageFlow')) {
 
-        // If clicked element is not yet being edited, start edit process
-        let toBeEditedelementHandler = [];
-
-        if (!this.isAnotherTaskOrDataObjectBeingEdited(e.element.id)) {
-
-          this.canvas.addMarker(e.element.id, 'selected');
-          if (is(e.element.businessObject, 'bpmn:Task')) {
-            toBeEditedelementHandler = this.taskHandlers.filter(function (obj) {
-              return obj.task == e.element.businessObject && obj.beingEdited == false;
+            this.canvas.removeMarker(e.element.id, 'selected');
+            // If there is some other element being edited than clicked one, terminate edit process
+            let beingEditedTasktHandler = this.taskHandlers.filter(function (obj) {
+              return obj.task != e.element.businessObject && (obj.beingEdited && obj.stereotypeSelector != null || obj.stereotypeSelectorHidden);
             });
-          } else if (is(e.element.businessObject, 'bpmn:MessageFlow')) {
-            toBeEditedelementHandler = this.messageFlowHandlers.filter(function (obj) {
-              return obj.messageFlow == e.element.businessObject && obj.beingEdited == false;
-            });
-          } else if (is(e.element.businessObject, 'bpmn:DataObjectReference') || is(e.element.businessObject, 'bpmn:DataStoreReference')) {
-            toBeEditedelementHandler = this.dataObjectHandlers.filter(function (obj) {
-              return obj.dataObject == e.element.businessObject && obj.beingEdited == false;
-            });
-          }
-          if (toBeEditedelementHandler.length > 0) {
-            if (!this.canEdit && (is(e.element.businessObject, 'bpmn:Task') || is(e.element.businessObject, 'bpmn:DataObjectReference') || is(e.element.businessObject, 'bpmn:DataStoreReference') || is(e.element.businessObject, 'bpmn:MessageFlow'))) {
-              toBeEditedelementHandler[0].initPublicStereotypeView();
-            } else {
-              toBeEditedelementHandler[0].initStereotypeEditProcess();
+            if (beingEditedTasktHandler.length > 0) {
+              beingEditedTasktHandler[0].checkForUnsavedChanges();
             }
+            let beingEditedMessageFlowHandler = this.messageFlowHandlers.filter(function (obj) {
+              return obj.messageFlow != e.element.businessObject && (obj.beingEdited && obj.stereotypeSelector != null || obj.stereotypeSelectorHidden);
+            });
+            if (beingEditedMessageFlowHandler.length > 0) {
+              beingEditedMessageFlowHandler[0].checkForUnsavedChanges();
+            }
+            let beingEditedDataObjectHandler = this.dataObjectHandlers.filter(function (obj) {
+              return obj.dataObject != e.element.businessObject && (obj.beingEdited && obj.stereotypeSelector != null || obj.stereotypeSelectorHidden);
+            });
+            if (beingEditedDataObjectHandler.length > 0) {
+              beingEditedDataObjectHandler[0].checkForUnsavedChanges();
+            }
+
           }
 
-        }
+          // If clicked element is not yet being edited, start edit process
+          let toBeEditedelementHandler = [];
 
+          if (!this.isAnotherTaskOrDataObjectBeingEdited(e.element.id)) {
+
+            this.canvas.addMarker(e.element.id, 'selected');
+            if (is(e.element.businessObject, 'bpmn:Task')) {
+              toBeEditedelementHandler = this.taskHandlers.filter(function (obj) {
+                return obj.task == e.element.businessObject && obj.beingEdited == false;
+              });
+            } else if (is(e.element.businessObject, 'bpmn:MessageFlow')) {
+              toBeEditedelementHandler = this.messageFlowHandlers.filter(function (obj) {
+                return obj.messageFlow == e.element.businessObject && obj.beingEdited == false;
+              });
+            } else if (is(e.element.businessObject, 'bpmn:DataObjectReference') || is(e.element.businessObject, 'bpmn:DataStoreReference')) {
+              toBeEditedelementHandler = this.dataObjectHandlers.filter(function (obj) {
+                return obj.dataObject == e.element.businessObject && obj.beingEdited == false;
+              });
+            }
+            if (toBeEditedelementHandler.length > 0) {
+              if (!this.canEdit && (is(e.element.businessObject, 'bpmn:Task') || is(e.element.businessObject, 'bpmn:DataObjectReference') || is(e.element.businessObject, 'bpmn:DataStoreReference') || is(e.element.businessObject, 'bpmn:MessageFlow'))) {
+                toBeEditedelementHandler[0].initPublicStereotypeView();
+              } else {
+                toBeEditedelementHandler[0].initStereotypeEditProcess();
+              }
+            }
+
+          }
+
+        });
       });
     });
   }
