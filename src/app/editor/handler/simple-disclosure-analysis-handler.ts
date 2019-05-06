@@ -19,10 +19,14 @@ export class SimpleDisclosureAnalysisHandler {
     this.analysisPanel = validationHandler.analysisPanel;
     this.successPanel = validationHandler.successPanel;
     this.dtoOwners = {};
+    if(getSimpleDisclosureData)
+      this.getSimpleDisclosureData = getSimpleDisclosureData;
 
-    this.getSimpleDisclosureData = getSimpleDisclosureData;
-    this.getSimpleDisclosureReportColumnGroups = getSimpleDisclosureReportColumnGroups;
-    this.getListOfModelUniqueDataObjects = getListOfModelUniqueDataObjects;
+    if(getSimpleDisclosureReportColumnGroups)
+      this.getSimpleDisclosureReportColumnGroups = getSimpleDisclosureReportColumnGroups;
+
+    if(getListOfModelUniqueDataObjects)      
+      this.getListOfModelUniqueDataObjects = getListOfModelUniqueDataObjects;
   }
 
   viewer: Viewer;
@@ -425,8 +429,10 @@ export class SimpleDisclosureAnalysisHandler {
       table += '</tr>';
     }
     table += '</tabel>';
+    $('#simple-legend').text('V = visible, H = hidden, MF = MessageFlow, S = SecureChannel');
     $('#simpleDisclosureReportModal').find('#report-table').html('').html(table);
     $('#simpleDisclosureReportModal').find('#simpleDisclosureReportTitle').text('').text(this.elementsHandler.parent.file.title);
+    $('#simpleDisclosureReportModal').find('#simpleDisclosureReportType').text(' - Simple disclosure analysis report');
     $('#simpleDisclosureReportModal').modal();
   }
 

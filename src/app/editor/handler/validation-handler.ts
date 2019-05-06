@@ -41,6 +41,7 @@ export class ValidationHandler {
 
   elementsHandler: ElementsHandler;
   simpleDisclosureAnalysisHandler: SimpleDisclosureAnalysisHandler;
+  simpleDisclosureAnalysisHandlerForExtended: SimpleDisclosureAnalysisHandler;
   extendedSimpleDisclosureAnalysisHandler: ExtendedSimpleDisclosureAnalysisHandler;
   dataDependenciesAnalysisHandler: DataDependenciesAnalysisHandler;
 
@@ -78,12 +79,16 @@ export class ValidationHandler {
     this.dataObjectHandlers = this.elementsHandler.getAllModelDataObjectHandlers();
     this.extendedSimpleDisclosureAnalysisHandler = new ExtendedSimpleDisclosureAnalysisHandler(this.viewer, this.diagram, this.elementsHandler, this);
 
-    this.simpleDisclosureAnalysisHandler = new SimpleDisclosureAnalysisHandler(this.viewer, this.diagram, this.elementsHandler, this, 
+    // Reusing methods for extended report
+    this.simpleDisclosureAnalysisHandlerForExtended = new SimpleDisclosureAnalysisHandler(this.viewer, this.diagram, this.elementsHandler, this, 
       this.extendedSimpleDisclosureAnalysisHandler.getSimpleDisclosureData, 
       this.extendedSimpleDisclosureAnalysisHandler.getSimpleDisclosureReportColumnGroups, 
       this.extendedSimpleDisclosureAnalysisHandler.getListOfModelUniqueDataObjects);
       
-    this.extendedSimpleDisclosureAnalysisHandler.init(this.simpleDisclosureAnalysisHandler);
+    this.extendedSimpleDisclosureAnalysisHandler.init(this.simpleDisclosureAnalysisHandlerForExtended);
+
+    // Old separate report
+    this.simpleDisclosureAnalysisHandler = new SimpleDisclosureAnalysisHandler(this.viewer, this.diagram, this.elementsHandler, this, null, null, null);
 
     this.dataDependenciesAnalysisHandler = new DataDependenciesAnalysisHandler(this.viewer, this.diagram, this.elementsHandler, this);
   }

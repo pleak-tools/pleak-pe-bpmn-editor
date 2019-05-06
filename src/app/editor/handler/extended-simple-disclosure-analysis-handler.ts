@@ -29,7 +29,8 @@ export class ExtendedSimpleDisclosureAnalysisHandler {
     this.analysisPanel.on('click', '#extended-analyze-simple-disclosure', (e) => {
       e.preventDefault();
       e.stopPropagation();
-      self.createSimpleDisclosureReportTable();
+      let res = self.createSimpleDisclosureReportTable();
+      self.showResults(res.uniqueLanesAndPools.length, res.simpleDisclosureDataObjects.length, res.uniqueLanesAndPools, res.simpleDisclosureDataObjects, res.dataObjectGroupsMessageFlowConnections)
     });
   }
 
@@ -166,13 +167,11 @@ export class ExtendedSimpleDisclosureAnalysisHandler {
     });
   }
 
-  createSimpleDisclosureReportTable(): void {
+  createSimpleDisclosureReportTable(): any {
     let deps = this.validationHandler.dataDependenciesAnalysisHandler.getDataDependencies();
     let uniqueLanesAndPools = ExtendedSimpleDisclosureAnalysisHandler.simpleDisclosureAnalysisHandler.getListOfModelLanesAndPoolsObjects();
     let simpleDisclosureDataObjects = this.getSimpleDisclosureReportColumnGroups();
-    let dataObjectGroupsMessageFlowConnections = ExtendedSimpleDisclosureAnalysisHandler.simpleDisclosureAnalysisHandler.getDataObjectGroupsMessageFlowConnections();;
-    let rows = uniqueLanesAndPools.length;
-    let columns = simpleDisclosureDataObjects.length;
+    let dataObjectGroupsMessageFlowConnections = ExtendedSimpleDisclosureAnalysisHandler.simpleDisclosureAnalysisHandler.getDataObjectGroupsMessageFlowConnections();
 
     for (let i = 0; i < simpleDisclosureDataObjects.length; i++) {
       for (let v = 0; v < simpleDisclosureDataObjects[i].visibility.length; v++) {
@@ -195,6 +194,14 @@ export class ExtendedSimpleDisclosureAnalysisHandler {
       }
     }
 
+    return {
+      simpleDisclosureDataObjects: simpleDisclosureDataObjects,
+      uniqueLanesAndPools: uniqueLanesAndPools,
+      dataObjectGroupsMessageFlowConnections: dataObjectGroupsMessageFlowConnections
+    };
+  }
+
+  showResults(rows, columns, uniqueLanesAndPools, simpleDisclosureDataObjects, dataObjectGroupsMessageFlowConnections){
     let table = "";
     table += '<table class="table" style="text-align:center">';
     table += '<tr><th style="background-color:#f5f5f5; text-align:center;">#</th>';
@@ -230,9 +237,12 @@ export class ExtendedSimpleDisclosureAnalysisHandler {
       }
       table += '</tr>';
     }
-    table += '</tabel>';
+    table += '</table>';
+
+    $('#simple-legend').text('V = visible, H = hidden, O = owner, MF = MessageFlow, S = SecureChannel, D = direct, I = indirect');
     $('#simpleDisclosureReportModal').find('#report-table').html('').html(table);
     $('#simpleDisclosureReportModal').find('#simpleDisclosureReportTitle').text('').text(this.elementsHandler.parent.file.title);
+    $('#simpleDisclosureReportModal').find('#simpleDisclosureReportType').text(' - Extended simple disclosure analysis report');
     $('#simpleDisclosureReportModal').modal();
   }
 
