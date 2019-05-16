@@ -7,7 +7,7 @@ import { AuthService } from './auth/auth.service';
 import { EditorService } from './editor/editor.service';
 import { ElementsHandler } from './editor/handler/elements-handler';
 
-import { SqlBPMNModdle } from "./editor/bpmn-labels-extension";
+import { SqlBPMNModdle } from './editor/bpmn-labels-extension';
 import NavigatedViewer from 'bpmn-js/lib/NavigatedViewer';
 
 
@@ -49,9 +49,9 @@ export class AppComponent implements OnInit {
     this.loadModel();
   }
 
-  private modelId;
-  private viewerType;
-  private file;
+  public modelId;
+  public viewerType;
+  public file;
   private fileOpenedTime: number;
   private exportType: string;
 
@@ -143,7 +143,7 @@ export class AppComponent implements OnInit {
     );
   }
 
-  private canEdit() {
+  canEdit() {
     const file = this.file;
 
     if (!file || !this.isAuthenticated()) { return false; }

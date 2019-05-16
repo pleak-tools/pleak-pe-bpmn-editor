@@ -1,9 +1,4 @@
 import { Injectable } from '@angular/core';
-import { Subject } from "rxjs/Subject";
-import { Observable } from "rxjs/Observable";
-import { HttpClient, HttpResponse } from '@angular/common/http';
-import { Router } from '@angular/router';
-import { Location } from '@angular/common';
 import { HttpClient, HttpResponse } from '@angular/common/http';
 
 import { BehaviorSubject } from 'rxjs';
@@ -19,7 +14,7 @@ const config = require('../../config.json');
 @Injectable()
 export class AuthService {
 
-  constructor(public http: HttpClient) {
+  constructor(public http: HttpClient, private toastr: ToastrService) {
     this.verifyToken();
   }
 
@@ -45,7 +40,7 @@ export class AuthService {
     this.loginCredentials.password = value;
   }
 
-  authStatusChanged(status: Boolean) {
+  authStatusChanged(status: boolean) {
     this.authStatusBool.next(status);
   }
 
@@ -66,26 +61,6 @@ export class AuthService {
 
     return true;
 
-  }
-
-  verifyTokenWithCallbacks(callbacks: any) {
-    this.http.get(config.backend.host + '/rest/auth', AuthService.loadRequestOptions()).subscribe(
-      () => {
-        this.user = jwt_decode(localStorage.getItem('jwt'));
-        this.authStatusChanged(true);
-        if (callbacks) {
-          callbacks.success();
-        }
-      },
-      () => {
-        localStorage.removeItem('jwt');
-        this.user = null;
-        this.authStatusChanged(false);
-        if (callbacks) {
-          callbacks.fail();
-        }
-      }
-    );
   }
 
   loginREST(user) {
