@@ -2,18 +2,19 @@ import { Injectable } from '@angular/core';
 import { Subject } from "rxjs/Subject";
 import { Observable } from "rxjs/Observable";
 import { HttpClient, HttpResponse } from '@angular/common/http';
+import { Router } from '@angular/router';
+import { Location } from '@angular/common';
+import { HttpClient, HttpResponse } from '@angular/common/http';
 
-declare let $: any;
+import { BehaviorSubject } from 'rxjs';
+import { ToastrService } from 'ngx-toastr';
+
+declare var $: any;
+
 declare function require(name: string);
 
-let jwt_decode = require('jwt-decode');
-
-let config = require('../../config.json');
-
-interface LoginCredentials {
-  email: string,
-  password: string
-}
+const jwt_decode = require('jwt-decode');
+const config = require('../../config.json');
 
 @Injectable()
 export class AuthService {
@@ -22,18 +23,18 @@ export class AuthService {
     this.verifyToken();
   }
 
-  user: LoginCredentials = null;
+  user = null;
 
-  private loginCredentials: LoginCredentials = {
+  private loginCredentials = {
     email: '',
     password: ''
   };
 
-  private authStatusBool: Subject<Boolean> = new Subject<boolean>();
-  authStatus: Observable<Boolean> = this.authStatusBool.asObservable();
+  private authStatusBool = new BehaviorSubject<boolean|null>(null);
+  authStatus = this.authStatusBool.asObservable();
 
-  getUserEmail() {
-    return this.user.email;
+  static loadRequestOptions(input: object | null = null): object {
+    return Object.assign({headers: {'JSON-Web-Token': localStorage.jwt || ''}}, input);
   }
 
   setLoginCredentialsEmail(value: string) {
@@ -48,28 +49,27 @@ export class AuthService {
     this.authStatusBool.next(status);
   }
 
-  loadRequestOptions() {
-    return {headers: {'JSON-Web-Token': localStorage.jwt || ''}};
-  }
-
   verifyToken() {
-    this.http.get(config.backend.host + '/rest/auth', this.loadRequestOptions()).subscribe(
+
+    this.http.get(config.backend.host + '/rest/auth', AuthService.loadRequestOptions()).subscribe(
       () => {
-        this.user = jwt_decode(localStorage.getItem('jwt'));
+        this.user = jwt_decode(localStorage.jwt);
         this.authStatusChanged(true);
       },
       () => {
-        localStorage.removeItem('jwt');
+        delete localStorage.jwt;
         this.user = null;
         this.authStatusChanged(false);
         return false;
       }
     );
+
     return true;
+
   }
 
   verifyTokenWithCallbacks(callbacks: any) {
-    this.http.get(config.backend.host + '/rest/auth', this.loadRequestOptions()).subscribe(
+    this.http.get(config.backend.host + '/rest/auth', AuthService.loadRequestOptions()).subscribe(
       () => {
         this.user = jwt_decode(localStorage.getItem('jwt'));
         this.authStatusChanged(true);
@@ -88,38 +88,50 @@ export class AuthService {
     );
   }
 
-  loginREST(user: LoginCredentials) {
-    this.http.post<HttpResponse<any>>(config.backend.host + '/rest/auth/login', user, Object.assign(this.loadRequestOptions(), {observe: 'response'})).subscribe(
-      (success) => {
-        if (success.status === 200) {
-          let token = success.body.token;
-          localStorage.setItem("jwt", token);
+  loginREST(user) {
+
+    this.http.post(config.backend.host + '/rest/auth/login', user, AuthService.loadRequestOptions({observe: 'response'})).subscribe(
+      (response: HttpResponse<any>) => {
+
+        if (response.status === 200) {
+
+          const token = response.body.token;
+          localStorage.jwt = token;
           this.user = jwt_decode(token);
           this.authStatusChanged(true);
           this.loginSuccess();
+
+          this.toastr.success('Logged in successfully');
+
         }
+
       },
-      (fail) => {
+      (fail: HttpResponse<any>) => {
         this.loginError(fail.status);
       }
     );
+
   }
 
   logoutREST() {
-    this.http.get(config.backend.host + '/rest/auth/logout', this.loadRequestOptions()).subscribe(
+
+    this.http.get(config.backend.host + '/rest/auth/logout', AuthService.loadRequestOptions()).subscribe(
       () => {
-        localStorage.removeItem('jwt');
+        delete localStorage.jwt;
         this.user = null;
         this.authStatusChanged(false);
         this.hideLogoutLoading();
+
+        this.toastr.info('Logged out successfully');
       },
       () => {
-        localStorage.removeItem('jwt');
+        delete localStorage.jwt;
         this.user = null;
         this.authStatusChanged(false);
         this.hideLogoutLoading();
       }
     );
+
   }
 
   login() {
@@ -130,33 +142,35 @@ export class AuthService {
   showLoginLoading() {
     $('#loginLoading').show();
     $('#loginForm').hide();
-  };
+  }
 
   loginSuccess() {
-    $('#loginLoading').fadeOut("slow", function () {
+    $('#loginLoading').fadeOut('slow', function () {
       $('#loginForm').trigger('reset').show();
       $('#loginForm .help-block').hide();
       $('#loginForm .form-group').removeClass('has-error');
     });
     $('#loginModal').modal('hide');
+    $('body').removeClass('modal-open');
+    $('.modal-backdrop').remove();
     this.loginCredentials = {
       email: '',
       password: ''
     };
-  };
+  }
 
-  loginError(code: Number) {
-    $('#loginLoading').fadeOut("slow", function () {
+  loginError(code) {
+    $('#loginLoading').fadeOut('slow', function () {
       $('#loginForm .help-block').hide();
       $('#loginForm .form-group').addClass('has-error');
       $('#loginForm').show();
-      if (code === 403 || code === 404 || code == 401) {
+      if (code === 403 || code === 404 || code === 401) {
         $('#loginHelpCredentials').show();
       } else {
         $('#loginHelpServer').show();
       }
     });
-  };
+  }
 
   logout() {
     this.showLogoutLoading();
@@ -165,19 +179,23 @@ export class AuthService {
       email: '',
       password: ''
     };
-    window.location.href = config.frontend.host;
   }
 
   showLogoutLoading() {
     $('#logoutLoading').show();
     $('#logoutText').hide();
-  };
+  }
 
   hideLogoutLoading() {
-    $('#logoutLoading').fadeOut("slow", function () {
+    $('#logoutLoading').fadeOut('slow', function () {
       $('#logoutText').show();
     });
     $('#logoutModal').modal('hide');
-  };
+    $('body').removeClass('modal-open');
+    $('.modal-backdrop').remove();
+
+    // this.router.navigateByUrl('/home');
+
+  }
 
 }
