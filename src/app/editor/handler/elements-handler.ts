@@ -41,6 +41,7 @@ export class ElementsHandler {
   private content: string | null;
 
   init() {
+    return new Promise((resolve) => {
     this.validationHandler = new ValidationHandler(this.viewer, this.diagram, this);
     // Import model from xml file
     this.viewer.importXML(this.diagram, () => {
@@ -52,6 +53,7 @@ export class ElementsHandler {
               this.validationHandler.init().then(() => {
                 $('#stereotype-options').html('');
                 $('#analyze-diagram').addClass('active');
+                resolve();
               });
             });
           });
@@ -115,6 +117,7 @@ export class ElementsHandler {
         }
 
       });
+    });
     });
   }
 

@@ -5,6 +5,7 @@ import { TaskHandler } from "./task-handler";
 import { MessageFlowHandler } from "./message-flow-handler";
 import { DataObjectHandler } from "./data-object-handler";
 import { SimpleDisclosureAnalysisHandler } from "./simple-disclosure-analysis-handler";
+import { ExtendedSimpleDisclosureAnalysisHandler } from "./extended-simple-disclosure-analysis-handler";
 import { DataDependenciesAnalysisHandler } from './data-dependencies-analysis-handler';
 
 declare let $: any;
@@ -40,6 +41,8 @@ export class ValidationHandler {
 
   elementsHandler: ElementsHandler;
   simpleDisclosureAnalysisHandler: SimpleDisclosureAnalysisHandler;
+  simpleDisclosureAnalysisHandlerForExtended: SimpleDisclosureAnalysisHandler;
+  extendedSimpleDisclosureAnalysisHandler: ExtendedSimpleDisclosureAnalysisHandler;
   dataDependenciesAnalysisHandler: DataDependenciesAnalysisHandler;
 
   taskHandlers: TaskHandler[] = [];
@@ -74,7 +77,11 @@ export class ValidationHandler {
     this.taskHandlers = this.elementsHandler.getAllModelTaskHandlers();
     this.messageFlowHandlers = this.elementsHandler.getAllModelMessageFlowHandlers();
     this.dataObjectHandlers = this.elementsHandler.getAllModelDataObjectHandlers();
+    this.extendedSimpleDisclosureAnalysisHandler = new ExtendedSimpleDisclosureAnalysisHandler(this.viewer, this.diagram, this.elementsHandler, this);
+
     this.simpleDisclosureAnalysisHandler = new SimpleDisclosureAnalysisHandler(this.viewer, this.diagram, this.elementsHandler, this);
+    this.extendedSimpleDisclosureAnalysisHandler.init(this.simpleDisclosureAnalysisHandler);
+
     this.dataDependenciesAnalysisHandler = new DataDependenciesAnalysisHandler(this.viewer, this.diagram, this.elementsHandler, this);
   }
 

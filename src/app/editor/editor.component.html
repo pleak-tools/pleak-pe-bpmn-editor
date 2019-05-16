@@ -32,6 +32,16 @@
         </li>
       </ul>
     </div>
+    <h3>Extended simple disclosure analysis</h3>
+    <div class="text-left">
+      <ul class="buttons analyze">
+        <li>
+          <a class="active" id="extended-analyze-simple-disclosure" title="Analyze simple disclosure" href="#">
+            <span class="glyphicon glyphicon-equalizer"></span> Analyze
+          </a>
+        </li>
+      </ul>
+    </div>
     <h3>Data dependencies analysis</h3>
     <div class="text-left">
       <ul class="buttons analyze">
@@ -45,19 +55,22 @@
   </div>
 </div>
 <!-- Simple Disclosure Analysis report modal -->
-<div class="modal fade" id="simpleDisclosureReportModal" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel">
+<div class="modal fade" id="simpleDisclosureReportModal" tabindex="-1" role="dialog"
+  aria-labelledby="mySmallModalLabel">
   <div class="modal-dialog">
     <div class="modal-content">
       <form>
         <div class="modal-header">
-          <h4><span id="simpleDisclosureReportTitle"></span> - Simple disclosure analysis report</h4>
+          <h4>
+            <span id="simpleDisclosureReportTitle"></span>
+            <span id="simpleDisclosureReportType"></span>
+          </h4>
         </div>
         <div class="modal-body">
           <div id="report-table"></div>
         </div>
         <div class="modal-footer">
-          <div class="pull-left">
-            V = visible, H = hidden, MF = MessageFlow, S = SecureChannel
+          <div id='simple-legend' class="pull-left">
           </div>
           <div class="pull-right">
             <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
@@ -69,7 +82,8 @@
 </div>
 
 <!--Connections modal -->
-<div class="modal fade" id="dataDependenciesAnalysisReportModal" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel">
+<div class="modal fade" id="dataDependenciesAnalysisReportModal" tabindex="-1" role="dialog"
+  aria-labelledby="mySmallModalLabel">
   <div class="modal-dialog">
     <div class="modal-content">
       <form>
@@ -92,4 +106,3 @@
     </div>
   </div>
 </div>
-
