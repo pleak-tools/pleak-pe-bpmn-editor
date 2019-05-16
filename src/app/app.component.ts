@@ -5,6 +5,10 @@ import { ToastrService } from 'ngx-toastr';
 
 import { AuthService } from './auth/auth.service';
 import { EditorService } from './editor/editor.service';
+import { ElementsHandler } from './editor/handler/elements-handler';
+
+import { SqlBPMNModdle } from "./editor/bpmn-labels-extension";
+import NavigatedViewer from 'bpmn-js/lib/NavigatedViewer';
 
 
 declare function require(name: string);
@@ -21,6 +25,10 @@ export class AppComponent implements OnInit {
     if (pathname[2] === 'viewer') {
       this.modelId = pathname[3];
       this.viewerType = 'public';
+    } else if (pathname[2] === 'export') {
+      this.modelId = pathname[3];
+      this.exportType = pathname[4];
+      this.export();
     } else {
       this.modelId = pathname[2];
       this.viewerType = 'private';
@@ -45,6 +53,7 @@ export class AppComponent implements OnInit {
   private viewerType;
   private file;
   private fileOpenedTime: number;
+  private exportType: string;
 
   canSave = false;
   authenticated: Boolean;
@@ -148,6 +157,70 @@ export class AppComponent implements OnInit {
     return false;
   }
 
+  export(): void {
+    this.http.get(config.backend.host + '/rest/directories/files/' + (this.viewerType === 'public' ? 'public/' : '') + this.modelId, { headers: { 'JSON-Web-Token': localStorage.jwt || '' } }).subscribe(
+      (response: any) => {
+        let file = response;
+        let viewer = null;
+        if (file.content.length === 0) {
+          this.toastr.error('File cannot be found or opened!', '', { disableTimeOut: true });
+        }
+        if (this.viewerType === 'public' && this.isAuthenticated()) {
+          this.getExportedFilePermissions(file.id);
+        } else {
+          if (file.content && viewer == null) {
+            viewer = new NavigatedViewer({
+              container: '#canvas',
+              keyboard: {
+                bindTo: document
+              },
+              moddleExtensions: {
+                sqlExt: SqlBPMNModdle
+              }
+            });
+
+            let elementsHandler = new ElementsHandler(viewer, file.content, this, this.canEditExportedFile(file));
+            elementsHandler.init().then(() => {
+              let message = "";
+              if (this.exportType == "esd") {
+                message = JSON.stringify(elementsHandler.validationHandler.extendedSimpleDisclosureAnalysisHandler.createSimpleDisclosureReportTable());
+              } else {
+                message = JSON.stringify("error");
+              }
+              localStorage.setItem('esdInfo', message);
+              localStorage.setItem('esdInfoStatus', 'done');
+            });
+          }
+        }
+      },
+      (fail) => {
+      }
+    );
+  }
+
+  private getExportedFilePermissions(file): void {
+    this.http.get(config.backend.host + '/rest/directories/files/' + file.id, { headers: { 'JSON-Web-Token': localStorage.jwt || '' } }).subscribe(
+      success => {
+        let response = JSON.parse((<any>success)._body);
+        file.permissions = response.permissions;
+        file.user = response.user;
+        file.md5Hash = response.md5Hash;
+      },
+      () => { }
+    );
+  }
+
+  private canEditExportedFile(file: any): boolean {
+    if (!file || !this.isAuthenticated()) { return false; }
+    if ((this.authService.user && file.user) ? file.user.email === this.authService.user.email : false) { return true; }
+    for (let pIx = 0; pIx < file.permissions.length; pIx++) {
+      if (file.permissions[pIx].action.title === 'edit' &&
+        this.authService.user ? file.permissions[pIx].user.email === this.authService.user.email : false) {
+        return true;
+      }
+    }
+    return false;
+  }
 
   ngOnInit() {
     window.addEventListener('storage', (e) => {

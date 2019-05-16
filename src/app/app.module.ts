@@ -9,13 +9,10 @@ import { AuthService } from './auth/auth.service';
 import { EditorModule } from './editor/editor.module';
 import { HttpClientModule } from '@angular/common/http';
 import { ToastrModule } from 'ngx-toastr';
-import { ExportComponent } from './editor/export/export.component';
-import { AppRoutingModule } from './editor/app-routing.module';
 
 @NgModule({
   declarations: [
     AppComponent,
-    ExportComponent
   ],
   imports: [
     BrowserModule,
@@ -28,7 +25,6 @@ import { AppRoutingModule } from './editor/app-routing.module';
       positionClass: 'toast-bottom-right',
       preventDuplicates: true,
     }),
-    AppRoutingModule
   ],
   providers: [AuthService],
   bootstrap: [AppComponent]
