@@ -1,16 +1,16 @@
-import { Component, OnInit, Input } from '@angular/core';
-import { Http } from '@angular/http';
+import { Component, Input } from '@angular/core';
 import { AuthService } from "../../auth/auth.service";
 import { SqlBPMNModdle } from "../bpmn-labels-extension";
 import NavigatedViewer from 'bpmn-js/lib/NavigatedViewer';
 
 import { ElementsHandler } from "../handler/elements-handler";
+import { HttpClient } from '@angular/common/http';
 
 declare let $: any;
 declare function require(name: string);
 let is = (element, type) => element.$instanceOf(type);
 
-let config = require('../../../config.json');
+const config = require('../../../config.json');
 
 @Component({
   selector: 'app-pe-bpmn-editor-export',
@@ -18,7 +18,7 @@ let config = require('../../../config.json');
 })
 export class ExportComponent {
 
-  constructor(public http: Http, private authService: AuthService) {
+  constructor(public http: HttpClient, private authService: AuthService) {
 
     let pathname = window.location.pathname.split('/');
     if (pathname[2] === 'export') {
@@ -44,9 +44,9 @@ export class ExportComponent {
   }
 
   export(): void {
-    this.http.get(config.backend.host + '/rest/directories/files/' + (this.viewerType == 'public' ? 'public/' : '') + this.modelId, this.authService.loadRequestOptions()).subscribe(
-      success => {
-        let file = JSON.parse((<any>success)._body);
+    this.http.get(config.backend.host + '/rest/directories/files/' + (this.viewerType === 'public' ? 'public/' : '') + this.modelId, AuthService.loadRequestOptions()).subscribe(
+      (repsonse: any) => {
+        const file = repsonse;
         if (file.content.length === 0) {
           console.log("File can't be found or opened!");
         }
@@ -83,9 +83,8 @@ export class ExportComponent {
   }
 
   getPermissions(file): void {
-    this.http.get(config.backend.host + '/rest/directories/files/' + file.id, this.authService.loadRequestOptions()).subscribe(
-      success => {
-        let response = JSON.parse((<any>success)._body);
+    this.http.get(config.backend.host + '/rest/directories/files/' + file.id, AuthService.loadRequestOptions()).subscribe(
+      (response: any) => {
         file.permissions = response.permissions;
         file.user = response.user;
         file.md5Hash = response.md5Hash;

@@ -1,10 +1,10 @@
 import { Component, OnInit, Input } from '@angular/core';
-import { Http } from '@angular/http';
 import { AuthService } from "../auth/auth.service";
 import { SqlBPMNModdle } from "./bpmn-labels-extension";
 import NavigatedViewer from 'bpmn-js/lib/NavigatedViewer';
 
 import { ElementsHandler } from "./handler/elements-handler";
+import { HttpClient, HttpResponse } from '@angular/common/http';
 
 declare let $: any;
 declare function require(name: string);
@@ -19,7 +19,7 @@ let config = require('../../config.json');
 })
 export class EditorComponent implements OnInit {
 
-  constructor(public http: Http, private authService: AuthService) {
+  constructor(public http: HttpClient, private authService: AuthService) {
     let pathname = window.location.pathname.split('/');
     if (pathname[2] === 'viewer') {
       this.modelId = pathname[3];
@@ -43,8 +43,8 @@ export class EditorComponent implements OnInit {
 
   private viewer: NavigatedViewer;
 
-  private modelId;
-  private viewerType;
+  modelId;
+  viewerType;
 
   private lastContent: string = '';
 
@@ -67,9 +67,9 @@ export class EditorComponent implements OnInit {
     $('#canvas').html('');
     $('.buttons-container').off('click', '#save-diagram');
     self.viewer = null;
-    this.http.get(config.backend.host + '/rest/directories/files/' + (this.viewerType == 'public' ? 'public/' : '') + this.modelId, this.authService.loadRequestOptions()).subscribe(
-      success => {
-        self.file = JSON.parse((<any>success)._body);
+    this.http.get(config.backend.host + '/rest/directories/files/' + (this.viewerType === 'public' ? 'public/' : '') + this.modelId, AuthService.loadRequestOptions()).subscribe(
+      (response: any) => {
+        self.file = response;
         self.fileId = self.file.id;
         if (self.file.content.length === 0) {
           console.log("File can't be found or opened!");
@@ -94,9 +94,8 @@ export class EditorComponent implements OnInit {
 
   getPermissions() {
     let self = this;
-    this.http.get(config.backend.host + '/rest/directories/files/' + self.fileId, self.authService.loadRequestOptions()).subscribe(
-      success => {
-        let response = JSON.parse((<any>success)._body);
+    this.http.get(config.backend.host + '/rest/directories/files/' + self.fileId, AuthService.loadRequestOptions()).subscribe(
+      (response: any) => {
         self.file.permissions = response.permissions;
         self.file.user = response.user;
         self.file.md5Hash = response.md5Hash;
@@ -225,10 +224,10 @@ export class EditorComponent implements OnInit {
             console.log(err)
           } else {
             self.file.content = xml;
-            this.http.put(config.backend.host + '/rest/directories/files/' + self.fileId, self.file, this.authService.loadRequestOptions()).subscribe(
-              success => {
+            this.http.put(config.backend.host + '/rest/directories/files/' + self.fileId, self.file, AuthService.loadRequestOptions({ observe: 'response' })).subscribe(
+              (success: HttpResponse<any>) => {
                 if (success.status === 200 || success.status === 201) {
-                  let data = JSON.parse((<any>success)._body);
+                  let data = success.body;
                   $('#fileSaveSuccess').show();
                   $('#fileSaveSuccess').fadeOut(5000);
                   $('#save-diagram').removeClass('active');
