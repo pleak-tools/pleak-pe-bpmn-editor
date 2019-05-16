@@ -113,8 +113,10 @@ export class DataDependenciesAnalysisHandler {
       $(document).find('#dataDependenciesAnalysisReportModal').find('.modal-dialog').toggleClass('dd-transparent');
     });
 
-    $('#dataDependenciesAnalysisReportModal').find('#report-table').html('').html(table);
-    $('#dataDependenciesAnalysisReportModal').find('#dependenciesAnalysisReportTitle').text('').text(this.elementsHandler.parent.file.title);
+    $('#dataDependenciesAnalysisReportModal').find('#report-table').html('');
+    $('#dataDependenciesAnalysisReportModal').find('#report-table').html(table);
+    $('#dataDependenciesAnalysisReportModal').find('#dependenciesAnalysisReportTitle').text('');
+    $('#dataDependenciesAnalysisReportModal').find('#dependenciesAnalysisReportTitle').text($('#fileName').text());
     $('#dataDependenciesAnalysisReportModal').modal();
   }
 

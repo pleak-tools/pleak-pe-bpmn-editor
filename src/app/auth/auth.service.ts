@@ -1,8 +1,7 @@
 import { Injectable } from '@angular/core';
-import { Http, RequestOptions, Headers } from '@angular/http';
-import * as Rx from 'rxjs/Rx';
 import { Subject } from "rxjs/Subject";
 import { Observable } from "rxjs/Observable";
+import { HttpClient, HttpResponse } from '@angular/common/http';
 
 declare let $: any;
 declare function require(name: string);
@@ -19,7 +18,7 @@ interface LoginCredentials {
 @Injectable()
 export class AuthService {
 
-  constructor(public http: Http) {
+  constructor(public http: HttpClient) {
     this.verifyToken();
   }
 
@@ -50,18 +49,16 @@ export class AuthService {
   }
 
   loadRequestOptions() {
-    let headers = new Headers();
-    headers.append('JSON-Web-Token', localStorage.getItem('jwt'));
-    return new RequestOptions({ headers: headers });
+    return {headers: {'JSON-Web-Token': localStorage.jwt || ''}};
   }
 
   verifyToken() {
     this.http.get(config.backend.host + '/rest/auth', this.loadRequestOptions()).subscribe(
-      success => {
+      () => {
         this.user = jwt_decode(localStorage.getItem('jwt'));
         this.authStatusChanged(true);
       },
-      fail => {
+      () => {
         localStorage.removeItem('jwt');
         this.user = null;
         this.authStatusChanged(false);
@@ -73,14 +70,14 @@ export class AuthService {
 
   verifyTokenWithCallbacks(callbacks: any) {
     this.http.get(config.backend.host + '/rest/auth', this.loadRequestOptions()).subscribe(
-      success => {
+      () => {
         this.user = jwt_decode(localStorage.getItem('jwt'));
         this.authStatusChanged(true);
         if (callbacks) {
           callbacks.success();
         }
       },
-      fail => {
+      () => {
         localStorage.removeItem('jwt');
         this.user = null;
         this.authStatusChanged(false);
@@ -92,17 +89,17 @@ export class AuthService {
   }
 
   loginREST(user: LoginCredentials) {
-    this.http.post(config.backend.host + '/rest/auth/login', user, this.loadRequestOptions()).subscribe(
-      success => {
+    this.http.post<HttpResponse<any>>(config.backend.host + '/rest/auth/login', user, Object.assign(this.loadRequestOptions(), {observe: 'response'})).subscribe(
+      (success) => {
         if (success.status === 200) {
-          let token = JSON.parse((<any>success)._body).token;
+          let token = success.body.token;
           localStorage.setItem("jwt", token);
           this.user = jwt_decode(token);
           this.authStatusChanged(true);
           this.loginSuccess();
         }
       },
-      fail => {
+      (fail) => {
         this.loginError(fail.status);
       }
     );
@@ -110,13 +107,13 @@ export class AuthService {
 
   logoutREST() {
     this.http.get(config.backend.host + '/rest/auth/logout', this.loadRequestOptions()).subscribe(
-      success => {
+      () => {
         localStorage.removeItem('jwt');
         this.user = null;
         this.authStatusChanged(false);
         this.hideLogoutLoading();
       },
-      fail => {
+      () => {
         localStorage.removeItem('jwt');
         this.user = null;
         this.authStatusChanged(false);

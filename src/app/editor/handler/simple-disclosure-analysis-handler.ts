@@ -462,7 +462,7 @@ export class SimpleDisclosureAnalysisHandler {
     table += '</tabel>';
     $('#simple-legend').text('V = visible, H = hidden, O = owner, MF = MessageFlow, S = SecureChannel');
     $('#simpleDisclosureReportModal').find('#report-table').html('').html(table);
-    $('#simpleDisclosureReportModal').find('#simpleDisclosureReportTitle').text('').text(this.elementsHandler.parent.file.title);
+    $('#simpleDisclosureReportModal').find('#simpleDisclosureReportTitle').text('').text($('#fileName').text());
     $('#simpleDisclosureReportModal').find('#simpleDisclosureReportType').text(' - Simple disclosure analysis report');
     $('#simpleDisclosureReportModal').modal();
   }

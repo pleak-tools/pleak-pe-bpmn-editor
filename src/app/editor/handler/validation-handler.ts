@@ -78,7 +78,6 @@ export class ValidationHandler {
     this.messageFlowHandlers = this.elementsHandler.getAllModelMessageFlowHandlers();
     this.dataObjectHandlers = this.elementsHandler.getAllModelDataObjectHandlers();
     this.extendedSimpleDisclosureAnalysisHandler = new ExtendedSimpleDisclosureAnalysisHandler(this.viewer, this.diagram, this.elementsHandler, this);
-    
     this.simpleDisclosureAnalysisHandler = new SimpleDisclosureAnalysisHandler(this.viewer, this.diagram, this.elementsHandler, this);
     this.extendedSimpleDisclosureAnalysisHandler.init(this.simpleDisclosureAnalysisHandler);
 

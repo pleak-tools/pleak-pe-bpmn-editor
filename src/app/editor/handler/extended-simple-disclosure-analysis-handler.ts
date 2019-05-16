@@ -120,7 +120,7 @@ export class ExtendedSimpleDisclosureAnalysisHandler {
 
     $('#simple-legend').text('V = visible, H = hidden, O = owner, MF = MessageFlow, S = SecureChannel, D = direct, I = indirect');
     $('#simpleDisclosureReportModal').find('#report-table').html('').html(table);
-    $('#simpleDisclosureReportModal').find('#simpleDisclosureReportTitle').text('').text(this.elementsHandler.parent.file.title);
+    $('#simpleDisclosureReportModal').find('#simpleDisclosureReportTitle').text('').text($('#fileName').text());
     $('#simpleDisclosureReportModal').find('#simpleDisclosureReportType').text(' - Extended simple disclosure analysis report');
     $('#simpleDisclosureReportModal').modal();
   }
