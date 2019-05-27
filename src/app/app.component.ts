@@ -87,7 +87,7 @@ export class AppComponent implements OnInit {
 
   loadModel() {
 
-    this.http.get(config.backend.host + '/rest/directories/files/' + (this.viewerType === 'public' ? 'public/' : '') + this.modelId, { headers: { 'JSON-Web-Token': localStorage.jwt || '' } }).subscribe(
+    this.http.get(config.backend.host + '/rest/directories/files/' + (this.viewerType === 'public' ? 'public/' : '') + this.modelId, AuthService.loadRequestOptions()).subscribe(
 
       (response: any) => {
 
@@ -109,7 +109,7 @@ export class AppComponent implements OnInit {
     const requestItem = Object.assign({}, this.file);
     Object.assign(requestItem, { content: this.editorService.getModel() });
 
-    this.http.put(config.backend.host + '/rest/directories/files/' + this.modelId, requestItem, { headers: { 'JSON-Web-Token': localStorage.jwt || '' } }).subscribe(
+    this.http.put(config.backend.host + '/rest/directories/files/' + this.modelId, requestItem, AuthService.loadRequestOptions()).subscribe(
       (response: any) => {
         this.file = response;
         this.canSave = false;
@@ -130,7 +130,7 @@ export class AppComponent implements OnInit {
   }
 
   private getPermissions(id: number) {
-    this.http.get(config.backend.host + '/rest/directories/files/' + id, { headers: { 'JSON-Web-Token': localStorage.jwt || '' } }).subscribe(
+    this.http.get(config.backend.host + '/rest/directories/files/' + id, AuthService.loadRequestOptions()).subscribe(
       (response: any) => {
         this.file.permissions = response.permissions;
         this.file.user = response.user;
@@ -158,7 +158,7 @@ export class AppComponent implements OnInit {
   }
 
   export(): void {
-    this.http.get(config.backend.host + '/rest/directories/files/' + (this.viewerType === 'public' ? 'public/' : '') + this.modelId, { headers: { 'JSON-Web-Token': localStorage.jwt || '' } }).subscribe(
+    this.http.get(config.backend.host + '/rest/directories/files/' + (this.viewerType === 'public' ? 'public/' : '') + this.modelId, AuthService.loadRequestOptions()).subscribe(
       (response: any) => {
         let file = response;
         let viewer = null;
@@ -199,12 +199,11 @@ export class AppComponent implements OnInit {
   }
 
   private getExportedFilePermissions(file): void {
-    this.http.get(config.backend.host + '/rest/directories/files/' + file.id, { headers: { 'JSON-Web-Token': localStorage.jwt || '' } }).subscribe(
-      success => {
-        let response = JSON.parse((<any>success)._body);
-        file.permissions = response.permissions;
-        file.user = response.user;
-        file.md5Hash = response.md5Hash;
+    this.http.get(config.backend.host + '/rest/directories/files/' + file.id, AuthService.loadRequestOptions()).subscribe(
+      (response: any) => {
+        this.file.permissions = response.permissions;
+        this.file.user = response.user;
+        this.file.md5Hash = response.md5Hash;
       },
       () => { }
     );
