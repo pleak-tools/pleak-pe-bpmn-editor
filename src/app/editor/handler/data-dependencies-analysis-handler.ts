@@ -451,33 +451,35 @@ export class DataDependenciesAnalysisHandler {
           this.findIncomingPathDataObjects(incDataObjects, element, sourceInputId, messageFlowInputs);
         }
       }
-      for (let element of input) {
-        if (element.type === "bpmn:MessageFlow") {
-          messageFlowInputs.push(element.id);
-          if (messageFlowInputs.filter(item => item == element.id).length > 5) {
-            return;
-          }
-          this.findIncomingPathDataObjects(incDataObjects, element.source, sourceInputId, messageFlowInputs);
-        }
-        if (element.sourceRef) {
-          if (element.type !== "bpmn:SequenceFlow") {
-            this.findIncomingPathDataObjects(incDataObjects, element.sourceRef, sourceInputId, messageFlowInputs);
-          }
-        }
-        if (element.incoming) {
-          if (incDataObjects.filter(item => item == element.incoming.id).length > 5) {
-            return;
-          }
-          if (element.type !== "bpmn:SequenceFlow") {
-            this.findIncomingPathDataObjects(incDataObjects, element.incoming, sourceInputId, messageFlowInputs);
-          }
-        }
-        if (element.source) {
-          if (incDataObjects.filter(item => item == element.source.id).length > 5) {
-            return;
-          }
-          if (element.type !== "bpmn:SequenceFlow") {
+      if (typeof input[Symbol.iterator] === 'function') {
+        for (let element of input) {
+          if (element.type === "bpmn:MessageFlow") {
+            messageFlowInputs.push(element.id);
+            if (messageFlowInputs.filter(item => item == element.id).length > 5) {
+              return;
+            }
             this.findIncomingPathDataObjects(incDataObjects, element.source, sourceInputId, messageFlowInputs);
+          }
+          if (element.sourceRef) {
+            if (element.type !== "bpmn:SequenceFlow") {
+              this.findIncomingPathDataObjects(incDataObjects, element.sourceRef, sourceInputId, messageFlowInputs);
+            }
+          }
+          if (element.incoming) {
+            if (incDataObjects.filter(item => item == element.incoming.id).length > 5) {
+              return;
+            }
+            if (element.type !== "bpmn:SequenceFlow") {
+              this.findIncomingPathDataObjects(incDataObjects, element.incoming, sourceInputId, messageFlowInputs);
+            }
+          }
+          if (element.source) {
+            if (incDataObjects.filter(item => item == element.source.id).length > 5) {
+              return;
+            }
+            if (element.type !== "bpmn:SequenceFlow") {
+              this.findIncomingPathDataObjects(incDataObjects, element.source, sourceInputId, messageFlowInputs);
+            }
           }
         }
       }

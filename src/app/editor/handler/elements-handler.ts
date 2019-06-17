@@ -50,11 +50,13 @@ export class ElementsHandler {
             // Add stereotype labels to elements based on xml labels
             this.viewer.importDefinitions(definitions, () => {
               this.createElementHandlerInstances(definitions).then(() => {
-                this.validationHandler.init().then(() => {
-                  $('#stereotype-options').html('');
-                  $('#analyze-diagram').addClass('active');
-                  resolve();
-                });
+                this.prepareTaskAndDataObjectHandlersForAnalysis().then(() => {
+                  this.validationHandler.init().then(() => {
+                    $('#stereotype-options').html('');
+                    $('#analyze-diagram').addClass('active');
+                    resolve();
+                  });
+                })
               });
             });
           }
@@ -135,6 +137,18 @@ export class ElementsHandler {
           });
         }
       });
+    });
+  }
+
+  prepareTaskAndDataObjectHandlersForAnalysis(): Promise<void> {
+    return new Promise((handlersPrepared) => {
+      for (const taskHandler of this.taskHandlers) {
+        taskHandler.prepareAnalysisDetails();
+      }
+      for (const dataObjectHandler of this.dataObjectHandlers) {
+        dataObjectHandler.prepareAnalysisDetails();
+      }
+      handlersPrepared();
     });
   }
 

@@ -142,6 +142,9 @@ export class TaskHandler {
       }
     }
     this.loadTaskStereotypes();
+  }
+
+  prepareAnalysisDetails(): void {
     this.loadTaskLaneOrPool();
   }
 

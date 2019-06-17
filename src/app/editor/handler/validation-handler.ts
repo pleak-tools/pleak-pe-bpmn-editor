@@ -562,11 +562,13 @@ export class ValidationHandler {
           }
         }
       }
-      for (let element of input) {
-        if (element.sourceRef) {
-          this.findIncomingPathTasks(incTasks, element.sourceRef, sourceInputId, type);
-        } else if (element.incoming) {
-          this.findIncomingPathTasks(incTasks, element.incoming, sourceInputId, type);
+      if (typeof input[Symbol.iterator] === 'function') {
+        for (let element of input) {
+          if (element.sourceRef) {
+            this.findIncomingPathTasks(incTasks, element.sourceRef, sourceInputId, type);
+          } else if (element.incoming) {
+            this.findIncomingPathTasks(incTasks, element.incoming, sourceInputId, type);
+          }
         }
       }
     }
@@ -612,11 +614,13 @@ export class ValidationHandler {
           }
         }
       }
-      for (let element of input) {
-        if (element.targetRef) {
-          this.findOutgoingPathTasks(incTasks, element.targetRef, sourceInputId, type);
-        } else if (element.outgoing) {
-          this.findOutgoingPathTasks(incTasks, element.outgoing, sourceInputId, type);
+      if (typeof input[Symbol.iterator] === 'function') {
+        for (let element of input) {
+          if (element.targetRef) {
+            this.findOutgoingPathTasks(incTasks, element.targetRef, sourceInputId, type);
+          } else if (element.outgoing) {
+            this.findOutgoingPathTasks(incTasks, element.outgoing, sourceInputId, type);
+          }
         }
       }
     }
@@ -658,11 +662,13 @@ export class ValidationHandler {
         }
       }
     }
-    for (let element of input) {
-      if (element.sourceRef) {
-        this.findIncomingPathExclusiveGateways(incGateways, element.sourceRef);
-      } else if (element.incoming) {
-        this.findIncomingPathExclusiveGateways(incGateways, element.incoming);
+    if (typeof input[Symbol.iterator] === 'function') {
+      for (let element of input) {
+        if (element.sourceRef) {
+          this.findIncomingPathExclusiveGateways(incGateways, element.sourceRef);
+        } else if (element.incoming) {
+          this.findIncomingPathExclusiveGateways(incGateways, element.incoming);
+        }
       }
     }
   }
@@ -711,11 +717,13 @@ export class ValidationHandler {
           }
         }
       }
-      for (let element of input) {
-        if (element.sourceRef) {
-          this.findIncomingPathStartAndIntermediateEvents(incEvents, element.sourceRef, sourceInputId, incTasks);
-        } else if (element.incoming) {
-          this.findIncomingPathStartAndIntermediateEvents(incEvents, element.incoming, sourceInputId, incTasks);
+      if (typeof input[Symbol.iterator] === 'function') {
+        for (let element of input) {
+          if (element.sourceRef) {
+            this.findIncomingPathStartAndIntermediateEvents(incEvents, element.sourceRef, sourceInputId, incTasks);
+          } else if (element.incoming) {
+            this.findIncomingPathStartAndIntermediateEvents(incEvents, element.incoming, sourceInputId, incTasks);
+          }
         }
       }
     }

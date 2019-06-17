@@ -98,6 +98,9 @@ export class DataObjectHandler {
       }
     }
     this.loadDataObjectStereotypes();
+  }
+
+  prepareAnalysisDetails(): void {
     this.loadParentLaneOrPool();
     this.loadIncomingParentTasks();
     this.loadOutgoingParentTasks();
