@@ -94,7 +94,6 @@ export class AppComponent implements OnInit {
         this.file = response;
         this.fileOpenedTime = new Date().getTime();
         document.title = 'Pleak PE-BPMN editor - ' + this.file.title;
-
         if (this.viewerType === 'public' && this.isAuthenticated()) {
           this.getPermissions(this.file.id);
         } else {
@@ -135,8 +134,8 @@ export class AppComponent implements OnInit {
         this.file.permissions = response.permissions;
         this.file.user = response.user;
         this.file.md5Hash = response.md5Hash;
+        this.editorService.loadModel(this.file.content, this.canEdit());
       },
-      () => { },
       () => {
         this.editorService.loadModel(this.file.content, this.canEdit());
       }
