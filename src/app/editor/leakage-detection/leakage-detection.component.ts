@@ -151,7 +151,7 @@ export class LeakageDetectionComponent {
       }
     } else if (step === 3) {
       this.leakagesResults = this.getFormattedResults(resultData);
-      this.leakagesStepType = 3;
+      this.leakagesStepType = requestData.verificationType;
     }
     this.leakageAnalysisInprogress = false;
   }
