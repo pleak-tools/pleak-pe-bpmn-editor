@@ -128,7 +128,7 @@ export class SimpleDisclosureAnalysisHandler {
           if ((is(node.businessObject, 'bpmn:Task'))) {
             if (node.businessObject.dataOutputAssociations && node.businessObject.dataOutputAssociations.length) {
               node.businessObject.dataOutputAssociations.forEach(x => {
-                if (x.targetRef.id == dataObjectObj.id) {
+                if (x.targetRef && x.targetRef.id == dataObjectObj.id) {
                   isInitialOwner = true;
                 }
               });

@@ -52,6 +52,16 @@
         </li>
       </ul>
     </div>
+    <h3>Leakage detection</h3>
+    <div class="text-left">
+      <ul class="buttons analyze">
+        <li>
+          <a class="active" id="detect-leakages" title="Analyze" href="#">
+            <span class="glyphicon glyphicon-equalizer"></span> Analyze
+          </a>
+        </li>
+      </ul>
+    </div>
   </div>
 </div>
 <!-- Simple Disclosure Analysis report modal -->
@@ -99,6 +109,30 @@
           </div>
           <div class="pull-right">
             <button type="button" class="btn btn-default" id="transparency-button">Toggle transparency</button>
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Leakage Detection Analysis modal -->
+<div class="modal fade in" id="leakageDetectionModal" role="dialog" aria-labelledby="mySmallModalLabel">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form>
+        <div class="modal-header">
+          <h4>
+            Leakage detection
+          </h4>
+        </div>
+        <div class="modal-body">
+          <app-leakage-detection [authenticated]="authenticated" [modelId]="modelId" [viewer]="viewer">
+          </app-leakage-detection>
+        </div>
+        <div class="modal-footer">
+          <div class="pull-right">
             <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
           </div>
         </div>

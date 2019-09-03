@@ -7,6 +7,7 @@ import { DataObjectHandler } from "./data-object-handler";
 import { SimpleDisclosureAnalysisHandler } from "./simple-disclosure-analysis-handler";
 import { ExtendedSimpleDisclosureAnalysisHandler } from "./extended-simple-disclosure-analysis-handler";
 import { DataDependenciesAnalysisHandler } from './data-dependencies-analysis-handler';
+import { LeakageDetectionComponent } from '../leakage-detection/leakage-detection.component';
 
 declare let $: any;
 let is = (element, type) => element.$instanceOf(type);
@@ -82,6 +83,8 @@ export class ValidationHandler {
     this.extendedSimpleDisclosureAnalysisHandler.init(this.simpleDisclosureAnalysisHandler);
 
     this.dataDependenciesAnalysisHandler = new DataDependenciesAnalysisHandler(this.viewer, this.diagram, this.elementsHandler, this);
+
+    LeakageDetectionComponent.initLeakageDetectionModal(this.analysisPanel);
   }
 
   // Add validation errors to the model validation errors list

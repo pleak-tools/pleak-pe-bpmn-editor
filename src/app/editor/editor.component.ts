@@ -16,13 +16,16 @@ export class EditorComponent {
 
   constructor(private editorService: EditorService) {
     this.editorService.newModel.subscribe(content => {
+      this.modelId = this.editorService.modelId;
       this.openDiagram(content);
     });
   }
 
   @Input() authenticated: Boolean;
 
-  private viewer: NavigatedViewer;
+  public viewer: NavigatedViewer;
+
+  modelId: number;
 
   // Load diagram and add editor
   openDiagram(diagram: string) {

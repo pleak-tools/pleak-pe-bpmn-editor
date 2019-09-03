@@ -1,0 +1,73 @@
+<div class="leakageDetectionPanel text-center">
+  <h4>Choose analysis type</h4>
+  <button class="btn btn-success" type="button" (click)="taskVerification()" [disabled]="leakageAnalysisInprogress">Task
+    verification</button>
+  <button class="btn btn-success" type="button" (click)="participantVerification()"
+    [disabled]="leakageAnalysisInprogress">Participant verification</button>
+  <button class="btn btn-success" type="button" (click)="sssharingVerification()"
+    [disabled]="leakageAnalysisInprogress">SSSharing verification</button>
+
+  <div class="panel panel-default analysis-description-panel" *ngIf="leakageAnalysisTypeDescription"
+    style="margin-top:20px">
+    <div class="panel-heading text-center" (click)="descriptionCollapsed = !descriptionCollapsed" style="cursor:pointer">
+      <h4>Analysis question</h4>
+    </div>
+    <div class="panel-body text-left" *ngIf="!descriptionCollapsed">
+      <span *ngIf="leakageAnalysisTypeDescription">{{leakageAnalysisTypeDescription}}</span>
+    </div>
+  </div>
+
+  <div class="panel panel-default step2-elements-panel" *ngIf="leakagesStep2Elements.length > 0">
+    <div class="panel-heading text-center clickable" (click)="step2collapsed = !step2collapsed" style="cursor:pointer">
+      <h4>Select element</h4>
+    </div>
+    <div class="panel-body text-left" *ngIf="!step2collapsed">
+      <p *ngFor="let element of leakagesStep2Elements" (click)="toggleStep2SelectedElements(element.id)">
+        <span [class.selected-link]="element.selected == true"
+          [class.not-selected-link]="element.selected != true">{{element.name}}</span>
+      </p>
+    </div>
+    <div class="panel-footer text-right" *ngIf="!step2collapsed">
+      <button [disabled]="!areStep2ElementsSelected() || leakageAnalysisInprogress" class="btn btn-success"
+        type="button" (click)="leakageDetectionAnalysisStep2()">Analyse</button>
+    </div>
+  </div>
+
+  <div class="panel panel-default step3-elements-panel" *ngIf="leakagesStep3Elements.length > 0">
+    <div class="panel-heading text-center clickable" (click)="step3collapsed = !step3collapsed" style="cursor:pointer">
+      <h4>Select data object</h4>
+    </div>
+    <div class="panel-body text-left" *ngIf="!step3collapsed">
+      <p *ngFor="let element of leakagesStep3Elements" (click)="toggleStep3SelectedElements(element.name)">
+        <span [class.selected-link]="element.selected == true"
+          [class.not-selected-link]="element.selected != true">{{element.name}}</span></p>
+    </div>
+    <div class="panel-footer text-right" *ngIf="!step3collapsed">
+      <button [disabled]="!areStep3ElementsSelected() || leakageAnalysisInprogress" class="btn btn-success"
+        type="button" (click)="leakageDetectionAnalysisStep3()">Analyse</button>
+    </div>
+  </div>
+
+  <div class="panel panel-default results-panel text-left" *ngIf="leakagesResults.success || leakagesResults.error">
+    <div class="panel-heading text-center clickable" (click)="resultsCollapsed = !resultsCollapsed" style="cursor:pointer">
+      <h4>Results</h4>
+    </div>
+    <div class="panel-body" *ngIf="!resultsCollapsed">
+      <div *ngIf="leakagesResults.success"><span><b>Yes</b></span><br><br>
+        <span
+          *ngFor="let elem of leakagesResults.result"><b>{{elem.task}}:</b><br>&nbsp;&nbsp;&nbsp;{{elem.dataObjects}}<br></span>
+      </div>
+      <span *ngIf="!leakagesResults.success && leakagesResults.error == 'error1'"><b>No</b></span>
+      <span *ngIf="!leakagesResults.success && leakagesResults.error == 'error2'"><b>Element has never this number of parameters.</b></span>
+      <span *ngIf="!leakagesResults.success && leakagesResults.error == 'error3'" style="color:orangered"><b>Analyser failed to compute the result,
+          please try again.</b></span>
+    </div>
+  </div>
+
+  <div class="leakages-analysis-spinner" *ngIf="leakageAnalysisInprogress"
+    style="width: 40px; height: 40px; position: relative; margin: 50px auto;">
+    <div class="double-bounce1-2"></div>
+    <div class="double-bounce2-2"></div>
+  </div>
+
+</div>

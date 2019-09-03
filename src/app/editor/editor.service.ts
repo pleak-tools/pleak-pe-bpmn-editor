@@ -12,16 +12,17 @@ export class EditorService {
   newModel: Observable<string | null> = this._newModel.asObservable();
 
   canEdit = false;
+  modelId: number;
 
   public analyze: Function;
 
-  loadModel(content, canEdit) {
+  loadModel(content, canEdit, modelId) {
     this.canEdit = canEdit;
+    this.modelId = modelId;
     if (content) {
       this._newModel.next(content);
       this._model.next(content);
     }
-
   }
 
   updateModel(content) {

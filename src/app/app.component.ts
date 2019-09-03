@@ -97,7 +97,7 @@ export class AppComponent implements OnInit {
         if (this.viewerType === 'public' && this.isAuthenticated()) {
           this.getPermissions(this.file.id);
         } else {
-          this.editorService.loadModel(this.file.content, this.canEdit());
+          this.editorService.loadModel(this.file.content, this.canEdit(), this.modelId);
         }
       }
     );
@@ -134,10 +134,10 @@ export class AppComponent implements OnInit {
         this.file.permissions = response.permissions;
         this.file.user = response.user;
         this.file.md5Hash = response.md5Hash;
-        this.editorService.loadModel(this.file.content, this.canEdit());
+        this.editorService.loadModel(this.file.content, this.canEdit(), this.modelId);
       },
       () => {
-        this.editorService.loadModel(this.file.content, this.canEdit());
+        this.editorService.loadModel(this.file.content, this.canEdit(), this.modelId);
       }
     );
   }
