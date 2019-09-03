@@ -125,7 +125,7 @@ export class LeakageDetectionComponent {
     if (step === 1) {
       if (requestData.verificationType === 1 || requestData.verificationType === 2) {
         let tmp = [];
-        for (let element of resultData.split("\n")) {
+        for (let element of resultData.trim().split("\n")) {
           let id = element.substring(4, element.indexOf("NAME:")).trim();
           let name = element.substring(element.indexOf("NAME:") + 6, element.length) ? element.substring(element.indexOf("NAME:") + 6, element.length) : "unnamed";
           let obj = { id: id, name: name, selected: false };
