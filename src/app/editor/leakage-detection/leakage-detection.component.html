@@ -62,7 +62,8 @@
       <span *ngIf="!leakagesResults.success && leakagesResults.error == 'error1'"><b>No</b></span>
       <span *ngIf="!leakagesResults.success && leakagesResults.error == 'error2'"><b>Element has never this number of
           parameters.</b></span>
-      <span *ngIf="!leakagesResults.success && leakagesResults.error == 'error3'" style="color:orangered"><b>Analyser
+      <span *ngIf="!leakagesResults.success && leakagesResults.error == 'error3'"><b>There is no SSSharing PET on this model.</b></span>
+      <span *ngIf="!leakagesResults.success && leakagesResults.error == 'error4'" style="color:orangered"><b>Analyser
           failed to compute the result,
           please try again.</b></span>
     </div>

@@ -58,7 +58,7 @@ export class LeakageDetectionComponent {
       console.log(redirectCount)
       if (redirectCount == 100) {
         this.leakageAnalysisInprogress = false;
-        this.leakagesResults = { success: false, error: "error3" };
+        this.leakagesResults = { success: false, error: "error4" };
         return;
       }
       return new Promise((resolve) => {
@@ -102,7 +102,7 @@ export class LeakageDetectionComponent {
   }
 
   getFormattedResults(resultString: string): any {
-    if (resultString != "false" && resultString != "NEVER HAS THIS NUMBER OF PARAMETERS") {
+    if (resultString != "false" && resultString != "NEVER HAS THIS NUMBER OF PARAMETERS" && resultString != "No SSsharing PET over this model") {
       let tmp = resultString.replace('\n', '').replace(/^\s+|\s+$/gm, '').replace(/\(/g, '"').replace(/\)/g, '"');
       tmp = tmp.substring(1, tmp.length - 1);
       let tmp2 = tmp.split('",');
@@ -119,6 +119,8 @@ export class LeakageDetectionComponent {
       return { success: false, error: "error1" };
     } else if (resultString == "NEVER HAS THIS NUMBER OF PARAMETERS") {
       return { success: false, error: "error2" };
+    } else if (resultString == "No SSsharing PET over this model") {
+      return { success: false, error: "error3" };
     }
     return { success: false, error: resultString };
   }
