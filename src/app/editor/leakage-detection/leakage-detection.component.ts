@@ -49,52 +49,56 @@ export class LeakageDetectionComponent {
   public step3collapsed: boolean = false;
   public resultsCollapsed: boolean = false;
 
+  public analysisStopped: boolean = false;
+
   detectLeakagesAnalysisRequest(requestData, requestType, redirectCount, step): Promise<any> {
-    this.leakageAnalysisInprogress = true;
-    redirectCount = redirectCount || 0;
-    console.log(redirectCount)
-    if (redirectCount == 100) {
-      this.leakageAnalysisInprogress = false;
-      this.leakagesResults = { success: false, error: "error3" };
-      return;
-    }
-    return new Promise((resolve) => {
-      let requestUrl = '';
-      if (requestType === 1) {
-        requestUrl = '/rest/leak-detect/verification';
-      } else if (requestType === 2) {
-        requestUrl = '/rest/leak-detect/analysis';
-      } else if (requestType === 3) {
-        requestUrl = '/rest/leak-detect/analysis2';
+    if (!this.analysisStopped) {
+      this.leakageAnalysisInprogress = true;
+      redirectCount = redirectCount || 0;
+      console.log(redirectCount)
+      if (redirectCount == 100) {
+        this.leakageAnalysisInprogress = false;
+        this.leakagesResults = { success: false, error: "error3" };
+        return;
       }
+      return new Promise((resolve) => {
+        let requestUrl = '';
+        if (requestType === 1) {
+          requestUrl = '/rest/leak-detect/verification';
+        } else if (requestType === 2) {
+          requestUrl = '/rest/leak-detect/analysis';
+        } else if (requestType === 3) {
+          requestUrl = '/rest/leak-detect/analysis2';
+        }
 
-      this.http.post(config.backend.host + requestUrl, requestData, AuthService.loadRequestOptions({ observe: 'response' })).pipe(
-        timeout(60000)
-      ).subscribe(
-        (response: any) => {
+        this.http.post(config.backend.host + requestUrl, requestData, AuthService.loadRequestOptions({ observe: 'response' })).pipe(
+          timeout(60000)
+        ).subscribe(
+          (response: any) => {
 
-          if (response.status === 200 && response.body !== null) {
-            if (response.body.result.indexOf("[error]") === -1 && response.body.result != "\n" && response.body.result.indexOf("Generated") === -1) {
-              this.leakagesInfo = response.body.result;
-              this.previousSuccessfulRequestAndResults.request = { requestType: requestType, verificationType: requestData.verificationType, analysisTarget: this.leakagesAnalysisTarget, analysisFinalTargets: this.leakagesAnalysisFinalTargets };
-              resolve(true);
+            if (response.status === 200 && response.body !== null) {
+              if (response.body.result.indexOf("[error]") === -1 && response.body.result != "\n" && response.body.result.indexOf("Generated") === -1) {
+                this.leakagesInfo = response.body.result;
+                this.previousSuccessfulRequestAndResults.request = { requestType: requestType, verificationType: requestData.verificationType, analysisTarget: this.leakagesAnalysisTarget, analysisFinalTargets: this.leakagesAnalysisFinalTargets };
+                resolve(true);
+              } else {
+                resolve(false);
+              }
             } else {
               resolve(false);
             }
-          } else {
+          },
+          (fail: any) => {
             resolve(false);
           }
-        },
-        (fail: any) => {
-          resolve(false);
-        }
-      );
+        );
 
 
-    })
-      .then((result) => {
-        return !result ? this.detectLeakagesAnalysisRequest(requestData, requestType, redirectCount + 1, step) : this.showRequestResult(requestData, this.leakagesInfo, step);
-      });
+      })
+        .then((result) => {
+          return !result ? this.detectLeakagesAnalysisRequest(requestData, requestType, redirectCount + 1, step) : this.showRequestResult(requestData, this.leakagesInfo, step);
+        });
+    }
   }
 
   getFormattedResults(resultString: string): any {
@@ -171,6 +175,7 @@ export class LeakageDetectionComponent {
 
 
   taskVerification(): void {
+    this.analysisStopped = false;
     let obj = { modelId: this.modelId, verificationType: 1 };
     if (this.isRequestNew(obj.verificationType, 1, "", "")) {
       this.leakagesStep2Elements = [];
@@ -182,6 +187,7 @@ export class LeakageDetectionComponent {
   }
 
   participantVerification(): void {
+    this.analysisStopped = false;
     let obj = { modelId: this.modelId, verificationType: 2 };
     if (this.isRequestNew(obj.verificationType, 1, "", "")) {
       this.leakagesStep2Elements = [];
@@ -193,6 +199,7 @@ export class LeakageDetectionComponent {
   }
 
   sssharingVerification(): void {
+    this.analysisStopped = false;
     let obj = { modelId: this.modelId, verificationType: 3 };
     if (this.isRequestNew(obj.verificationType, 1, "", "")) {
       this.leakagesStep2Elements = [];
@@ -205,6 +212,7 @@ export class LeakageDetectionComponent {
 
 
   leakageDetectionAnalysisStep2(): void {
+    this.analysisStopped = false;
     let selectedElement: any = this.leakagesStep2Elements.filter((element) => {
       return element.selected === true;
     });
@@ -220,6 +228,7 @@ export class LeakageDetectionComponent {
   }
 
   leakageDetectionAnalysisStep3(): void {
+    this.analysisStopped = false;
     let selectedElements = this.getStep3SelectedElements();
     if (selectedElements.length > 0) {
       this.leakagesAnalysisFinalTargets = selectedElements;
@@ -300,6 +309,12 @@ export class LeakageDetectionComponent {
       $selector.modal();
       return false;
     });
+  }
+
+  stopAnalysis(): void {
+    this.analysisStopped = true;
+    this.leakageAnalysisInprogress = false;
+    this.previousSuccessfulRequestAndResults = {};
   }
 
 }

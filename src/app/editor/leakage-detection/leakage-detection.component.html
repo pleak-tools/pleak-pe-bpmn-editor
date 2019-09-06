@@ -9,7 +9,8 @@
 
   <div class="panel panel-default analysis-description-panel" *ngIf="leakageAnalysisTypeDescription"
     style="margin-top:20px">
-    <div class="panel-heading text-center" (click)="descriptionCollapsed = !descriptionCollapsed" style="cursor:pointer">
+    <div class="panel-heading text-center" (click)="descriptionCollapsed = !descriptionCollapsed"
+      style="cursor:pointer">
       <h4>Analysis question</h4>
     </div>
     <div class="panel-body text-left" *ngIf="!descriptionCollapsed">
@@ -49,7 +50,8 @@
   </div>
 
   <div class="panel panel-default results-panel text-left" *ngIf="leakagesResults.success || leakagesResults.error">
-    <div class="panel-heading text-center clickable" (click)="resultsCollapsed = !resultsCollapsed" style="cursor:pointer">
+    <div class="panel-heading text-center clickable" (click)="resultsCollapsed = !resultsCollapsed"
+      style="cursor:pointer">
       <h4>Results</h4>
     </div>
     <div class="panel-body" *ngIf="!resultsCollapsed">
@@ -58,8 +60,10 @@
           *ngFor="let elem of leakagesResults.result"><b>{{elem.task}}:</b><br>&nbsp;&nbsp;&nbsp;{{elem.dataObjects}}<br></span>
       </div>
       <span *ngIf="!leakagesResults.success && leakagesResults.error == 'error1'"><b>No</b></span>
-      <span *ngIf="!leakagesResults.success && leakagesResults.error == 'error2'"><b>Element has never this number of parameters.</b></span>
-      <span *ngIf="!leakagesResults.success && leakagesResults.error == 'error3'" style="color:orangered"><b>Analyser failed to compute the result,
+      <span *ngIf="!leakagesResults.success && leakagesResults.error == 'error2'"><b>Element has never this number of
+          parameters.</b></span>
+      <span *ngIf="!leakagesResults.success && leakagesResults.error == 'error3'" style="color:orangered"><b>Analyser
+          failed to compute the result,
           please try again.</b></span>
     </div>
   </div>
@@ -68,6 +72,10 @@
     style="width: 40px; height: 40px; position: relative; margin: 50px auto;">
     <div class="double-bounce1-2"></div>
     <div class="double-bounce2-2"></div>
+  </div>
+  <div style="display:block" class="text-right" *ngIf="leakageAnalysisInprogress">
+    <button [disabled]="!leakageAnalysisInprogress" class="btn btn-default" type="button" (click)="stopAnalysis()">Stop
+      analysis</button>
   </div>
 
 </div>
