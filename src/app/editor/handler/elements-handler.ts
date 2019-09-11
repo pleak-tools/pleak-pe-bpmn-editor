@@ -45,9 +45,9 @@ export class ElementsHandler {
       this.validationHandler = new ValidationHandler(this.viewer, this.diagram, this);
       // Import model from xml file
       this.viewer.importXML(this.diagram, () => {
+        this.canvas.zoom('fit-viewport', 'auto');
         this.viewer.get("moddle").fromXML(this.diagram, (err: any, definitions: any) => {
           if (typeof definitions !== 'undefined') {
-            this.viewer.get('canvas').zoom('fit-viewport', 'auto');
             // Add stereotype labels to elements based on xml labels
             this.viewer.importDefinitions(definitions, () => {
               this.createElementHandlerInstances(definitions).then(() => {
@@ -130,7 +130,7 @@ export class ElementsHandler {
     this.viewer.importXML(this.diagram, () => {
       this.viewer.get("moddle").fromXML(this.diagram, (err: any, definitions: any) => {
         if (typeof definitions !== 'undefined') {
-          this.viewer.get('canvas').zoom('fit-viewport', 'auto');
+          this.canvas.zoom('fit-viewport', 'auto');
           // Add stereotype labels to elements based on xml labels
           this.viewer.importDefinitions(definitions, () => {
             this.createElementHandlerInstances(definitions).then(() => {
