@@ -47,6 +47,7 @@ export class ElementsHandler {
       this.viewer.importXML(this.diagram, () => {
         this.viewer.get("moddle").fromXML(this.diagram, (err: any, definitions: any) => {
           if (typeof definitions !== 'undefined') {
+            this.viewer.get('canvas').zoom('fit-viewport', 'auto');
             // Add stereotype labels to elements based on xml labels
             this.viewer.importDefinitions(definitions, () => {
               this.createElementHandlerInstances(definitions).then(() => {
@@ -129,6 +130,7 @@ export class ElementsHandler {
     this.viewer.importXML(this.diagram, () => {
       this.viewer.get("moddle").fromXML(this.diagram, (err: any, definitions: any) => {
         if (typeof definitions !== 'undefined') {
+          this.viewer.get('canvas').zoom('fit-viewport', 'auto');
           // Add stereotype labels to elements based on xml labels
           this.viewer.importDefinitions(definitions, () => {
             this.createElementHandlerInstances(definitions).then(() => {
