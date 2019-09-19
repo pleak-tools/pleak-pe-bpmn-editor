@@ -1,11 +1,14 @@
 <div class="leakageDetectionPanel text-center">
   <h4>Choose analysis type</h4>
-  <button class="btn btn-success" type="button" (click)="taskVerification()" [disabled]="leakageAnalysisInprogress">Task
-    verification</button>
+  <button class="btn btn-success" type="button" (click)="taskVerification()"
+          [disabled]="leakageAnalysisInprogress"
+          [class.active]="verificationType == 1">Task verification</button>
   <button class="btn btn-success" type="button" (click)="participantVerification()"
-    [disabled]="leakageAnalysisInprogress">Participant verification</button>
+          [disabled]="leakageAnalysisInprogress"
+          [class.active]="verificationType == 2">Participant verification</button>
   <button class="btn btn-success" type="button" (click)="sssharingVerification()"
-    [disabled]="leakageAnalysisInprogress">SSSharing verification</button>
+          [disabled]="leakageAnalysisInprogress"
+          [class.active]="verificationType == 3">SSSharing verification</button>
 
   <div class="panel panel-default analysis-description-panel" *ngIf="leakageAnalysisTypeDescription"
     style="margin-top:20px">
@@ -23,10 +26,12 @@
       <h4>Select element</h4>
     </div>
     <div class="panel-body text-left" *ngIf="!step2collapsed">
-      <p *ngFor="let element of leakagesStep2Elements" (click)="toggleStep2SelectedElements(element.id)">
-        <span [class.selected-link]="element.selected == true"
-          [class.not-selected-link]="element.selected != true">{{element.name}}</span>
-      </p>
+      <div class="element-row" *ngFor="let element of leakagesStep2Elements"
+           (click)="toggleStep2SelectedElements(element.id)"
+           [class.selected-link]="element.selected == true"
+           [class.not-selected-link]="element.selected != true">
+        <span >{{element.name}}</span>
+      </div>
     </div>
     <div class="panel-footer text-right" *ngIf="!step2collapsed">
       <button [disabled]="!areStep2ElementsSelected() || leakageAnalysisInprogress" class="btn btn-success"
@@ -39,9 +44,12 @@
       <h4>Select data object</h4>
     </div>
     <div class="panel-body text-left" *ngIf="!step3collapsed">
-      <p *ngFor="let element of leakagesStep3Elements" (click)="toggleStep3SelectedElements(element.name)">
-        <span [class.selected-link]="element.selected == true"
-          [class.not-selected-link]="element.selected != true">{{element.name}}</span></p>
+      <div class="element-row" *ngFor="let element of leakagesStep3Elements"
+           (click)="toggleStep3SelectedElements(element.name)"
+           [class.selected-link]="element.selected == true"
+           [class.not-selected-link]="element.selected != true">
+        <span >{{element.name}}</span>
+      </div>
     </div>
     <div class="panel-footer text-right" *ngIf="!step3collapsed">
       <button [disabled]="!areStep3ElementsSelected() || leakageAnalysisInprogress" class="btn btn-success"

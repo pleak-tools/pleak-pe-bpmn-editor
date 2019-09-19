@@ -1,10 +1,21 @@
-.selected-link {
-  cursor: pointer;
-  font-weight: bold;
-  color: darkblue;
+.element-row {
+  border-top: 1px solid #ddd;
+  padding: 10px 0;
+  &:last-child {
+    border-bottom: 1px solid #ddd;
+  }
+
+  span {
+    cursor: pointer;
+  }
+
+  &.selected-link span{
+    font-weight: bold;
+  }
+
+  &.not-selected-link span {
+    font-weight: normal;
+  }
 }
 
-.not-selected-link {
-  cursor: pointer;
-  font-weight: normal;
-}
+

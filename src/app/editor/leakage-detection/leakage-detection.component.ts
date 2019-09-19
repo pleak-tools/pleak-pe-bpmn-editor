@@ -29,6 +29,8 @@ export class LeakageDetectionComponent {
 
   private leakagesInfo: any = {};
 
+  public verificationType = null;
+
   public leakagesStep2Elements: any[] = [];
   public leakagesStep3Elements: any[] = [];
 
@@ -178,6 +180,7 @@ export class LeakageDetectionComponent {
 
   taskVerification(): void {
     this.analysisStopped = false;
+    this.verificationType = 1;
     let obj = { modelId: this.modelId, verificationType: 1 };
     if (this.isRequestNew(obj.verificationType, 1, "", "")) {
       this.leakagesStep2Elements = [];
@@ -190,6 +193,7 @@ export class LeakageDetectionComponent {
 
   participantVerification(): void {
     this.analysisStopped = false;
+    this.verificationType = 2;
     let obj = { modelId: this.modelId, verificationType: 2 };
     if (this.isRequestNew(obj.verificationType, 1, "", "")) {
       this.leakagesStep2Elements = [];
@@ -202,6 +206,7 @@ export class LeakageDetectionComponent {
 
   sssharingVerification(): void {
     this.analysisStopped = false;
+    this.verificationType = 3;
     let obj = { modelId: this.modelId, verificationType: 3 };
     if (this.isRequestNew(obj.verificationType, 1, "", "")) {
       this.leakagesStep2Elements = [];
