@@ -49,8 +49,9 @@ export class ExtendedSimpleDisclosureAnalysisHandler {
   createSimpleDisclosureReportTable(): any {
     let deps = this.validationHandler.dataDependenciesAnalysisHandler.getDataDependencies();
     let uniqueLanesAndPools = ExtendedSimpleDisclosureAnalysisHandler.simpleDisclosureAnalysisHandler.getListOfModelLanesAndPoolsObjects();
-    let simpleDisclosureDataObjects = ExtendedSimpleDisclosureAnalysisHandler.simpleDisclosureAnalysisHandler.getSimpleDisclosureReportColumnGroups();
-    let dataObjectGroupsMessageFlowConnections = ExtendedSimpleDisclosureAnalysisHandler.simpleDisclosureAnalysisHandler.getDataObjectGroupsMessageFlowConnections();
+    let uniqueDataObjects = ExtendedSimpleDisclosureAnalysisHandler.simpleDisclosureAnalysisHandler.getListOfModelUniqueDataObjectsForExtendedSimpleDisclosure();
+    let simpleDisclosureDataObjects = ExtendedSimpleDisclosureAnalysisHandler.simpleDisclosureAnalysisHandler.getColumnGroupsForExtendedSimpleDisclosure(uniqueDataObjects);
+    let dataObjectGroupsMessageFlowConnections = ExtendedSimpleDisclosureAnalysisHandler.simpleDisclosureAnalysisHandler.getDataObjectGroupsMessageFlowConnections(uniqueDataObjects);
 
     for (let i = 0; i < simpleDisclosureDataObjects.length; i++) {
       for (let v = 0; v < simpleDisclosureDataObjects[i].visibility.length; v++) {

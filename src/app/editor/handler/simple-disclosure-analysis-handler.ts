@@ -83,8 +83,7 @@ export class SimpleDisclosureAnalysisHandler {
   }
 
   // Get simple disclosure data (containing only V and H information)
-  getSimpleDisclosureData(): any[] {
-    let uniqueDataObjectsByName = this.getListOfModelUniqueDataObjects();
+  getSimpleDisclosureData(uniqueDataObjectsByName: any[]): any[] {
     let resultData = [];
 
     for (let dataObjectObj of uniqueDataObjectsByName) {
@@ -151,7 +150,6 @@ export class SimpleDisclosureAnalysisHandler {
           visibility = "V";
         }
       }
-
       visibilityObj.visibility = visibility;
       resultData.push(visibilityObj);
     }
@@ -160,9 +158,8 @@ export class SimpleDisclosureAnalysisHandler {
   }
 
   // Get simple disclosure data for all participant - data object relation (contains V, H and - information)
-  public getSimpleDisclosureDataMatrix(): any[] {
-    let simpleDisclosureData = this.getSimpleDisclosureData();
-    let uniqueDataObjectsByName = this.getListOfModelUniqueDataObjects();
+  public getSimpleDisclosureDataMatrix(uniqueDataObjectsByName: any[]): any[] {
+    let simpleDisclosureData = this.getSimpleDisclosureData(uniqueDataObjectsByName);
     let modelParticipants = this.getListOfModelLanesAndPoolsObjects();
     let simpleDisclosureDataMatrix = [];
 
@@ -190,8 +187,8 @@ export class SimpleDisclosureAnalysisHandler {
   }
 
   // Get data objects groups based on stereotypes
-  getDataObjectsGroupsBasedOnStereotypes(): any[] {
-    let simpleDisclosureData = this.getSimpleDisclosureData();
+  getDataObjectsGroupsBasedOnStereotypes(uniqueDataObjects): any[] {
+    let simpleDisclosureData = this.getSimpleDisclosureData(uniqueDataObjects);
     let taskHandlers = this.elementsHandler.getAllModelTaskHandlers();
     let stereotypeBasedDataObjectsGroupInfo = [];
 
@@ -297,9 +294,9 @@ export class SimpleDisclosureAnalysisHandler {
   }
 
   // Get raw simple disclosure (unformatted for report tabel) data ojects groups
-  getSimpleDisclosureReportColumnGroupsRaw(): any[] {
-    let dataObjectsGroupsBasedOnStereotypes = this.getDataObjectsGroupsBasedOnStereotypes();
-    let getSimpleDisclosureDataMatrix = this.getSimpleDisclosureDataMatrix();
+  getSimpleDisclosureReportColumnGroupsRaw(uniqueDataObjectsByName): any[] {
+    let dataObjectsGroupsBasedOnStereotypes = this.getDataObjectsGroupsBasedOnStereotypes(uniqueDataObjectsByName);
+    let getSimpleDisclosureDataMatrix = this.getSimpleDisclosureDataMatrix(uniqueDataObjectsByName);
     let groups = dataObjectsGroupsBasedOnStereotypes.map(a => ({ ...a }));
     let dataObjectsNames = this.validationHandler.getUniqueValuesOfArray(getSimpleDisclosureDataMatrix.map(a => a.name));
     let dataObjectsIds = this.validationHandler.getUniqueValuesOfArray(getSimpleDisclosureDataMatrix.map(a => a.id));
@@ -342,14 +339,53 @@ export class SimpleDisclosureAnalysisHandler {
 
   // Format and sort simple disclosure report data objects groups data
   getSimpleDisclosureReportColumnGroups(): any[] {
-    let getSimpleDisclosureDataMatrix = this.getSimpleDisclosureDataMatrix();
+    let uniqueDataObjects = this.getListOfModelUniqueDataObjects();
+    let getSimpleDisclosureDataMatrix = this.getSimpleDisclosureDataMatrix(uniqueDataObjects);
+    let modelParticipants = this.getListOfModelLanesAndPoolsObjects();
+    let simpleDisclosureReportColumnGroupsRawData = this.getSimpleDisclosureReportColumnGroupsRaw(uniqueDataObjects);
+    let formattedDataObjectsGroupData = [];
+
+    for (let rawDataObjectsGroup of simpleDisclosureReportColumnGroupsRawData) {
+      let visibilityData = [];
+      for (let participant of modelParticipants) {
+        let visibility = [];
+        for (let dataObject of rawDataObjectsGroup.dataObjects) {
+          let visibilityInfoExists = getSimpleDisclosureDataMatrix.filter((obj) => {
+            return obj.visibleTo == participant.id && obj.name == dataObject;
+          });
+          if (visibilityInfoExists.length !== 0) {
+            visibility.push(visibilityInfoExists[0].visibility);
+          }
+        }
+        let visibilityValue = "-";
+        if (visibility.indexOf("V") !== -1) {
+          visibilityValue = "V";
+        } else if (visibility.indexOf("H") !== -1 && visibility.indexOf("V") === -1) {
+          visibilityValue = "H";
+        }
+        visibilityData.push({ visibleTo: participant.id, visibility: visibilityValue });
+      }
+      formattedDataObjectsGroupData.push({ name: rawDataObjectsGroup.name, visibility: visibilityData });
+    }
+
+    return formattedDataObjectsGroupData.sort(function (a, b) {
+      var nameA = a.name.toLowerCase(), nameB = b.name.toLowerCase();
+      if (nameA < nameB)
+        return -1
+      if (nameA > nameB)
+        return 1
+      return 0
+    });
+  }
+
+  getColumnGroupsForExtendedSimpleDisclosure(uniqueDataObjectsByName: any[]): any[] {
+    let getSimpleDisclosureDataMatrix = this.getSimpleDisclosureDataMatrix(uniqueDataObjectsByName);
     let formattedDataObjectsGroupData = [];
 
     let grouped = [];
     for (let i = 0; i < getSimpleDisclosureDataMatrix.length; i++) {
       let existingDto = grouped.find(x => x.name == getSimpleDisclosureDataMatrix[i].name);
-      if (getSimpleDisclosureDataMatrix[i].visibleTo != getSimpleDisclosureDataMatrix[i].owner &&
-        getSimpleDisclosureDataMatrix[i].visibility == "O") {
+      if (getSimpleDisclosureDataMatrix[i].visibleTo != getSimpleDisclosureDataMatrix[i].owner && getSimpleDisclosureDataMatrix[i].visibility == "O") {
         getSimpleDisclosureDataMatrix[i].visibility = "V";
       }
 
@@ -358,10 +394,7 @@ export class SimpleDisclosureAnalysisHandler {
           visibility: getSimpleDisclosureDataMatrix[i].visibility,
           visibleTo: getSimpleDisclosureDataMatrix[i].visibleTo
         });
-      }
-      else {
-        // let visibility = getSimpleDisclosureDataMatrix[i].visibleTo != getSimpleDisclosureDataMatrix[i].owner && 
-        // getSimpleDisclosureDataMatrix[i].visibility == "O";
+      } else {
         grouped.push({
           name: getSimpleDisclosureDataMatrix[i].name,
           visibility: [{
@@ -384,10 +417,11 @@ export class SimpleDisclosureAnalysisHandler {
     });
   }
 
+
   // Return list of connections between data objects groups and message flows
-  public getDataObjectGroupsMessageFlowConnections(): any[] {
+  public getDataObjectGroupsMessageFlowConnections(uniqueDataObjectsByName: any[]): any[] {
     let dataObjectMessageFlowConnections = this.getListOfModeldataObjectsAndMessageFlowConnections();
-    let simpleDisclosureReportColumnGroupsRawData = this.getSimpleDisclosureReportColumnGroupsRaw();
+    let simpleDisclosureReportColumnGroupsRawData = this.getSimpleDisclosureReportColumnGroupsRaw(uniqueDataObjectsByName);
     let dataObjectGroupsMessageFlowConnections = [];
 
     for (let rawDataObjectsGroup of simpleDisclosureReportColumnGroupsRawData) {
@@ -420,7 +454,7 @@ export class SimpleDisclosureAnalysisHandler {
   public createSimpleDisclosureReportTable(): void {
     let uniqueLanesAndPools = this.getListOfModelLanesAndPoolsObjects();
     let simpleDisclosureDataObjects = this.getSimpleDisclosureReportColumnGroups();
-    let dataObjectGroupsMessageFlowConnections = this.getDataObjectGroupsMessageFlowConnections();;
+    let dataObjectGroupsMessageFlowConnections = this.getDataObjectGroupsMessageFlowConnections(this.getListOfModelUniqueDataObjects());
     let rows = uniqueLanesAndPools.length;
     let columns = simpleDisclosureDataObjects.length;
 
@@ -502,6 +536,28 @@ export class SimpleDisclosureAnalysisHandler {
     for (let dataObjectHandler of dataObjectHandlers) {
       let visibleTo = this.validationHandler.getUniqueValuesOfArray(dataObjectHandler.getLanesAndPoolsDataObjectIsVisibleTo());
       let visibility = dataObjectHandler.getVisibilityStatus();
+      if (dataObjectHandler.dataObject.name) {
+        let dataObjectAlreadyAdded = uniqueDataObjectsByName.filter((obj) => {
+          return obj.name.trim() == dataObjectHandler.dataObject.name.trim();
+        });
+        if (dataObjectAlreadyAdded.length > 0) {
+          dataObjectAlreadyAdded[0].visibleTo = this.validationHandler.getUniqueValuesOfArray(dataObjectAlreadyAdded[0].visibleTo.concat(visibleTo));
+          dataObjectAlreadyAdded[0].visibility = this.validationHandler.getUniqueValuesOfArray(dataObjectAlreadyAdded[0].visibility.concat(visibility));
+        } else {
+          uniqueDataObjectsByName.push({ name: dataObjectHandler.dataObject.name.trim(), visibleTo: visibleTo, visibility: visibility });
+        }
+      }
+    }
+    uniqueDataObjectsByName = uniqueDataObjectsByName.sort(this.compareNames);
+    return uniqueDataObjectsByName;
+  }
+
+  getListOfModelUniqueDataObjectsForExtendedSimpleDisclosure(): any[] {
+    let dataObjectHandlers = this.elementsHandler.getAllModelDataObjectHandlers();
+    let uniqueDataObjectsByName = [];
+    for (let dataObjectHandler of dataObjectHandlers) {
+      let visibleTo = this.validationHandler.getUniqueValuesOfArray(dataObjectHandler.getLanesAndPoolsDataObjectIsVisibleTo());
+      let visibility = dataObjectHandler.getVisibilityStatus();
       let owner = null;
 
       let registry = this.registry;
@@ -510,10 +566,8 @@ export class SimpleDisclosureAnalysisHandler {
           let curPart = registry._elements[i].element;
 
           for (var j = 0; j < curPart.children.length; j++) {
-            if (curPart.children[j].type == "bpmn:DataObjectReference" &&
-              curPart.children[j].businessObject &&
-              dataObjectHandler.dataObject.id == curPart.children[j].businessObject.id) {
-                this.dtoOwners[dataObjectHandler.dataObject.name] = curPart.id;
+            if (curPart.children[j].type == "bpmn:DataObjectReference" && curPart.children[j].businessObject && dataObjectHandler.dataObject.id == curPart.children[j].businessObject.id) {
+              this.dtoOwners[dataObjectHandler.dataObject.name] = curPart.id;
               owner = curPart.id;
               break;
             }
@@ -538,6 +592,8 @@ export class SimpleDisclosureAnalysisHandler {
     uniqueDataObjectsByName = uniqueDataObjectsByName.sort(this.compareNames);
     return uniqueDataObjectsByName;
   }
+
+
 
   // Return list of dataObjects that are moved over MessageFlow / SecureChannel
   public getListOfModeldataObjectsAndMessageFlowConnections(): any[] {
