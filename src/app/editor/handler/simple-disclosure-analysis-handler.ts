@@ -117,6 +117,8 @@ export class SimpleDisclosureAnalysisHandler {
         visibility = "V";
       }
 
+
+      // START - needed for extended simple disclosure
       let registry = this.registry;
       visibilityObj.owner = dataObjectObj.owner;
       if (visibility == "V" && !!dataObjectObj.visibleTo.find(x => x == dataObjectObj.owner)) {
@@ -150,6 +152,8 @@ export class SimpleDisclosureAnalysisHandler {
           visibility = "V";
         }
       }
+      // END - needed for extended simple disclosure
+
       visibilityObj.visibility = visibility;
       resultData.push(visibilityObj);
     }
@@ -183,6 +187,22 @@ export class SimpleDisclosureAnalysisHandler {
         }
       }
     }
+
+    // Finding owners (O values) of dataobjects
+    for (let cell of simpleDisclosureDataMatrix) {
+      let allDataObjects = this.elementsHandler.getAllModelDataObjectHandlers().map((dO) => dO.dataObject).filter((dO) => {
+        return dO.name && dO.name == cell.name && this.registry.get(dO.id).incoming.length === 0 && this.registry.get(dO.id).outgoing.length > 0;
+      });
+      for (let dO of allDataObjects) {
+        let dataObject = this.registry.get(dO.id);
+        for (let oG of dataObject.outgoing) {
+          if (oG.target && oG.target.parent && oG.target.parent.id == cell.visibleTo) {
+            cell.visibility = "O";
+          }
+        }
+      }
+    }
+
     return simpleDisclosureDataMatrix;
   }
 
@@ -358,7 +378,9 @@ export class SimpleDisclosureAnalysisHandler {
           }
         }
         let visibilityValue = "-";
-        if (visibility.indexOf("V") !== -1) {
+        if (visibility.indexOf("O") !== -1) {
+          visibilityValue = "O";
+        } else if (visibility.indexOf("V") !== -1) {
           visibilityValue = "V";
         } else if (visibility.indexOf("H") !== -1 && visibility.indexOf("V") === -1) {
           visibilityValue = "H";
@@ -423,7 +445,6 @@ export class SimpleDisclosureAnalysisHandler {
     let dataObjectMessageFlowConnections = this.getListOfModeldataObjectsAndMessageFlowConnections();
     let simpleDisclosureReportColumnGroupsRawData = this.getSimpleDisclosureReportColumnGroupsRaw(uniqueDataObjectsByName);
     let dataObjectGroupsMessageFlowConnections = [];
-
     for (let rawDataObjectsGroup of simpleDisclosureReportColumnGroupsRawData) {
       let connectionTypes = [];
       for (let dataObject of rawDataObjectsGroup.dataObjects) {
@@ -439,14 +460,15 @@ export class SimpleDisclosureAnalysisHandler {
         }
       }
       let typeValue = "-";
-      if (connectionTypes.indexOf("MF") !== -1) {
-        typeValue = "MF";
-      } else if (connectionTypes.indexOf("S") !== -1 && connectionTypes.indexOf("MF") === -1) {
+      if (connectionTypes.indexOf("MF-V") !== -1) {
+        typeValue = "MF-V";
+      } else if (connectionTypes.indexOf("MF-H") !== -1 && connectionTypes.indexOf("MF-V") === -1) {
+        typeValue = "MF-H";
+      } else if (connectionTypes.indexOf("S") !== -1 && connectionTypes.indexOf("MF-V") === -1) {
         typeValue = "S";
       }
       dataObjectGroupsMessageFlowConnections.push({ name: rawDataObjectsGroup.name, type: typeValue });
     }
-
     return dataObjectGroupsMessageFlowConnections;
   }
 
@@ -599,24 +621,41 @@ export class SimpleDisclosureAnalysisHandler {
   public getListOfModeldataObjectsAndMessageFlowConnections(): any[] {
     let messageFlowHandlers = this.elementsHandler.getAllModelMessageFlowHandlers();
     let messageFlowObjects = [];
+    let simpleDisclosureDataMatrix = this.getSimpleDisclosureDataMatrix(this.getListOfModelUniqueDataObjects());
     for (let messageFlowHandler of messageFlowHandlers) {
-      let messageFlowOutputNames = messageFlowHandler.getMessageFlowOutputObjects().map(a => a.businessObject.name.trim());
-      let connectedDataObjects = messageFlowOutputNames;
-      let messageFlow = messageFlowHandler.messageFlow;
-      let messageFlowType = "MF";
-      if (this.messageFlowHasStereotype(messageFlow, "SecureChannel") || this.messageFlowHasStereotype(messageFlow, "CommunicationProtection")) {
-        messageFlowType = "S";
-      }
-      for (let dObject of connectedDataObjects) {
-        let oTypes = [];
-        oTypes.push(messageFlowType);
-        let messageFlowAlreadyInList = messageFlowObjects.filter((obj) => {
-          return obj.dataObject == dObject;
+      let messageFlowInputs = messageFlowHandler.getMessageFlowInputObjects();
+      let sourceElement = this.registry.get(messageFlowHandler.messageFlow.sourceRef.id);
+      let sourceParent = sourceElement.parent;
+      for (let input of messageFlowInputs) {
+        let inputHandler = this.elementsHandler.getDataObjectHandlerByDataObjectId(input.businessObject.id);
+        let inputObjects = simpleDisclosureDataMatrix.filter((cell) => {
+          return cell.name == inputHandler.dataObject.name && cell.visibleTo == sourceParent.id;
         });
-        if (messageFlowAlreadyInList.length === 0) {
-          messageFlowObjects.push({ dataObject: dObject, types: oTypes });
-        } else {
-          messageFlowAlreadyInList[0].types = this.validationHandler.getUniqueValuesOfArray(messageFlowAlreadyInList[0].types.concat(oTypes));
+        let messageFlow = messageFlowHandler.messageFlow;
+        let messageFlowType = "MF-V";
+        if (this.messageFlowHasStereotype(messageFlow, "SecureChannel") || this.messageFlowHasStereotype(messageFlow, "CommunicationProtection")) {
+          messageFlowType = "S";
+        }
+        for (let inputObject of inputObjects) {
+          let visibilityStatuses = [];
+          if (messageFlowType == "S") {
+            visibilityStatuses.push(messageFlowType);
+          } else {
+            if (inputObject.visibility == "H") {
+              visibilityStatuses.push("MF-H");
+            } else {
+              visibilityStatuses.push("MF-V");
+            }
+          }
+          let messageFlowAlreadyInList = messageFlowObjects.filter((obj) => {
+            return obj.dataObject == inputObject.name;
+          });
+          if (messageFlowAlreadyInList.length === 0) {
+            messageFlowObjects.push({ dataObject: inputObject.name, types: visibilityStatuses });
+          } else {
+            messageFlowAlreadyInList[0].types = this.validationHandler.getUniqueValuesOfArray(messageFlowAlreadyInList[0].types.concat(visibilityStatuses));
+          }
+
         }
       }
     }
