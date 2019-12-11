@@ -7,116 +7,155 @@ import { SimpleDisclosureAnalysisHandler } from './simple-disclosure-analysis-ha
 declare let $: any;
 let is = (element, type) => element.$instanceOf(type);
 
-export class ExtendedSimpleDisclosureAnalysisHandler {
+export class ExtendedSimpleDisclosureAnalysisHandler2 {
 
-  constructor(viewer: Viewer, diagram: string, elementsHandler: ElementsHandler, validationHandler: ValidationHandler) {
+  constructor(viewer: Viewer, elementsHandler: ElementsHandler, validationHandler: ValidationHandler) {
     this.viewer = viewer;
     this.registry = this.viewer.get('elementRegistry');
-    this.eventBus = this.viewer.get('eventBus');
-    this.canvas = this.viewer.get('canvas');
-    this.diagram = diagram;
     this.elementsHandler = elementsHandler;
     this.validationHandler = validationHandler;
     this.analysisPanel = validationHandler.analysisPanel;
     this.successPanel = validationHandler.successPanel;
   }
 
-  init(simpleDisclosureAnalysisHandler: SimpleDisclosureAnalysisHandler){
-    let self = this;
-    ExtendedSimpleDisclosureAnalysisHandler.simpleDisclosureAnalysisHandler = simpleDisclosureAnalysisHandler;
-    this.analysisPanel.off('click', '#extended-analyze-simple-disclosure');
-    this.analysisPanel.on('click', '#extended-analyze-simple-disclosure', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      let res = self.createSimpleDisclosureReportTable();
-      self.showResults(res.uniqueLanesAndPools.length, res.simpleDisclosureDataObjects.length, res.uniqueLanesAndPools, res.simpleDisclosureDataObjects, res.dataObjectGroupsMessageFlowConnections)
-    });
-  }
-
   viewer: Viewer;
   registry: any;
-  eventBus: any;
-  canvas: any;
-  diagram: string;
 
   elementsHandler: ElementsHandler;
   validationHandler: ValidationHandler;
-  static simpleDisclosureAnalysisHandler: SimpleDisclosureAnalysisHandler;
+  simpleDisclosureAnalysisHandler: SimpleDisclosureAnalysisHandler;
 
   analysisPanel: any;
   successPanel: any;
 
-  createSimpleDisclosureReportTable(): any {
-    let deps = this.validationHandler.dataDependenciesAnalysisHandler.getDataDependencies();
-    let uniqueLanesAndPools = ExtendedSimpleDisclosureAnalysisHandler.simpleDisclosureAnalysisHandler.getListOfModelLanesAndPoolsObjects();
-    let uniqueDataObjects = ExtendedSimpleDisclosureAnalysisHandler.simpleDisclosureAnalysisHandler.getListOfModelUniqueDataObjectsForExtendedSimpleDisclosure();
-    let simpleDisclosureDataObjects = ExtendedSimpleDisclosureAnalysisHandler.simpleDisclosureAnalysisHandler.getColumnGroupsForExtendedSimpleDisclosure(uniqueDataObjects);
-    let dataObjectGroupsMessageFlowConnections = ExtendedSimpleDisclosureAnalysisHandler.simpleDisclosureAnalysisHandler.getDataObjectGroupsMessageFlowConnections(uniqueDataObjects);
+  init(simpleDisclosureAnalysisHandler: SimpleDisclosureAnalysisHandler) {
+    this.simpleDisclosureAnalysisHandler = simpleDisclosureAnalysisHandler;
+    this.analysisPanel.off('click', '#extended-analyze-simple-disclosure');
+    this.analysisPanel.on('click', '#extended-analyze-simple-disclosure', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      let uniqueDataObjects = this.simpleDisclosureAnalysisHandler.getListOfModelUniqueDataObjects();
+      let newMatrix = this.getMtrx(uniqueDataObjects);
 
-    for (let i = 0; i < simpleDisclosureDataObjects.length; i++) {
-      for (let v = 0; v < simpleDisclosureDataObjects[i].visibility.length; v++) {
-        if (simpleDisclosureDataObjects[i].visibility[v].visibility == '-') {
+      this.showResults(this.simpleDisclosureAnalysisHandler.getListOfModelLanesAndPoolsObjects().length, uniqueDataObjects.length, this.simpleDisclosureAnalysisHandler.getListOfModelLanesAndPoolsObjects(), newMatrix, this.simpleDisclosureAnalysisHandler.getDataObjectGroupsMessageFlowConnections(uniqueDataObjects));
+    });
 
-          let foundDiscs = [];
-          for (let j = 0; j < deps.length; j++) {
-            if (deps[j].col == simpleDisclosureDataObjects[i].name &&
-              ExtendedSimpleDisclosureAnalysisHandler.simpleDisclosureAnalysisHandler.dtoOwners[deps[j].row] == simpleDisclosureDataObjects[i].visibility[v].visibleTo) {
-              if (deps[j].value != '-' && !foundDiscs.find(x => x == deps[j].value)) {
-                foundDiscs.push(deps[j].value);
+  }
+
+  getMtrx(uniqueDataObjects) {
+    let simpleDisclosureMatrix = this.simpleDisclosureAnalysisHandler.getSimpleDisclosureDataMatrix(uniqueDataObjects);
+    let newMatrix = JSON.parse(JSON.stringify(simpleDisclosureMatrix));
+
+    let dd = this.validationHandler.dataDependenciesAnalysisHandler.getDataDependencies();
+    for (let cell of newMatrix) {
+      if (cell.visibility == "V") {
+        // Row in DD, based on cell name
+        let row1 = dd.filter((obj) => {
+          return obj.row.trim() == cell.name.trim();
+        });
+        if (row1.length > 0) {
+
+          // Row in SD (to be updated)
+          let row2 = newMatrix.filter((obj) => {
+            return obj.visibleTo == cell.visibleTo;
+          });
+          if (row2.length > 0) {
+
+            // Cells in the SD row
+            for (let x of row2) {
+
+              // Cell matching with the name in DD row
+              let k = row1.filter((obj) => {
+                return obj.col.trim() == x.name.trim();
+              })
+              if (k.length > 0) {
+
+
+                if (k[0].value != "-" && k[0].value != "#") {
+                  let kk = newMatrix.filter((obj) => {
+                    return obj.visibleTo == cell.visibleTo && obj.name.trim() == k[0].col.trim();
+                  })[0];
+                  if (kk.visibility != "O" && kk.visibility != "V") {
+                    if (kk.visibility.indexOf(k[0].value) == -1) {
+                      kk.visibility += ", " + k[0].value;
+                    }
+                  }
+                }
               }
             }
           }
 
-          if (foundDiscs.length) {
-            simpleDisclosureDataObjects[i].visibility[v].visibility = foundDiscs.join(', ');
-          }
         }
+
       }
     }
+    return newMatrix;
+  }
+
+  getExtendedSimpleDisclosureReportTable() {
+    let uniqueDataObjects = this.simpleDisclosureAnalysisHandler.getListOfModelUniqueDataObjects();
+    let matrix = this.getMtrx(uniqueDataObjects);
 
     return {
-      simpleDisclosureDataObjects: simpleDisclosureDataObjects,
-      uniqueLanesAndPools: uniqueLanesAndPools,
-      dataObjectGroupsMessageFlowConnections: dataObjectGroupsMessageFlowConnections
+      simpleDisclosureDataObjects: matrix,
+      uniqueLanesAndPools: this.simpleDisclosureAnalysisHandler.getListOfModelLanesAndPoolsObjects(),
+      dataObjectGroupsMessageFlowConnections: this.simpleDisclosureAnalysisHandler.getDataObjectGroupsMessageFlowConnections(this.simpleDisclosureAnalysisHandler.getListOfModelUniqueDataObjects())
     };
   }
 
-  showResults(rows, columns, uniqueLanesAndPools, simpleDisclosureDataObjects, dataObjectGroupsMessageFlowConnections){
+  showResults(rows, columns, uniqueLanesAndPools, simpleDisclosureDataObjects, dataObjectGroupsMessageFlowConnections) {
+    let uniqueDataObjects = this.simpleDisclosureAnalysisHandler.getListOfModelUniqueDataObjects();
+
+    let tmp = [];
+    for (let dO of uniqueDataObjects) {
+      for (let cell of simpleDisclosureDataObjects) {
+        let visibilityObject = {visibility: cell.visibility, visibleTo: ""};
+      }
+    }
+
     let table = "";
     table += '<table class="table" style="text-align:center">';
     table += '<tr><th style="background-color:#f5f5f5; text-align:center;">#</th>';
-    for (let c = 0; c < columns; c++) {
-      table += '<th style="background-color:#f5f5f5; text-align:center; vertical-align: middle;">' + simpleDisclosureDataObjects[c].name + '</th>';
+    for (let col of uniqueDataObjects) {
+      table += '<th style="background-color:#f5f5f5; text-align:center; vertical-align: middle;">' + col.name.trim() + '</th>';
     }
     table += '</tr>';
-    for (let r = 0; r < rows; r++) {
-      table += '<tr><td style="background-color:#f5f5f5;"><b>' + uniqueLanesAndPools[r].name + '</b></td>';
-      for (let c = 0; c < columns; c++) {
-        let visibilityInfoExists = simpleDisclosureDataObjects[c].visibility.filter((obj) => {
-          return obj.visibleTo == uniqueLanesAndPools[r].id;
+
+    for (let row of uniqueLanesAndPools) {
+      table += '<tr>';
+      table += '<td style="background-color:#f5f5f5;vertical-align:middle"><b>' + row.name.trim() + '</b></td>';
+
+      for (let col of uniqueDataObjects) {
+        let connectionInfo = simpleDisclosureDataObjects.filter((obj) => {
+          return obj.name.trim() == col.name.trim() && obj.visibleTo == row.id;
         });
-        if (visibilityInfoExists.length !== 0) {
-          table += '<td>' + visibilityInfoExists[0].visibility + '</td>';
-        } else {
-          table += '<td>?</td>';
-        }
-      }
-      table += '</tr>';
-    }
-    if (dataObjectGroupsMessageFlowConnections) {
-      table += '<tr><td colspan="' + (columns + 1) + '"></td></tr><tr><td>Shared over</td>'
-      for (let c2 = 0; c2 < columns; c2++) {
-        let connectionInfo = dataObjectGroupsMessageFlowConnections.filter((obj) => {
-          return obj.name == simpleDisclosureDataObjects[c2].name;
-        });
-        if (connectionInfo.length !== 0) {
-          table += '<td>' + connectionInfo[0].type + '</td>';
+        if (connectionInfo.length > 0) {
+          let visibilityValues = connectionInfo[0].visibility.split(", ");
+          let visibilityStr = visibilityValues.length > 1 ? visibilityValues[0] + "<br>" + visibilityValues.slice(1, visibilityValues.length).join(", ") : visibilityValues[0] + "<br>";
+          table += '<td>' + visibilityStr + '</td>';
+
         } else {
           table += '<td>-</td>';
         }
       }
       table += '</tr>';
     }
+
+    // if (dataObjectGroupsMessageFlowConnections) {
+    //   table += '<tr><td colspan="' + (columns + 1) + '"></td></tr><tr><td>Shared over</td>'
+    //   for (let c2 = 0; c2 < columns; c2++) {
+    //     let connectionInfo = dataObjectGroupsMessageFlowConnections.filter((obj) => {
+    //       return obj.name == simpleDisclosureDataObjects[c2].name;
+    //     });
+    //     if (connectionInfo.length !== 0) {
+    //       table += '<td>' + connectionInfo[0].type + '</td>';
+    //     } else {
+    //       table += '<td>-</td>';
+    //     }
+    //   }
+    //   table += '</tr>';
+    // }
+
     table += '</table>';
 
     $('#simple-legend').text('V = visible, H = hidden, O = owner, MF = MessageFlow, S = SecureChannel, D = direct, I = indirect');
@@ -125,4 +164,5 @@ export class ExtendedSimpleDisclosureAnalysisHandler {
     $('#simpleDisclosureReportModal').find('#simpleDisclosureReportType').text(' - Extended simple disclosure analysis report');
     $('#simpleDisclosureReportModal').modal();
   }
+
 }

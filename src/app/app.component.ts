@@ -183,6 +183,7 @@ export class AppComponent implements OnInit {
               let message = "";
               if (this.exportType == "esd") {
                 message = JSON.stringify(elementsHandler.validationHandler.extendedSimpleDisclosureAnalysisHandler.createSimpleDisclosureReportTable());
+                //message = JSON.stringify(elementsHandler.validationHandler.extendedSimpleDisclosureAnalysisHandler.getExtendedSimpleDisclosureReportTable());
               } else {
                 message = JSON.stringify("error");
               }

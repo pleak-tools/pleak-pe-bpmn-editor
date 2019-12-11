@@ -172,8 +172,17 @@ export class TaskHandler {
   loadTaskLaneOrPool() {
     let task = this.registry.get(this.task.id);
     if (task.businessObject.lanes) {
-      this.addLaneOrPoolToTheListOfModelLanesAndPools(task.businessObject.lanes[0].id);
-      this.loadTaskOntoParentLaneOrPool(task.businessObject.lanes[0].id, this.task.id);
+      if (task.businessObject.lanes.length > 1) {
+        for (let lane of task.businessObject.lanes) {
+          if (!lane.childLaneSet) {
+            this.addLaneOrPoolToTheListOfModelLanesAndPools(lane.id);
+            this.loadTaskOntoParentLaneOrPool(lane.id, this.task.id);
+          }
+        }
+      } else {
+        this.addLaneOrPoolToTheListOfModelLanesAndPools(task.businessObject.lanes[0].id);
+        this.loadTaskOntoParentLaneOrPool(task.businessObject.lanes[0].id, this.task.id);
+      }
     }
     if (!task.businessObject.lanes) {
       this.addLaneOrPoolToTheListOfModelLanesAndPools(task.parent.id);

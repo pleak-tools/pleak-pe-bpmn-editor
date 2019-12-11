@@ -160,6 +160,11 @@ export class DataObjectHandler {
       for (let incoming of this.registry.get(this.dataObject.id).incoming) {
         if (incoming.businessObject && incoming.businessObject.$parent && incoming.businessObject.$parent.$type === "bpmn:Task") {
           if (this.registry.get(incoming.businessObject.$parent.id).businessObject.lanes) {
+            for (let lane of this.registry.get(incoming.businessObject.$parent.id).businessObject.lanes) {
+              if (!lane.childLaneSet) {
+                tasksVisibleTo.push(lane.id);
+              }
+            }
             tasksVisibleTo.push(this.registry.get(incoming.businessObject.$parent.id).businessObject.lanes[0].id);
           }
           if (!this.registry.get(incoming.businessObject.$parent.id).businessObject.lanes && this.registry.get(incoming.businessObject.$parent.id).parent) {
@@ -173,7 +178,11 @@ export class DataObjectHandler {
         if (outgoing.businessObject && outgoing.businessObject.$parent && outgoing.businessObject.$parent.$type === "bpmn:Task") {
           if (this.registry.get(outgoing.businessObject.$parent.id)) {
             if (this.registry.get(outgoing.businessObject.$parent.id).businessObject.lanes) {
-              tasksVisibleTo.push(this.registry.get(outgoing.businessObject.$parent.id).businessObject.lanes[0].id);
+              for (let lane of this.registry.get(outgoing.businessObject.$parent.id).businessObject.lanes) {
+                if (!lane.childLaneSet) {
+                  tasksVisibleTo.push(lane.id);
+                }
+              }
             }
             if (!this.registry.get(outgoing.businessObject.$parent.id).businessObject.lanes && this.registry.get(outgoing.businessObject.$parent.id).parent) {
               tasksVisibleTo.push(this.registry.get(outgoing.businessObject.$parent.id).parent.id);
@@ -185,7 +194,7 @@ export class DataObjectHandler {
     if (tasksVisibleTo.length === 0) {
       tasksVisibleTo.push(this.parentLaneOrPool.id);
     }
-    this.tasksVisibleTo = tasksVisibleTo;
+    this.tasksVisibleTo = this.validationHandler.getUniqueValuesOfArray(tasksVisibleTo);
   }
 
   // Load visibility status of data object

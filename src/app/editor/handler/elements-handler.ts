@@ -243,6 +243,9 @@ export class ElementsHandler {
                   for (let node of sprocess.flowElements.filter((e: any) => is(e, "bpmn:Task"))) {
                     this.taskHandlers.push(new TaskHandler(this, node));
                   }
+                  for (let node of sprocess.flowElements.filter((e: any) => is(e, "bpmn:DataObjectReference"))) {
+                    this.dataObjectHandlers.push(new DataObjectHandler(this, node));
+                  }
                 }
               }
               for (let node of participant.processRef.flowElements.filter((e: any) => is(e, "bpmn:DataObjectReference"))) {
@@ -315,11 +318,13 @@ export class ElementsHandler {
   // Get dataObjectHandler instance of dataObject by dataObject id
   getDataObjectHandlerByDataObjectId(dataObjectId: string) {
     let dataObjectHandler = null;
-    let dataObjectHandlerWithMessageFlowId = this.getAllModelDataObjectHandlers().filter(function (obj) {
-      return obj.dataObject.id == dataObjectId;
-    });
-    if (dataObjectHandlerWithMessageFlowId.length > 0) {
-      dataObjectHandler = dataObjectHandlerWithMessageFlowId[0];
+    if (dataObjectId) {
+      let dataObjectHandlerWithMessageFlowId = this.getAllModelDataObjectHandlers().filter(function (obj) {
+        return obj && obj.dataObject && obj.dataObject.id && obj.dataObject.id == dataObjectId;
+      });
+      if (dataObjectHandlerWithMessageFlowId.length > 0) {
+        dataObjectHandler = dataObjectHandlerWithMessageFlowId[0];
+      }
     }
     return dataObjectHandler;
   }

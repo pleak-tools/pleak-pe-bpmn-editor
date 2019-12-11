@@ -5,7 +5,8 @@ import { TaskHandler } from "./task-handler";
 import { MessageFlowHandler } from "./message-flow-handler";
 import { DataObjectHandler } from "./data-object-handler";
 import { SimpleDisclosureAnalysisHandler } from "./simple-disclosure-analysis-handler";
-import { ExtendedSimpleDisclosureAnalysisHandler } from "./extended-simple-disclosure-analysis-handler";
+import { ExtendedSimpleDisclosureAnalysisHandler2 } from "./extended-simple-disclosure-analysis-handler";
+import { ExtendedSimpleDisclosureAnalysisHandler } from "./extended-simple-disclosure-analysis-handler-old";
 import { DataDependenciesAnalysisHandler } from './data-dependencies-analysis-handler';
 import { LeakageDetectionComponent } from '../leakage-detection/leakage-detection.component';
 
@@ -42,8 +43,8 @@ export class ValidationHandler {
 
   elementsHandler: ElementsHandler;
   simpleDisclosureAnalysisHandler: SimpleDisclosureAnalysisHandler;
-  simpleDisclosureAnalysisHandlerForExtended: SimpleDisclosureAnalysisHandler;
   extendedSimpleDisclosureAnalysisHandler: ExtendedSimpleDisclosureAnalysisHandler;
+  extendedSimpleDisclosureAnalysisHandler2: ExtendedSimpleDisclosureAnalysisHandler2;
   dataDependenciesAnalysisHandler: DataDependenciesAnalysisHandler;
 
   taskHandlers: TaskHandler[] = [];
@@ -79,10 +80,11 @@ export class ValidationHandler {
     this.messageFlowHandlers = this.elementsHandler.getAllModelMessageFlowHandlers();
     this.dataObjectHandlers = this.elementsHandler.getAllModelDataObjectHandlers();
     this.extendedSimpleDisclosureAnalysisHandler = new ExtendedSimpleDisclosureAnalysisHandler(this.viewer, this.diagram, this.elementsHandler, this);
+    this.extendedSimpleDisclosureAnalysisHandler2 = new ExtendedSimpleDisclosureAnalysisHandler2(this.viewer, this.elementsHandler, this);
     this.simpleDisclosureAnalysisHandler = new SimpleDisclosureAnalysisHandler(this.viewer, this.diagram, this.elementsHandler, this);
-    this.extendedSimpleDisclosureAnalysisHandler.init(this.simpleDisclosureAnalysisHandler);
-
     this.dataDependenciesAnalysisHandler = new DataDependenciesAnalysisHandler(this.viewer, this.diagram, this.elementsHandler, this);
+    this.extendedSimpleDisclosureAnalysisHandler.init(this.simpleDisclosureAnalysisHandler);
+    this.extendedSimpleDisclosureAnalysisHandler2.init(this.simpleDisclosureAnalysisHandler);
 
     LeakageDetectionComponent.initLeakageDetectionModal(this.analysisPanel);
   }
@@ -526,11 +528,24 @@ export class ValidationHandler {
   }
 
   // Find all tasks from the incoming path of task
-  findIncomingPathTasks(incTasks: any, input: any, sourceInputId: string, type: string) {
+  findIncomingPathTasks(incTasks: any, input: any, sourceInputId: string, type: string, counts: any) {
     if (!input) {
       return;
     }
-    if (incTasks.filter(item => item == input.id).length > 10) {
+    if (typeof input[Symbol.iterator] === 'function') {
+      for (let element of input) {
+        if (element.sourceRef) {
+          this.findIncomingPathTasks(incTasks, element.sourceRef, sourceInputId, type, counts);
+        } else if (element.incoming) {
+          this.findIncomingPathTasks(incTasks, element.incoming, sourceInputId, type, counts);
+        }
+      }
+      return;
+    }
+
+    // Stop recursion if too many loops
+    counts[input.id] = counts[input.id] ? counts[input.id] + 1 : 1;
+    if (counts[input.id] >= 10 || incTasks.filter(item => item == input.id).length >= 10) {
       return;
     }
     if (input.id != sourceInputId) {
@@ -539,12 +554,6 @@ export class ValidationHandler {
         if (type === "first") {
           return;
         }
-      }
-      if (input.sourceRef) {
-        this.findIncomingPathTasks(incTasks, input.sourceRef, sourceInputId, type);
-      }
-      if (input.incoming) {
-        this.findIncomingPathTasks(incTasks, input.incoming, sourceInputId, type);
       }
       if (input.$type === "bpmn:StartEvent" || input.$type === "bpmn:IntermediateCatchEvent") {
         let rElements;
@@ -558,21 +567,19 @@ export class ValidationHandler {
             if (el.messageFlows) {
               for (let mF of el.messageFlows) {
                 if (mF.targetRef.id == input.id) {
-                  this.findIncomingPathTasks(incTasks, mF.sourceRef, sourceInputId, type);
+                  this.findIncomingPathTasks(incTasks, mF.sourceRef, sourceInputId, type, counts);
                 }
               }
             }
           }
         }
       }
-      if (typeof input[Symbol.iterator] === 'function') {
-        for (let element of input) {
-          if (element.sourceRef) {
-            this.findIncomingPathTasks(incTasks, element.sourceRef, sourceInputId, type);
-          } else if (element.incoming) {
-            this.findIncomingPathTasks(incTasks, element.incoming, sourceInputId, type);
-          }
-        }
+
+      if (input.sourceRef) {
+        this.findIncomingPathTasks(incTasks, input.sourceRef, sourceInputId, type, counts);
+      }
+      if (input.incoming) {
+        this.findIncomingPathTasks(incTasks, input.incoming, sourceInputId, type, counts);
       }
     }
   }
@@ -735,7 +742,8 @@ export class ValidationHandler {
   // Return all tasks from the incoming path of task
   getTasksOfIncomingPathByInputElement(inputElement: any) {
     let incTasks = [];
-    this.findIncomingPathTasks(incTasks, inputElement.incoming, inputElement.id, null);
+    let counts = {};
+    this.findIncomingPathTasks(incTasks, inputElement.incoming, inputElement.id, null, counts);
     let rElements;
     if (inputElement.$parent.$parent.rootElements) {
       rElements = inputElement.$parent.$parent.rootElements;
@@ -747,7 +755,7 @@ export class ValidationHandler {
         if (el.messageFlows) {
           for (let mF of el.messageFlows) {
             if (mF.targetRef.$type === "bpmn:Task" && incTasks.indexOf(mF.targetRef.id) !== -1 || mF.targetRef.id == inputElement.id) {
-              this.findIncomingPathTasks(incTasks, mF.sourceRef, inputElement.id, null);
+              this.findIncomingPathTasks(incTasks, mF.sourceRef, inputElement.id, null, counts);
             }
           }
         }
@@ -783,7 +791,8 @@ export class ValidationHandler {
   // Return all (first) tasks from the incoming path of element
   getFirstTasksOfIncomingPathOfInputElement(input: any) {
     let incTasks = [];
-    this.findIncomingPathTasks(incTasks, input.incoming, input.id, "first");
+    let counts = {};
+    this.findIncomingPathTasks(incTasks, input.incoming, input.id, "first", counts);
     let rElements;
     if (input.$parent.$parent.rootElements) {
       rElements = input.$parent.$parent.rootElements;
@@ -795,7 +804,7 @@ export class ValidationHandler {
         if (el.messageFlows) {
           for (let mF of el.messageFlows) {
             if (mF.targetRef.$type === "bpmn:Task" && incTasks.indexOf(mF.targetRef.id) !== -1 || mF.targetRef.id == input.id) {
-              this.findIncomingPathTasks(incTasks, mF.sourceRef, input.id, "first");
+              this.findIncomingPathTasks(incTasks, mF.sourceRef, input.id, "first", counts);
             }
           }
         }
