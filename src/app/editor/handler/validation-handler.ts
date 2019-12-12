@@ -513,9 +513,17 @@ export class ValidationHandler {
       let task = this.registry.get(taskId);
       if (task) {
         let outputElements = this.elementsHandler.getTaskHandlerByTaskId(task.id).getTaskOutputObjectsBasedOnTaskStereotype();
-        if (outputElements) {
-          let outputElementsNames = outputElements.map(a => a.businessObject.name.trim());
-          let inputObjectsNames = inputObjects.map(a => a.businessObject.name.trim());
+        if (outputElements && inputObjects) {
+          let outputElementsNames = outputElements.filter((a) => {
+            return a && a.businessObject && a.businessObject.name;
+          }).map((a) => {
+            return a.businessObject.name.trim();
+          });
+          let inputObjectsNames = inputObjects.filter((a) => {
+            return a && a.businessObject && a.businessObject.name;
+          }).map((a) => {
+            return a.businessObject.name.trim();
+          });
           for (let inputObjectName of inputObjectsNames) {
             if (outputElementsNames.indexOf(inputObjectName) !== -1) {
               return true;

@@ -57,7 +57,7 @@ export class LeakageDetectionComponent {
     if (!this.analysisStopped) {
       this.leakageAnalysisInprogress = true;
       redirectCount = redirectCount || 0;
-      console.log(redirectCount)
+      // console.log(redirectCount)
       if (redirectCount == 100) {
         this.leakageAnalysisInprogress = false;
         this.leakagesResults = { success: false, error: "error4" };
@@ -171,7 +171,7 @@ export class LeakageDetectionComponent {
       this.previousSuccessfulRequestAndResults.request.verificationType === verificationType &&
       this.previousSuccessfulRequestAndResults.request.analysisTarget === analysisTarget &&
       this.previousSuccessfulRequestAndResults.request.analysisFinalTargets === analysisFinalTargets) {
-      console.log("same request again");
+      // console.log("same request again");
       return false;
     }
     return true;
