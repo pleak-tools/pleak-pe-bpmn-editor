@@ -288,6 +288,16 @@ export class SKComputation extends TaskStereotype {
     return true;
   }
 
+  doAllInputElementsExist() {
+    let savedData = this.getSavedStereotypeSettings();
+    for (let input of savedData.inputTypes) {
+      if (!this.taskHasInputElement(input.id)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   checkForErrors(existingErrors: ValidationErrorObject[]) {
     let savedData = this.getSavedStereotypeSettings();
     if (!this.areInputsAndOutputsNumbersCorrect()) {
@@ -309,6 +319,10 @@ export class SKComputation extends TaskStereotype {
     }
     if (typeof savedData.inputTypes == 'undefined') {
       this.addUniqueErrorToErrorsList(existingErrors, "SKComputation error: inputTypes is undefined", [this.task.id], []);
+    } else {
+      if (!this.doAllInputElementsExist()) {
+        this.addUniqueErrorToErrorsList(existingErrors, "SKComputation error: one or more input data objects are missing", [this.task.id], []);
+      }
     }
   }
 
