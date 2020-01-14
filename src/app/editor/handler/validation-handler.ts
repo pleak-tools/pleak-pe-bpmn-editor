@@ -5,8 +5,7 @@ import { TaskHandler } from "./task-handler";
 import { MessageFlowHandler } from "./message-flow-handler";
 import { DataObjectHandler } from "./data-object-handler";
 import { SimpleDisclosureAnalysisHandler } from "./simple-disclosure-analysis-handler";
-import { ExtendedSimpleDisclosureAnalysisHandler2 } from "./extended-simple-disclosure-analysis-handler";
-import { ExtendedSimpleDisclosureAnalysisHandler } from "./extended-simple-disclosure-analysis-handler-old";
+import { ExtendedSimpleDisclosureAnalysisHandler } from "./extended-simple-disclosure-analysis-handler";
 import { DataDependenciesAnalysisHandler } from './data-dependencies-analysis-handler';
 import { LeakageDetectionComponent } from '../leakage-detection/leakage-detection.component';
 
@@ -44,7 +43,6 @@ export class ValidationHandler {
   elementsHandler: ElementsHandler;
   simpleDisclosureAnalysisHandler: SimpleDisclosureAnalysisHandler;
   extendedSimpleDisclosureAnalysisHandler: ExtendedSimpleDisclosureAnalysisHandler;
-  extendedSimpleDisclosureAnalysisHandler2: ExtendedSimpleDisclosureAnalysisHandler2;
   dataDependenciesAnalysisHandler: DataDependenciesAnalysisHandler;
 
   taskHandlers: TaskHandler[] = [];
@@ -79,12 +77,10 @@ export class ValidationHandler {
     this.taskHandlers = this.elementsHandler.getAllModelTaskHandlers();
     this.messageFlowHandlers = this.elementsHandler.getAllModelMessageFlowHandlers();
     this.dataObjectHandlers = this.elementsHandler.getAllModelDataObjectHandlers();
-    this.extendedSimpleDisclosureAnalysisHandler = new ExtendedSimpleDisclosureAnalysisHandler(this.viewer, this.diagram, this.elementsHandler, this);
-    this.extendedSimpleDisclosureAnalysisHandler2 = new ExtendedSimpleDisclosureAnalysisHandler2(this.viewer, this.elementsHandler, this);
+    this.extendedSimpleDisclosureAnalysisHandler = new ExtendedSimpleDisclosureAnalysisHandler(this.viewer, this.elementsHandler, this);
     this.simpleDisclosureAnalysisHandler = new SimpleDisclosureAnalysisHandler(this.viewer, this.diagram, this.elementsHandler, this);
     this.dataDependenciesAnalysisHandler = new DataDependenciesAnalysisHandler(this.viewer, this.diagram, this.elementsHandler, this);
     this.extendedSimpleDisclosureAnalysisHandler.init(this.simpleDisclosureAnalysisHandler);
-    this.extendedSimpleDisclosureAnalysisHandler2.init(this.simpleDisclosureAnalysisHandler);
 
     LeakageDetectionComponent.initLeakageDetectionModal(this.analysisPanel);
   }

@@ -382,42 +382,6 @@ export class SimpleDisclosureAnalysisHandler {
     });
   }
 
-  getColumnGroupsForExtendedSimpleDisclosure(uniqueDataObjectsByName: any[]): any[] {
-    let getSimpleDisclosureDataMatrix = this.getSimpleDisclosureDataMatrix(uniqueDataObjectsByName);
-    let formattedDataObjectsGroupData = [];
-
-    let grouped = [];
-    for (let i = 0; i < getSimpleDisclosureDataMatrix.length; i++) {
-      let existingDto = grouped.find(x => x.name == getSimpleDisclosureDataMatrix[i].name);
-      if (existingDto) {
-        existingDto.visibility.push({
-          visibility: getSimpleDisclosureDataMatrix[i].visibility,
-          visibleTo: getSimpleDisclosureDataMatrix[i].visibleTo
-        });
-      } else {
-        grouped.push({
-          name: getSimpleDisclosureDataMatrix[i].name,
-          visibility: [{
-            visibility: getSimpleDisclosureDataMatrix[i].visibility,
-            visibleTo: getSimpleDisclosureDataMatrix[i].visibleTo
-          }]
-        });
-      }
-    }
-
-    formattedDataObjectsGroupData = grouped;
-
-    return formattedDataObjectsGroupData.sort(function (a, b) {
-      var nameA = a.name.toLowerCase(), nameB = b.name.toLowerCase();
-      if (nameA < nameB)
-        return -1
-      if (nameA > nameB)
-        return 1
-      return 0
-    });
-  }
-
-
   // Return list of connections between data objects groups and message flows
   public getDataObjectGroupsMessageFlowConnections(uniqueDataObjectsByName: any[]): any[] {
     let dataObjectMessageFlowConnections = this.getListOfModeldataObjectsAndMessageFlowConnections();
@@ -437,7 +401,35 @@ export class SimpleDisclosureAnalysisHandler {
           connectionTypes.push("-");
         }
       }
-      let typeValue = "-";
+      dataObjectGroupsMessageFlowConnections.push({ name: rawDataObjectsGroup.name, type: this.getMessageFlowTypeValue(connectionTypes) });
+    }
+    return dataObjectGroupsMessageFlowConnections;
+  }
+
+  // Return list of connections between data objects and message flows
+  public getDataObjectsMessageFlowConnections(uniqueDataObjectsByName: any[]): any[] {
+    let dataObjectMessageFlowConnections = this.getListOfModeldataObjectsAndMessageFlowConnections();
+    let dataObjectsMessageFlowConnections = [];
+    for (let dataObject of uniqueDataObjectsByName) {
+      let connectionTypes = [];
+      let connectionInfoExists = dataObjectMessageFlowConnections.filter((obj) => {
+        return obj.dataObject.trim() == dataObject.name.trim();
+      });
+      if (connectionInfoExists.length !== 0) {
+        for (let type of connectionInfoExists[0].types) {
+          connectionTypes.push(type);
+        }
+      } else {
+        connectionTypes.push("-");
+      }
+      dataObjectsMessageFlowConnections.push({ name: dataObject.name, type: this.getMessageFlowTypeValue(connectionTypes) });
+    }
+    return dataObjectsMessageFlowConnections;
+  }
+
+  getMessageFlowTypeValue(connectionTypes: string[]): string {
+    let typeValue = "-";
+    if (connectionTypes) {
       if (connectionTypes.indexOf("MF-V") !== -1) {
         typeValue = "MF-V";
       } else if (connectionTypes.indexOf("MF-H") !== -1 && connectionTypes.indexOf("MF-V") === -1) {
@@ -445,9 +437,8 @@ export class SimpleDisclosureAnalysisHandler {
       } else if (connectionTypes.indexOf("S") !== -1 && connectionTypes.indexOf("MF-V") === -1) {
         typeValue = "S";
       }
-      dataObjectGroupsMessageFlowConnections.push({ name: rawDataObjectsGroup.name, type: typeValue });
     }
-    return dataObjectGroupsMessageFlowConnections;
+    return typeValue;
   }
 
   // Create simple disclosure report table
@@ -552,47 +543,6 @@ export class SimpleDisclosureAnalysisHandler {
     uniqueDataObjectsByName = uniqueDataObjectsByName.sort(this.compareNames);
     return uniqueDataObjectsByName;
   }
-
-  getListOfModelUniqueDataObjectsForExtendedSimpleDisclosure(): any[] {
-    let dataObjectHandlers = this.elementsHandler.getAllModelDataObjectHandlers();
-    let uniqueDataObjectsByName = [];
-    for (let dataObjectHandler of dataObjectHandlers) {
-      let visibleTo = this.validationHandler.getUniqueValuesOfArray(dataObjectHandler.getLanesAndPoolsDataObjectIsVisibleTo());
-      let visibility = dataObjectHandler.getVisibilityStatus();
-
-      // TODO - compute dtowners correctly!!!
-      let registry = this.registry;
-      for (var i in registry._elements) {
-        if (registry._elements[i].element.type == "bpmn:Participant") {
-          let curPart = registry._elements[i].element;
-
-          for (var j = 0; j < curPart.children.length; j++) {
-            if (curPart.children[j].type == "bpmn:DataObjectReference" && curPart.children[j].businessObject && dataObjectHandler.dataObject.id == curPart.children[j].businessObject.id) {
-              this.dtoOwners[dataObjectHandler.dataObject.name] = curPart.id;
-              break;
-            }
-          }
-        }
-      }
-
-      if (dataObjectHandler.dataObject.name) {
-        let dataObjectAlreadyAdded = uniqueDataObjectsByName.filter((obj) => {
-          return obj.id == dataObjectHandler.dataObject.id;
-        });
-        if (dataObjectAlreadyAdded.length > 0) {
-          dataObjectAlreadyAdded[0].id = dataObjectHandler.dataObject.id;
-          dataObjectAlreadyAdded[0].visibleTo = this.validationHandler.getUniqueValuesOfArray(dataObjectAlreadyAdded[0].visibleTo.concat(visibleTo));
-          dataObjectAlreadyAdded[0].visibility = this.validationHandler.getUniqueValuesOfArray(dataObjectAlreadyAdded[0].visibility.concat(visibility));
-        } else {
-          uniqueDataObjectsByName.push({ id: dataObjectHandler.dataObject.id, name: dataObjectHandler.dataObject.name.trim(), visibleTo: visibleTo, visibility: visibility });
-        }
-      }
-    }
-    uniqueDataObjectsByName = uniqueDataObjectsByName.sort(this.compareNames);
-    return uniqueDataObjectsByName;
-  }
-
-
 
   // Return list of dataObjects that are moved over MessageFlow / SecureChannel
   public getListOfModeldataObjectsAndMessageFlowConnections(): any[] {
