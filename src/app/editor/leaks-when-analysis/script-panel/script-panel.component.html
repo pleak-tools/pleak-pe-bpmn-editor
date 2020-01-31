@@ -1,0 +1,31 @@
+<ng-container *ngIf="(isBPMNLeaksWhenActive() || isSQLLeaksWhenActive()) && isScriptElement">
+  <div class="panel panel-default text-left">
+    <div class="panel-heading">
+      <b>
+        <h4>
+          <ng-container *ngIf="isBPMNLeaksWhenActive()">
+            Script
+          </ng-container>
+          <ng-container *ngIf="isSQLLeaksWhenActive()">
+            <ng-container *ngIf="selectedElement.type !== 'bpmn:DataObjectReference' && selectedElement.type !== 'bpmn:DataStoreReference'">
+              SQL Script
+            </ng-container>
+            <ng-container *ngIf="selectedElement.type === 'bpmn:DataObjectReference' || selectedElement.type === 'bpmn:DataStoreReference'">
+              Table schema
+            </ng-container>
+          </ng-container>
+        </h4>
+      </b>
+    </div>
+    <div class="panel-body">
+      <ngx-codemirror [ngModel]="getScript()" [options]="{
+        lineNumbers: true,
+        mode: 'text/x-mysql',
+        showCursorWhenSelecting: true,
+        lineWiseCopyCut: false,
+        readOnly: !canEdit
+      }" (ngModelChange)=scriptChanged($event)>
+      </ngx-codemirror>
+    </div>
+  </div>
+</ng-container>

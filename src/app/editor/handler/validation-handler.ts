@@ -8,6 +8,7 @@ import { SimpleDisclosureAnalysisHandler } from "./simple-disclosure-analysis-ha
 import { ExtendedSimpleDisclosureAnalysisHandler } from "./extended-simple-disclosure-analysis-handler";
 import { DataDependenciesAnalysisHandler } from './data-dependencies-analysis-handler';
 import { LeakageDetectionComponent } from '../leakage-detection/leakage-detection.component';
+import { LeaksWhenAnalysisComponent } from '../leaks-when-analysis/leaks-when-analysis.component';
 
 declare let $: any;
 let is = (element, type) => element.$instanceOf(type);
@@ -151,6 +152,12 @@ export class ValidationHandler {
       let errors: ValidationErrorObject[] = [];
       this.errorChecks = { dataObjects: false, tasks: false, messageFlows: false };
       this.checkTaskErrors(errors);
+    } else {
+      if (this.elementsHandler.isSQLLeaksWhenActive() && this.numberOfErrorsInModel > 0) {
+        this.elementsHandler.parent.setPEBPMNMode();
+      } else if (this.elementsHandler.isSQLLeaksWhenActive() && this.numberOfErrorsInModel === 0) {
+        this.extendedSimpleDisclosureAnalysisHandler.showModal();
+      }
     }
   }
 
@@ -191,6 +198,9 @@ export class ValidationHandler {
       this.errorsList.html(errors_list);
       $('.analysis-spinner').hide();
       this.errorsPanel.removeClass('hidden');
+      if (this.elementsHandler.isSQLLeaksWhenActive()) {
+        this.elementsHandler.parent.setPEBPMNMode();
+      }
     }
     if (areThereAnyErrorsOnModel) {
       this.analysisPanel.addClass('hidden');
@@ -199,9 +209,15 @@ export class ValidationHandler {
       if (!areThereAnyWarningsOnModel) {
         this.errorsList.html('');
         this.errorsPanel.addClass('hidden');
-        this.successPanel.removeClass('hidden');
+        if (this.elementsHandler.isSQLLeaksWhenActive()) {
+          this.extendedSimpleDisclosureAnalysisHandler.showModal();
+        } else {
+          this.successPanel.removeClass('hidden');
+        }
       }
-      this.analysisPanel.removeClass('hidden');
+      if (!this.elementsHandler.isSQLLeaksWhenActive()) {
+        this.analysisPanel.removeClass('hidden');
+      }
       this.simpleDisclosureAnalysisHandler.init();
       this.dataDependenciesAnalysisHandler.init();
     }

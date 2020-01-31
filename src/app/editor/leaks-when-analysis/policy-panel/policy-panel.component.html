@@ -1,0 +1,27 @@
+<!-- SQL leaks-when-->
+<ng-container *ngIf="isSQLLeaksWhenActive() && isPolicyElement">
+  <div class="panel panel-default text-left">
+    <div class="panel-heading">
+      <b>
+        <h4>
+          <ng-container *ngIf="isSQLLeaksWhenActive()">
+            Policy
+          </ng-container>
+        </h4>
+      </b>
+    </div>
+    <div class="panel-body">
+      <ngx-codemirror [ngModel]="getPolicy()" [options]="{
+        lineNumbers: true,
+        mode: 'text/x-mysql',
+        showCursorWhenSelecting: true,
+        lineWiseCopyCut: false,
+        readOnly: !canEdit
+      }" (ngModelChange)=policyChanged($event)>
+      </ngx-codemirror>
+      <hr>
+      <h4>Available Roles</h4>
+      <span *ngFor="let role of roles">{{role}}<br></span>
+    </div>
+  </div>
+</ng-container>

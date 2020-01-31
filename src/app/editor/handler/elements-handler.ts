@@ -5,8 +5,6 @@ import { MessageFlowHandler } from "./message-flow-handler";
 import { DataObjectHandler } from "./data-object-handler";
 import { ValidationHandler } from './validation-handler';
 
-import { EditorService } from '../editor.service';
-
 declare let $: any;
 let is = (element, type) => element.$instanceOf(type);
 
@@ -17,6 +15,7 @@ export class ElementsHandler {
     this.lastContent = diagram;
     this.eventBus = this.viewer.get('eventBus');
     this.canvas = this.viewer.get('canvas');
+    this.overlays = this.viewer.get('overlays');
     this.diagram = diagram;
     this.parent = parent;
     this.canEdit = canEdit;
@@ -26,6 +25,7 @@ export class ElementsHandler {
   eventBus: any;
   canvas: any;
   diagram: string;
+  overlays: any;
   parent: any;
   canEdit: Boolean;
 
@@ -39,6 +39,27 @@ export class ElementsHandler {
 
   private lastContent: string | null;
   private content: string | null;
+
+  selectedElement: any = null;
+  selectedDataObjects: any[] = [];
+
+  selectedDataObjectSettings: any = null;
+
+  public SelectedTarget: any = {
+    name: null,
+    r: null,
+    c: null,
+  };
+
+  modelLoaded: boolean = false;
+
+  isPEBPMModeActive(): boolean {
+    return this.parent.activeMode === "PEBPMN";
+  }
+
+  isSQLLeaksWhenActive(): boolean {
+    return this.parent.activeMode === "SQLleaks";
+  }
 
   init() {
     return new Promise((resolve) => {
@@ -54,7 +75,7 @@ export class ElementsHandler {
                 this.prepareTaskAndDataObjectHandlersForAnalysis().then(() => {
                   this.validationHandler.init().then(() => {
                     $('#stereotype-options').html('');
-                    $('#analyze-diagram').addClass('active');
+                    this.modelLoaded = true;
                     resolve();
                   });
                 })
@@ -62,8 +83,17 @@ export class ElementsHandler {
             });
           }
         });
+
         // Add click event listener to init and terminate stereotype processes
         this.eventBus.on('element.click', (e) => {
+
+          console.log(e.element)
+          this.selectedElement = e.element;
+
+          // Selecting dataObjects and dataStores for SQL leaks-when analysis
+          if (this.isSQLLeaksWhenActive()) {
+            this.initDataObjectSelectMenu(e.element);
+          }
 
           if (is(e.element.businessObject, 'bpmn:Task') || is(e.element.businessObject, 'bpmn:DataObjectReference') || is(e.element.businessObject, 'bpmn:DataStoreReference') || is(e.element.businessObject, 'bpmn:MessageFlow')) {
 
@@ -110,7 +140,7 @@ export class ElementsHandler {
               });
             }
             if (toBeEditedelementHandler.length > 0) {
-              if (!this.canEdit && (is(e.element.businessObject, 'bpmn:Task') || is(e.element.businessObject, 'bpmn:DataObjectReference') || is(e.element.businessObject, 'bpmn:DataStoreReference') || is(e.element.businessObject, 'bpmn:MessageFlow'))) {
+              if (!this.isPEBPMModeActive() || !this.canEdit && (is(e.element.businessObject, 'bpmn:Task') || is(e.element.businessObject, 'bpmn:DataObjectReference') || is(e.element.businessObject, 'bpmn:DataStoreReference') || is(e.element.businessObject, 'bpmn:MessageFlow'))) {
                 toBeEditedelementHandler[0].initPublicStereotypeView();
               } else {
                 toBeEditedelementHandler[0].initStereotypeEditProcess();
@@ -122,6 +152,64 @@ export class ElementsHandler {
         });
       });
     });
+  }
+
+  initDataObjectSelectMenu(element: any): void {
+    this.terminateDataObjectSelectMenu();
+    if ((element.type === "bpmn:DataObjectReference" || element.type === "bpmn:DataStoreReference") && element.incoming && element.incoming.length > 0) {
+      this.reloadDataObjectSelectMenu(element);
+    }
+
+  }
+
+  reloadDataObjectSelectMenu(element: any): void {
+    this.terminateDataObjectSelectMenu();
+    const dataObjectId = element.businessObject.id;
+
+    let overlayHtml = `<div class="dataObject-selector-editor" id="` + dataObjectId + `-dataObject-selector" style="background:white; padding:10px; border-radius:2px">`;
+
+    if ((element.type === "bpmn:DataObjectReference" || element.type === "bpmn:DataStoreReference") && element.incoming && element.incoming.length > 0) {
+      const index = this.selectedDataObjects.findIndex(x => x === element.businessObject);
+      if (index === -1) {
+        overlayHtml += `<button class="btn btn-default" id="` + dataObjectId + `-dataObject-on-button">Select</button><br>`;
+      } else {
+        overlayHtml += `<button class="btn btn-default" id="` + dataObjectId + `-dataObject-off-button">Deselect</button><br>`;
+      }
+    }
+    overlayHtml += `</div>`;
+    overlayHtml = $(overlayHtml);
+
+    this.selectedDataObjectSettings = this.overlays.add(element, {
+      position: {
+        top: -15,
+        right: -30
+      },
+      html: overlayHtml
+    });
+
+    if ((element.type === "bpmn:DataObjectReference" || element.type === "bpmn:DataStoreReference") && element.incoming && element.incoming.length > 0) {
+      const index = this.selectedDataObjects.findIndex(x => x === element.businessObject);
+      if (index === -1) {
+        $(overlayHtml).on('click', '#' + dataObjectId + '-dataObject-on-button', (ev1) => {
+          this.selectedDataObjects.push(element.businessObject);
+          this.canvas.addMarker(element.id, 'highlight-input-selected');
+          this.reloadDataObjectSelectMenu(element);
+        });
+      } else {
+        $(overlayHtml).on('click', '#' + dataObjectId + '-dataObject-off-button', (ev2) => {
+          this.selectedDataObjects.splice(index, 1);
+          this.canvas.removeMarker(element.id, 'highlight-input-selected');
+          this.reloadDataObjectSelectMenu(element);
+        });
+      }
+    }
+  }
+
+  terminateDataObjectSelectMenu(): void {
+    if (this.selectedDataObjectSettings != null) {
+      this.overlays.remove({ id: this.selectedDataObjectSettings });
+      this.selectedDataObjectSettings = null;
+    }
   }
 
   initWithoutClickHandlers() {
@@ -296,6 +384,20 @@ export class ElementsHandler {
   // Get all taskHandler instances of the model
   getAllModelTaskHandlers() {
     return this.taskHandlers;
+  }
+
+  terminateElementsEditing() {
+    this.selectedElement = null;
+    this.validationHandler.removeAllErrorHighlights();
+    for (let taskHandler of this.getAllModelTaskHandlers()) {
+      taskHandler.terminateStereotypeEditProcess();
+    }
+    for (let dataObjectHandler of this.getAllModelDataObjectHandlers()) {
+      dataObjectHandler.terminateStereotypeEditProcess();
+    }
+    for (let messageFlow of this.getAllModelMessageFlowHandlers()) {
+      messageFlow.terminateStereotypeEditProcess();
+    }
   }
 
   // Get messageFlowHandler instance of messageFlow by messageFlow id

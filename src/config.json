@@ -19,6 +19,12 @@
     "sql_derivative_sensitivity_editor": {
         "folder": "pleak-sql-derivative-sensitivity-editor"
     },
+    "leakswhen": {
+      "host": "http://localhost:3000",
+      "report": "/upload",
+      "compute": "/compute",
+      "multi_runs": true
+    },
     "guessing_advantage_editor": {
         "folder": "pleak-guessing-advantage-editor"
     },

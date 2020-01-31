@@ -1,68 +1,92 @@
 <div id="canvas"></div>
 <div id="sidebar">
-  <div class="panel panel-default hidden" id="stereotype-options-sidebar">
-    <div class="panel-heading blue-panel-heading">
-      <button class="btn btn-default pull-right" type="button" id="stereotype-options-hide-button">X</button>
-      <h3 id="stereotype-options-title"></h3>
+
+  <button type="button" class="btn btn-default" (click)="setPEBPMNMode()"
+    [disabled]=isPEBPMModeActive()>PE-BPMN</button>
+
+  <button type="button" class="btn btn-default" (click)="setBPMNLeaksWhenMode()" [disabled]=isBPMNLeaksWhenActive()>BPMN
+    leaks-when</button>
+
+  <button type="button" class="btn btn-default" (click)="setSQLLeaksWhenMode()" [disabled]=isSQLLeaksWhenActive()>SQL
+    leaks-when</button>
+
+  <hr>
+
+  <div style="margin-top:15px; margin-bottom:15px; text-align:right" *ngIf=isPEBPMModeActive()>
+    <button type="button" class="btn btn-success" (click)="validateModel()" [disabled]=!modelLoaded()>Run
+      analysis</button>
+  </div>
+
+  <app-leaks-when-analysis #leaksWhenAnalysisComponent [authenticated]="authenticated" [modelId]="modelId" [viewer]="viewer"
+    [elementsHandler]="elementsHandler" [activeMode]="activeMode">
+  </app-leaks-when-analysis>
+
+  <div [class.hidden]=!isPEBPMModeActive()>
+    <div class="panel panel-default hidden" id="stereotype-options-sidebar">
+      <div class="panel-heading blue-panel-heading">
+        <button class="btn btn-default pull-right" type="button" id="stereotype-options-hide-button">X</button>
+        <h3 id="stereotype-options-title"></h3>
+      </div>
+      <div class="panel-body" id="stereotype-options"></div>
+      <div class="panel-footer blue-panel-footer text-right">
+        <button class="btn btn-success" type="button" id="stereotype-options-save-button">Save</button>
+      </div>
     </div>
-    <div class="panel-body" id="stereotype-options"></div>
-    <div class="panel-footer blue-panel-footer text-right">
-      <button class="btn btn-success" type="button" id="stereotype-options-save-button">Save</button>
+    <div class="analysis-spinner" style="display:none">
+      <div class="double-bounce1-2"></div>
+      <div class="double-bounce2-2"></div>
+    </div>
+    <div id="model-errors" class="hidden">
+      <h3>Errors in model</h3>
+      <div id="errors-list"></div>
+    </div>
+    <div id="model-correct" class="hidden">
+      <h3><i class="fa fa-check-square-o" aria-hidden="true"></i> Passed validation!</h3>
+    </div>
+    <div id="analysis" class="hidden">
+      <h3>Simple disclosure analysis</h3>
+      <div class="text-left">
+        <ul class="buttons analyze">
+          <li>
+            <a class="active" id="analyze-simple-disclosure" title="Analyze simple disclosure" href="#">
+              <span class="glyphicon glyphicon-equalizer"></span> Analyze
+            </a>
+          </li>
+        </ul>
+      </div>
+      <h3>Extended simple disclosure analysis</h3>
+      <div class="text-left">
+        <ul class="buttons analyze">
+          <li>
+            <a class="active" id="extended-analyze-simple-disclosure" title="Analyze simple disclosure" href="#">
+              <span class="glyphicon glyphicon-equalizer"></span> Analyze
+            </a>
+          </li>
+        </ul>
+      </div>
+      <h3>Data dependencies analysis</h3>
+      <div class="text-left">
+        <ul class="buttons analyze">
+          <li>
+            <a class="active" id="analyze-dependencies" title="Analyze" href="#">
+              <span class="glyphicon glyphicon-equalizer"></span> Analyze
+            </a>
+          </li>
+        </ul>
+      </div>
+      <h3>Leakage detection</h3>
+      <div class="text-left">
+        <ul class="buttons analyze">
+          <li>
+            <a class="active" id="detect-leakages" title="Analyze" href="#">
+              <span class="glyphicon glyphicon-equalizer"></span> Analyze
+            </a>
+          </li>
+        </ul>
+      </div>
     </div>
   </div>
-  <div class="analysis-spinner" style="display:none">
-    <div class="double-bounce1-2"></div>
-    <div class="double-bounce2-2"></div>
-  </div>
-  <div id="model-errors" class="hidden">
-    <h3>Errors in model</h3>
-    <div id="errors-list"></div>
-  </div>
-  <div id="model-correct" class="hidden">
-    <h3><i class="fa fa-check-square-o" aria-hidden="true"></i> Passed validation!</h3>
-  </div>
-  <div id="analysis" class="hidden">
-    <h3>Simple disclosure analysis</h3>
-    <div class="text-left">
-      <ul class="buttons analyze">
-        <li>
-          <a class="active" id="analyze-simple-disclosure" title="Analyze simple disclosure" href="#">
-            <span class="glyphicon glyphicon-equalizer"></span> Analyze
-          </a>
-        </li>
-      </ul>
-    </div>
-    <h3>Extended simple disclosure analysis</h3>
-    <div class="text-left">
-      <ul class="buttons analyze">
-        <li>
-          <a class="active" id="extended-analyze-simple-disclosure" title="Analyze simple disclosure" href="#">
-            <span class="glyphicon glyphicon-equalizer"></span> Analyze
-          </a>
-        </li>
-      </ul>
-    </div>
-    <h3>Data dependencies analysis</h3>
-    <div class="text-left">
-      <ul class="buttons analyze">
-        <li>
-          <a class="active" id="analyze-dependencies" title="Analyze" href="#">
-            <span class="glyphicon glyphicon-equalizer"></span> Analyze
-          </a>
-        </li>
-      </ul>
-    </div>
-    <h3>Leakage detection</h3>
-    <div class="text-left">
-      <ul class="buttons analyze">
-        <li>
-          <a class="active" id="detect-leakages" title="Analyze" href="#">
-            <span class="glyphicon glyphicon-equalizer"></span> Analyze
-          </a>
-        </li>
-      </ul>
-    </div>
-  </div>
+
 </div>
 <!-- Simple Disclosure Analysis report modal -->
 <div class="modal fade" id="simpleDisclosureReportModal" tabindex="-1" role="dialog"
@@ -83,6 +107,7 @@
           <div id='simple-legend' class="pull-left">
           </div>
           <div class="pull-right">
+            <button id="simpleDisclosureLeaksWhen" type="button" class="btn btn-default" data-dismiss="modal" style="display:none" (click)=leaksWhenAnalysisComponent.runSimpleDisclosureLeaksWhenAnalysis()>Run simple disclosure leaks-when analysis</button>
             <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
           </div>
         </div>
@@ -137,6 +162,20 @@
           </div>
         </div>
       </form>
+    </div>
+  </div>
+</div>
+
+<!-- BPMN leaks-when analysis results modal-->
+<div class="modal fade" id="bpmnLeaksWhenModal" role="dialog">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">BPMN leaks-when analysis results</h4>
+      </div>
+      <div class="modal-body">
+      </div>
     </div>
   </div>
 </div>

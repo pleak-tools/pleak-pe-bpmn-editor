@@ -1,0 +1,65 @@
+
+<div style="margin-top:15px; margin-bottom:15px; text-align:right" *ngIf="isSQLLeaksWhenActive() || isBPMNLeaksWhenActive()">
+  <button type="button" class="btn btn-success" (click)="runSQLLeaksWhenAnalysis()" *ngIf=isSQLLeaksWhenActive()>Run SQL leaks-when analysis</button>
+  <button type="button" class="btn btn-success" (click)="runBPMNLeaksWhenAnalysis()" *ngIf=isBPMNLeaksWhenActive()>Run BPMN leaks-when analysis</button>
+  <button type="button" class="btn btn-success" (click)="elementsHandler.initValidation();" *ngIf="isSQLLeaksWhenActive() && elementsHandler">Run Simple Disclosure leaks-when analysis</button>
+</div>
+
+<div class="panel panel-default leaks-when-options-sidebar" *ngIf="!isPEBPMModeActive() && getSelectedElement() && (isSelectedElementScriptElement() || isSQLLeaksWhenActive() && isSelectedElementPolicyElement())">
+  <div class="panel-heading blue-panel-heading">
+    <button class="btn btn-default pull-right" type="button" (click)=clear()>X</button>
+    <h3>{{getSelectedElement().businessObject.name ? getSelectedElement().businessObject.name : ""}}</h3>
+  </div>
+  <div class="panel-body">
+    <app-script-panel [activeMode]="activeMode" [selectedElement]=getSelectedElement() [isScriptElement]=isSelectedElementScriptElement() [canEdit]=canEdit() (script)=setScript($event)></app-script-panel>
+    <app-policy-panel [activeMode]="activeMode" [selectedElement]=getSelectedElement() [isPolicyElement]=isSelectedElementPolicyElement() [canEdit]=canEdit() [roles]=getPolicyRoles() (policy)=setPolicy($event)></app-policy-panel>
+  </div>
+  <div class="panel-footer blue-panel-footer text-right">
+    <button class="btn btn-success" type="button" *ngIf="!isPEBPMModeActive() && canEdit()" (click)=save()>Save</button>
+  </div>
+</div>
+
+<br>
+
+<ng-container *ngIf="isBPMNLeaksWhenActive() && BPMNLeaksWhenError">
+  <div style="display:block; background-color: white; padding: 10px">
+    <h3>BPMN leaks-when analysis failed</h3>
+    <span style="font-size: 16px; color: darkred;">{{BPMNLeaksWhenError}}</span>
+  </div>
+</ng-container>
+
+<ng-container *ngIf="isSQLLeaksWhenActive() && SQLLeaksWhenError">
+  <div style="display:block; background-color: white; padding: 10px">
+    <h3>SQL leaks-when analysis failed</h3>
+    <span style="font-size: 16px; color: darkred;">{{SQLLeaksWhenError}}</span>
+  </div>
+</ng-container>
+
+<ng-container *ngIf="isSQLLeaksWhenActive() && SQLLeaksWhenResult && SQLLeaksWhenResult.length > 0 && !leaksWhenAnalysisInprogress">
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h3>
+        SQL leaks-when analysis results
+      </h3>
+    </div>
+    <div class="panel-body">
+      <div *ngFor="let element of SQLLeaksWhenResult">
+        <b><h4><ng-container *ngIf="element.input.length > 0">Input: {{element.input}}, </ng-container>Output: {{element.name}}</h4></b>
+        <div style="text-align: left;">
+          <ol>
+            <li *ngFor="let link of element.links">
+              <a href="{{link.view}}" target="_blank">View graph</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="{{link.download}}" target="_blank">Export (.dot)</a>
+            </li>
+          </ol>
+          <br>
+        </div>
+      </div>
+    </div>
+  </div>
+</ng-container>
+
+<div class="leaks-when-analysis-spinner" *ngIf="leaksWhenAnalysisInprogress"
+  style="width: 40px; height: 40px; position: relative; margin: 50px auto;">
+  <div class="double-bounce1-2"></div>
+  <div class="double-bounce2-2"></div>
+</div>

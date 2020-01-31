@@ -25,10 +25,70 @@ export class EditorComponent {
 
   public viewer: NavigatedViewer;
 
+  elementsHandler: ElementsHandler;
+
   modelId: number;
 
+  activeMode: string = "PEBPMN";
+
+  setPEBPMNMode(): void {
+    this.activeMode = "PEBPMN";
+    if (this.elementsHandler) {
+      this.elementsHandler.terminateElementsEditing();
+      for (let dO of this.elementsHandler.selectedDataObjects) {
+        this.elementsHandler.canvas.removeMarker(dO.id, 'highlight-input-selected');
+      }
+      this.elementsHandler.selectedDataObjects = [];
+    }
+  }
+
+  setBPMNLeaksWhenMode(): void {
+    this.activeMode = "BPMNleaks";
+    if (this.elementsHandler) {
+      this.elementsHandler.terminateElementsEditing();
+      for (let dO of this.elementsHandler.selectedDataObjects) {
+        this.elementsHandler.canvas.removeMarker(dO.id, 'highlight-input-selected');
+      }
+      this.elementsHandler.selectedDataObjects = [];
+    }
+  }
+
+  setSQLLeaksWhenMode(): void {
+    this.activeMode = "SQLleaks";
+    if (this.elementsHandler) {
+      this.elementsHandler.terminateElementsEditing();
+      for (let dO of this.elementsHandler.selectedDataObjects) {
+        this.elementsHandler.canvas.removeMarker(dO.id, 'highlight-input-selected');
+      }
+      this.elementsHandler.selectedDataObjects = [];
+    }
+  }
+
+  isPEBPMModeActive(): boolean {
+    return this.activeMode === "PEBPMN";
+  }
+
+  isBPMNLeaksWhenActive(): boolean {
+    return this.activeMode === "BPMNleaks";
+  }
+
+  isSQLLeaksWhenActive(): boolean {
+    return this.activeMode === "SQLleaks";
+  }
+
+  validateModel(): void {
+    this.editorService.analyze();
+  }
+
+  modelLoaded(): boolean {
+    if (this.elementsHandler) {
+      return this.elementsHandler.modelLoaded;
+    }
+    return false;
+  }
+
   // Load diagram and add editor
-  openDiagram(diagram: string) {
+  openDiagram(diagram: string): void {
     if (diagram) {
       $('#canvas').html('');
       this.viewer = new NavigatedViewer({
@@ -41,17 +101,17 @@ export class EditorComponent {
         }
       });
 
-      let elementsHandler = new ElementsHandler(this.viewer, diagram, this, this.canEdit());
-      elementsHandler.init();
-      this.addEventHandlers(elementsHandler);
+      this.elementsHandler = new ElementsHandler(this.viewer, diagram, this, this.canEdit());
+      this.elementsHandler.init();
+      this.addEventHandlers(this.elementsHandler);
     }
   }
 
-  canEdit() {
+  canEdit(): boolean {
     return this.editorService.canEdit;
   }
 
-  addEventHandlers(elementsHandler) {
+  addEventHandlers(elementsHandler: ElementsHandler): void {
 
     this.removeEventHandlers();
 
@@ -80,7 +140,7 @@ export class EditorComponent {
 
   }
 
-  removeEventHandlers() {
+  removeEventHandlers(): void {
     $('.buttons-container').off('click', '.buttons a');
     $(window).off('keydown');
     $(window).unbind('beforeunload');

@@ -25,7 +25,7 @@ export class AppComponent implements OnInit {
     if (pathname[2] === 'viewer') {
       this.modelId = pathname[3];
       this.viewerType = 'public';
-    } else if (pathname[2] === 'export') {
+    } else if (pathname[2] === 'export') { // TODO - remove this part
       this.modelId = pathname[3];
       this.exportType = pathname[4];
       this.export();
@@ -124,10 +124,6 @@ export class AppComponent implements OnInit {
     );
   }
 
-  validateModel() {
-    this.editorService.analyze();
-  }
-
   private getPermissions(id: number) {
     this.http.get(config.backend.host + '/rest/directories/files/' + id, AuthService.loadRequestOptions()).subscribe(
       (response: any) => {
@@ -156,6 +152,7 @@ export class AppComponent implements OnInit {
     return false;
   }
 
+  // TODO: remove export() function
   export(): void {
     this.http.get(config.backend.host + '/rest/directories/files/' + (this.viewerType === 'public' ? 'public/' : '') + this.modelId, AuthService.loadRequestOptions()).subscribe(
       (response: any) => {

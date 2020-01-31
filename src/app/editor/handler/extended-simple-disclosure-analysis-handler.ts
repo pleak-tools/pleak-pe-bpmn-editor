@@ -31,14 +31,23 @@ export class ExtendedSimpleDisclosureAnalysisHandler {
     this.analysisPanel.on('click', '#extended-analyze-simple-disclosure', (e) => {
       e.preventDefault();
       e.stopPropagation();
-      let uniqueDataObjects = this.simpleDisclosureAnalysisHandler.getListOfModelUniqueDataObjects();
-      this.showResults(
-        uniqueDataObjects,
-        this.simpleDisclosureAnalysisHandler.getListOfModelLanesAndPoolsObjects(),
-        this.getExtendedSimpleDisclosureMatrix(uniqueDataObjects),
-        this.simpleDisclosureAnalysisHandler.getDataObjectsMessageFlowConnections(uniqueDataObjects)
-      );
+      this.showModal();
     });
+  }
+
+  showModal(): void {
+    this.elementsHandler.SelectedTarget = {
+      name: null,
+      r: null,
+      c: null,
+    };
+    let uniqueDataObjects = this.simpleDisclosureAnalysisHandler.getListOfModelUniqueDataObjects();
+    this.showResults(
+      uniqueDataObjects,
+      this.simpleDisclosureAnalysisHandler.getListOfModelLanesAndPoolsObjects(),
+      this.getExtendedSimpleDisclosureMatrix(uniqueDataObjects),
+      this.simpleDisclosureAnalysisHandler.getDataObjectsMessageFlowConnections(uniqueDataObjects)
+    );
   }
 
   getExtendedSimpleDisclosureMatrix(uniqueDataObjects) {
@@ -101,24 +110,41 @@ export class ExtendedSimpleDisclosureAnalysisHandler {
     }
     table += '</tr>';
 
-    for (let row of uniqueLanesAndPools) {
-      table += '<tr>';
-      table += '<td style="background-color:#f5f5f5;vertical-align:middle"><b>' + row.name.trim() + '</b></td>';
+    for (let r = 0; r < uniqueLanesAndPools.length; r++) {
 
-      for (let col of uniqueDataObjects) {
+      table += '<tr>';
+      table += '<td style="background-color:#f5f5f5;vertical-align:middle"><b>' + uniqueLanesAndPools[r].name.trim() + '</b></td>';
+
+      for (let c = 0; c < uniqueDataObjects.length; c++) {
         let connectionInfo = simpleDisclosureDataObjects.filter((obj) => {
-          return obj.name.trim() == col.name.trim() && obj.visibleTo == row.id;
+          return obj.name.trim() == uniqueDataObjects[c].name.trim() && obj.visibleTo == uniqueLanesAndPools[r].id;
         });
         if (connectionInfo.length > 0) {
           let visibilityValues = connectionInfo[0].visibility.split(", ");
           let visibilityStr = visibilityValues.length > 1 ? visibilityValues[0] + "<br>" + visibilityValues.slice(1, visibilityValues.length).join(", ") : visibilityValues[0] + "<br>";
-          table += '<td>' + visibilityStr + '</td>';
+
+          if (visibilityStr.indexOf('I') !== -1 || visibilityStr.indexOf('D') !== -1) {
+            table += '<td class="esd-' + r + '-' + c + '" style="cursor:pointer">' + visibilityStr + '</td>';
+            $(document).off('click', '.esd-' + r + '-' + c);
+            $(document).on('click', '.esd-' + r + '-' + c, (e) => {
+              if (this.elementsHandler.SelectedTarget.name) {
+                $(document).find('.esd-' + this.elementsHandler.SelectedTarget.r + '-' + this.elementsHandler.SelectedTarget.c).css('background-color', 'white').css('color', 'black');
+              }
+              $(e.target).css('background-color', 'deepskyblue').css('color', 'white');
+              this.elementsHandler.SelectedTarget.name = uniqueDataObjects[c].name.trim();
+              this.elementsHandler.SelectedTarget.c = c;
+              this.elementsHandler.SelectedTarget.r = r;
+            });
+          } else {
+            table += '<td class="esd-' + r + '-' + c + '">' + visibilityStr + '</td>';
+          }
 
         } else {
           table += '<td>-</td>';
         }
       }
       table += '</tr>';
+
     }
 
     if (dataObjectsMessageFlowConnections) {
@@ -143,6 +169,7 @@ export class ExtendedSimpleDisclosureAnalysisHandler {
     $('#simpleDisclosureReportModal').find('#report-table').html('').html(table);
     $('#simpleDisclosureReportModal').find('#simpleDisclosureReportTitle').text('').text($('#fileName').text());
     $('#simpleDisclosureReportModal').find('#simpleDisclosureReportType').text(' - Extended simple disclosure analysis report');
+    $('#simpleDisclosureLeaksWhen').show();
     $('#simpleDisclosureReportModal').modal();
   }
 

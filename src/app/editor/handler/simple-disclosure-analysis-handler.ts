@@ -490,6 +490,7 @@ export class SimpleDisclosureAnalysisHandler {
     $('#simpleDisclosureReportModal').find('#report-table').html('').html(table);
     $('#simpleDisclosureReportModal').find('#simpleDisclosureReportTitle').text('').text($('#fileName').text());
     $('#simpleDisclosureReportModal').find('#simpleDisclosureReportType').text(' - Simple disclosure analysis report');
+    $('#simpleDisclosureLeaksWhen').hide();
     $('#simpleDisclosureReportModal').modal();
   }
 
