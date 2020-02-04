@@ -18,7 +18,7 @@
   </div>
 
   <app-leaks-when-analysis #leaksWhenAnalysisComponent [authenticated]="authenticated" [modelId]="modelId" [viewer]="viewer"
-    [elementsHandler]="elementsHandler" [activeMode]="activeMode">
+    [elementsHandler]="elementsHandler" [activeMode]="activeMode" (open)=scriptPolicyModal.openModal($event)>
   </app-leaks-when-analysis>
 
   <div [class.hidden]=!isPEBPMModeActive()>
@@ -179,3 +179,5 @@
     </div>
   </div>
 </div>
+
+<app-script-policy-modal [activeMode]="activeMode" [canEdit]=canEdit() (save)=leaksWhenAnalysisComponent.save() (scriptOrPolicy)=leaksWhenAnalysisComponent.setScriptOrPolicy($event) #scriptPolicyModal></app-script-policy-modal>

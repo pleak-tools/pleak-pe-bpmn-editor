@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ViewChild } from '@angular/core';
 
 @Component({
   selector: 'app-policy-panel',
@@ -14,13 +14,16 @@ export class PolicyPanelComponent {
   @Input() roles: string[];
 
   @Output() policy = new EventEmitter();
+  @Output() open = new EventEmitter();
+
+  @ViewChild('policyCodeMirror', { static: false }) policyInput: any;
 
   isSQLLeaksWhenActive(): boolean {
     return this.activeMode === "SQLleaks";
   }
 
   getPolicy(): string {
-    return this.selectedElement.businessObject.policyScript ? this.selectedElement.businessObject.policyScript : "";
+    return this.selectedElement && this.selectedElement.businessObject && this.selectedElement.businessObject.policyScript ? this.selectedElement.businessObject.policyScript : "";
   }
 
   policyChanged(value: string): void {
@@ -29,6 +32,10 @@ export class PolicyPanelComponent {
     } else {
       this.policy.emit(value);
     }
+  }
+
+  openModal(type: string): void {
+    this.open.emit(JSON.stringify({type: type, value: this.policyInput.value}));
   }
 
 }

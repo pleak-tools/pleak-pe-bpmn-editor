@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ViewChild } from '@angular/core';
 
 @Component({
   selector: 'app-script-panel',
@@ -13,6 +13,9 @@ export class ScriptPanelComponent {
   @Input() canEdit: boolean;
 
   @Output() script = new EventEmitter();
+  @Output() open = new EventEmitter();
+
+  @ViewChild('scriptCodeMirror', { static: false }) scriptInput: any;
 
   isBPMNLeaksWhenActive(): boolean {
     return this.activeMode === "BPMNleaks";
@@ -23,7 +26,7 @@ export class ScriptPanelComponent {
   }
 
   getScript(): string {
-    return this.selectedElement.businessObject.sqlScript ? this.selectedElement.businessObject.sqlScript : "";
+    return this.selectedElement && this.selectedElement.businessObject && this.selectedElement.businessObject.sqlScript ? this.selectedElement.businessObject.sqlScript : "";
   }
 
   scriptChanged(value: string): void {
@@ -32,6 +35,10 @@ export class ScriptPanelComponent {
     } else {
       this.script.emit(value);
     }
+  }
+
+  openModal(type: string): void {
+    this.open.emit(JSON.stringify({type: type, value: this.scriptInput.value}));
   }
 
 }

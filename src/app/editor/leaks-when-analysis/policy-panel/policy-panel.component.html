@@ -2,6 +2,7 @@
 <ng-container *ngIf="isSQLLeaksWhenActive() && isPolicyElement">
   <div class="panel panel-default text-left">
     <div class="panel-heading">
+      <button class="btn btn-default pull-right" type="button" (click)="openModal('policy')"><span class="glyphicon glyphicon-fullscreen"></span></button>
       <b>
         <h4>
           <ng-container *ngIf="isSQLLeaksWhenActive()">
@@ -17,7 +18,7 @@
         showCursorWhenSelecting: true,
         lineWiseCopyCut: false,
         readOnly: !canEdit
-      }" (ngModelChange)=policyChanged($event)>
+      }" (ngModelChange)=policyChanged($event) #policyCodeMirror>
       </ngx-codemirror>
       <hr>
       <h4>Available Roles</h4>

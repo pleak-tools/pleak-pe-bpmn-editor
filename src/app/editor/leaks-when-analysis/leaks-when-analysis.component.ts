@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../auth/auth.service';
 import { ElementsHandler } from '../handler/elements-handler';
@@ -26,6 +26,8 @@ export class LeaksWhenAnalysisComponent {
   @Input() viewer: any;
   @Input() elementsHandler: ElementsHandler;
   @Input() activeMode: string;
+
+  @Output() open = new EventEmitter();
 
   registry: any;
   eventBus: any;
@@ -74,12 +76,27 @@ export class LeaksWhenAnalysisComponent {
     return null;
   }
 
+  openModal(value: string): void {
+    let obj = JSON.parse(value);
+    obj.name = this.getSelectedElement().businessObject.name ? this.getSelectedElement().businessObject.name : "";
+    this.open.emit(JSON.stringify(obj));
+  }
+
   setScript(script: string): void {
     this.scriptOfSelectedElement = script;
   }
 
   setPolicy(policy: string): void {
     this.policyOfSelectedElement = policy;
+  }
+
+  setScriptOrPolicy(value: string): void {
+    let inputObj = JSON.parse(value);
+    if (inputObj.type === "script") {
+      this.setScript(inputObj.value);
+    } else if (inputObj.type === "policy") {
+      this.setPolicy(inputObj.value);
+    }
   }
 
   isPEBPMModeActive(): boolean {
@@ -190,6 +207,10 @@ export class LeaksWhenAnalysisComponent {
     }
 
     this.init();
+
+    this.scriptOfSelectedElement = null;
+    this.policyOfSelectedElement = null;
+    this.elementsHandler.terminateElementsEditing();
 
     this.leaksWhenAnalysisInprogress = true;
     this.SQLLeaksWhenResult = [];
@@ -408,6 +429,9 @@ export class LeaksWhenAnalysisComponent {
 
   runBPMNLeaksWhenAnalysis(): void {
     this.init();
+    this.scriptOfSelectedElement = null;
+    this.policyOfSelectedElement = null;
+    this.elementsHandler.terminateElementsEditing();
     if (this.viewer) {
       this.sendBPMNLeaksWhenAnalysisRequest();
     } else {
@@ -544,6 +568,9 @@ export class LeaksWhenAnalysisComponent {
 
   runSQLLeaksWhenAnalysis(): void {
     this.init();
+    this.scriptOfSelectedElement = null;
+    this.policyOfSelectedElement = null;
+    this.elementsHandler.terminateElementsEditing();
     if (this.viewer) {
       this.leaksWhenAnalysisInprogress = true;
       this.SQLLeaksWhenResult = [];

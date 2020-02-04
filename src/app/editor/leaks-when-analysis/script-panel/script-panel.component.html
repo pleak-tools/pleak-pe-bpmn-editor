@@ -1,6 +1,7 @@
 <ng-container *ngIf="(isBPMNLeaksWhenActive() || isSQLLeaksWhenActive()) && isScriptElement">
   <div class="panel panel-default text-left">
     <div class="panel-heading">
+      <button class="btn btn-default pull-right" type="button" (click)="openModal('script')"><span class="glyphicon glyphicon-fullscreen"></span></button>
       <b>
         <h4>
           <ng-container *ngIf="isBPMNLeaksWhenActive()">
@@ -24,8 +25,9 @@
         showCursorWhenSelecting: true,
         lineWiseCopyCut: false,
         readOnly: !canEdit
-      }" (ngModelChange)=scriptChanged($event)>
+      }" (ngModelChange)=scriptChanged($event) #scriptCodeMirror>
       </ngx-codemirror>
     </div>
   </div>
+
 </ng-container>
