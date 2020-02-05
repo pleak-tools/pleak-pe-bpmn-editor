@@ -491,6 +491,7 @@ export class SimpleDisclosureAnalysisHandler {
     $('#simpleDisclosureReportModal').find('#simpleDisclosureReportTitle').text('').text($('#fileName').text());
     $('#simpleDisclosureReportModal').find('#simpleDisclosureReportType').text(' - Simple disclosure analysis report');
     $('#simpleDisclosureLeaksWhenButton').prop('disabled', true).hide();
+    $('#simpleDisclosureLeaksWhenButtonNote').hide();
     $('#simpleDisclosureReportModal').modal();
   }
 

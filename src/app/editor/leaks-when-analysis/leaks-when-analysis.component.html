@@ -1,6 +1,7 @@
 
 <div style="margin-top:15px; margin-bottom:15px; text-align:right" *ngIf="isSQLLeaksWhenActive() || isBPMNLeaksWhenActive()">
-  <button type="button" class="btn btn-success" (click)="runSQLLeaksWhenAnalysis()" *ngIf=isSQLLeaksWhenActive()>Run SQL leaks-when analysis</button>
+  <div *ngIf=isSQLLeaksWhenActive() style="width: 100%; padding: 10px; background-color: white; text-align: left; margin-bottom: 15px"><b>Note:</b> To run SQL leaks-when analysis, select at least one output data object.</div>
+  <button type="button" class="btn btn-success" [disabled]="elementsHandler.selectedDataObjects.length === 0" (click)="runSQLLeaksWhenAnalysis()" *ngIf=isSQLLeaksWhenActive() style="margin-bottom: 5px">Run SQL leaks-when analysis</button>
   <button type="button" class="btn btn-success" (click)="runBPMNLeaksWhenAnalysis()" *ngIf=isBPMNLeaksWhenActive()>Run BPMN leaks-when analysis</button>
   <button type="button" class="btn btn-success" (click)="elementsHandler.initValidation();" *ngIf="isSQLLeaksWhenActive() && elementsHandler">Run Simple Disclosure leaks-when analysis</button>
 </div>

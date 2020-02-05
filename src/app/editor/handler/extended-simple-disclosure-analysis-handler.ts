@@ -171,6 +171,7 @@ export class ExtendedSimpleDisclosureAnalysisHandler {
     $('#simpleDisclosureReportModal').find('#simpleDisclosureReportTitle').text('').text($('#fileName').text());
     $('#simpleDisclosureReportModal').find('#simpleDisclosureReportType').text(' - Extended simple disclosure analysis report');
     $('#simpleDisclosureLeaksWhenButton').prop('disabled', true).show();
+    $('#simpleDisclosureLeaksWhenButtonNote').show();
     $('#simpleDisclosureReportModal').modal();
   }
 
