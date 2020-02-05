@@ -134,6 +134,7 @@ export class ExtendedSimpleDisclosureAnalysisHandler {
               this.elementsHandler.SelectedTarget.name = uniqueDataObjects[c].name.trim();
               this.elementsHandler.SelectedTarget.c = c;
               this.elementsHandler.SelectedTarget.r = r;
+              $('#simpleDisclosureLeaksWhenButton').prop('disabled', false);
             });
           } else {
             table += '<td class="esd-' + r + '-' + c + '">' + visibilityStr + '</td>';
@@ -169,7 +170,7 @@ export class ExtendedSimpleDisclosureAnalysisHandler {
     $('#simpleDisclosureReportModal').find('#report-table').html('').html(table);
     $('#simpleDisclosureReportModal').find('#simpleDisclosureReportTitle').text('').text($('#fileName').text());
     $('#simpleDisclosureReportModal').find('#simpleDisclosureReportType').text(' - Extended simple disclosure analysis report');
-    $('#simpleDisclosureLeaksWhen').show();
+    $('#simpleDisclosureLeaksWhenButton').prop('disabled', true).show();
     $('#simpleDisclosureReportModal').modal();
   }
 
