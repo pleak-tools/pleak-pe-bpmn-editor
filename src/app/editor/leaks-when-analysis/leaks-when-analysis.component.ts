@@ -44,7 +44,7 @@ export class LeaksWhenAnalysisComponent {
     simplificationDto: null,
     r: null,
     c: null,
-    selectedTargetForLeaksWhen: null
+    selectedTargetsForLeaksWhen: []
   };
 
   leaksWhenAnalysisInprogress: boolean = false;
@@ -57,6 +57,8 @@ export class LeaksWhenAnalysisComponent {
 
   SQLLeaksWhenResult: any[] = [];
   BPMNLeaksWhenResult: any = null;
+
+  simpleLeaksWhenMessageFlowIndex: number = 0;
 
   init(): void {
     if (this.viewer) {
@@ -219,7 +221,7 @@ export class LeaksWhenAnalysisComponent {
       simplificationDto: null,
       r: null,
       c: null,
-      selectedTargetForLeaksWhen: null
+      selectedTargetsForLeaksWhen: []
     };
 
     this.SelectedTarget.simplificationDto = this.getAllDataObjects().find(x => x.name.trim() == this.elementsHandler.SelectedTarget.name);
@@ -234,7 +236,7 @@ export class LeaksWhenAnalysisComponent {
 
     this.findOutputDtoForLeaksWhen();
 
-    if (!this.SelectedTarget.selectedTargetForLeaksWhen) {
+    if (this.SelectedTarget.selectedTargetsForLeaksWhen.length === 0) {
       this.leaksWhenAnalysisInprogress = false;
       this.SQLLeaksWhenError = "Unable to find output dataObject for the analysis."
       return;
@@ -242,7 +244,8 @@ export class LeaksWhenAnalysisComponent {
 
     if (this.SelectedTarget.simplificationDto) {
       const processedTarget = this.SelectedTarget.simplificationDto.name.trim();
-      this.runLeaksWhenAnalysis(processedTarget, this.SelectedTarget.selectedTargetForLeaksWhen);
+      this.simpleLeaksWhenMessageFlowIndex = 0;
+      this.runLeaksWhenAnalysis(processedTarget, this.SelectedTarget.selectedTargetsForLeaksWhen[0]);
     } else {
       this.leaksWhenAnalysisInprogress = false;
       this.SQLLeaksWhenError = "Select at least one data object to run the analysis."
@@ -260,6 +263,21 @@ export class LeaksWhenAnalysisComponent {
       }
     }
     return allDtos;
+  }
+
+  getAllTasks(): any[] {
+    let allTasks = [];
+    for (var i in this.registry._elements) {
+      var node = this.registry._elements[i].element;
+      if (is(node.businessObject, 'bpmn:Task')) {
+        if (!allTasks.find(x => x.id == node.businessObject.id))
+          allTasks.push(node.businessObject);
+      }
+    }
+    allTasks = allTasks.sort((x, y) => {
+      return x.orderingIndex - y.orderingIndex;
+    });
+    return allTasks;
   }
 
   handleMessageFlows(): any[] {
@@ -411,15 +429,33 @@ export class LeaksWhenAnalysisComponent {
       .filter(x => (x.source.participant.id == this.SelectedTarget.simplificationDto.participant.id) &&
         x.source.orderingIndex >= this.SelectedTarget.simplificationDto.orderingIndex);
     nextMessageFlows = nextMessageFlows.sort((a, b) => a.source.orderingIndex - b.source.orderingIndex);
+    let allTasks = this.getAllTasks();
 
-    if (nextMessageFlows.length) {
-      let nextMessageFlow = nextMessageFlows[0];
+    for (let i = 0; i < nextMessageFlows.length; i++) {
+      let nextMessageFlow = nextMessageFlows[i];
+
+      let sqlFlow = "";
+      for (var j = 0; j < allTasks.length; j++) {
+        let x = allTasks[j];
+        if (!!x.sqlScript && x.orderingIndex <= nextMessageFlow.target.orderingIndex)
+          sqlFlow += x.sqlScript + '\n\n'
+      }
+
+      sqlFlow = sqlFlow.toLowerCase();
+
       let outputDtos = this.getAllDataObjects().filter(x => x.name != 'parameters' && (x.participant.id == nextMessageFlow.target.participant.id) &&
         (x.orderingIndex >= nextMessageFlow.target.orderingIndex));
-      outputDtos = outputDtos.sort((a, b) => a.orderingIndex - b.orderingIndex);
+      outputDtos = outputDtos
+        .sort((a, b) => a.orderingIndex - b.orderingIndex)
+        .filter(x => {
+          const regex = RegExp(`into ${x.name.split(' ').map(word => word.toLowerCase()).join('_')}\\s+from`);
+          const found = sqlFlow.match(regex);
+          return !!found;
+        });
+
       if (outputDtos.length) {
         let outputDto = outputDtos[0];
-        this.SelectedTarget.selectedTargetForLeaksWhen = outputDto;
+        this.SelectedTarget.selectedTargetsForLeaksWhen.push(outputDto);
       }
     }
   }
@@ -484,25 +520,27 @@ export class LeaksWhenAnalysisComponent {
         </table>`
     );
 
-    $modal.find('table thead').html(() => {
+    $modal.find('.modal-title').text('BPMN LeaksWhen Report');
+
+    $modal.find('table thead').html(function () {
       let output = `<th></th>`;
 
-      response.inputs.forEach((item) => {
+      response.inputs.forEach(function (item) {
         output += `<th><div><span>${item}</span></div></th>`;
       });
 
       return `<tr>${output}</tr>`;
     });
 
-    $modal.find('table tbody').html(() => {
+    $modal.find('table tbody').html(function () {
       let output = '';
 
-      response.outputs.forEach((item) => {
+      response.outputs.forEach(function (item) {
         const realKey = Object.keys(item)[0];
         const realItem = item[realKey];
         output += `<tr><th>${realKey}</th>`;
 
-        realItem.forEach((rowValue) => {
+        realItem.forEach(function (rowValue) {
           const realValue = Object.keys(rowValue)[0];
           if (realValue === 'if') {
             output += `<td class="${realValue}" data-toggle="tooltip" data-container="body" title="${rowValue[realValue]}">${realValue}</td>`;
@@ -518,13 +556,13 @@ export class LeaksWhenAnalysisComponent {
     });
 
     $modal.find('table tbody td').hover(
-      () => {
+      function () {
         const $output = $(this).closest('table').find('thead th').eq($(this).index());
         const $input = $('th:first', $(this).parents('tr'));
 
         $output.addClass('highlighted');
         $input.addClass('highlighted');
-      }, () => {
+      }, function () {
         const $output = $(this).closest('table').find('thead th').eq($(this).index());
         const $input = $('th:first', $(this).parents('tr'));
 
@@ -532,7 +570,7 @@ export class LeaksWhenAnalysisComponent {
         $input.removeClass('highlighted');
       });
 
-    $modal.find('.modal-header').on('mousedown', (event) => {
+    $modal.find('.modal-header').on('mousedown', function (event) {
       const startX = event.pageX;
       const startY = event.pageY;
 
@@ -545,15 +583,16 @@ export class LeaksWhenAnalysisComponent {
       $modalheader.css('cursor', 'move');
       $modal.css('opacity', 0.3);
 
-      const moveFunction = (e) => {
+      const moveFunction = function (e) {
         const diffX = e.pageX - startX;
         const diffY = e.pageY - startY;
 
         $modalContainer.css('transform', `translate(${diffX + modalX}px, ${diffY + modalY}px)`);
+        // console.log('move');
       };
 
       $(document).on('mousemove', moveFunction);
-      $(document).on('mouseup', () => {
+      $(document).on('mouseup', function () {
         $(document).off('mousemove', moveFunction);
         $modal.css('opacity', 1);
       });
@@ -633,8 +672,15 @@ export class LeaksWhenAnalysisComponent {
               this.sendPreparationRequest(serverPetriFileName, JSON.stringify(petriNetArray), matcher, (outputTarget ? [outputTarget] : this.elementsHandler.selectedDataObjects), this.taskDtoOrdering, participants, simplificationTarget)
                 .then(
                   () => {
-                    this.leaksWhenAnalysisInprogress = false;
-                    this.SQLLeaksWhenError = null;
+                    this.simpleLeaksWhenMessageFlowIndex++;
+                    if (this.SelectedTarget.selectedTargetsForLeaksWhen[this.simpleLeaksWhenMessageFlowIndex]) {
+                      let currentIndex = this.simpleLeaksWhenMessageFlowIndex;
+                      const processedTarget = this.SelectedTarget.simplificationDto.name.trim();
+                      this.runLeaksWhenAnalysis(processedTarget, this.SelectedTarget.selectedTargetsForLeaksWhen[currentIndex]);
+                    } else {
+                      this.leaksWhenAnalysisInprogress = false;
+                      this.SQLLeaksWhenError = null;
+                    }
                   },
                   () => {
                     this.leaksWhenAnalysisInprogress = false;
