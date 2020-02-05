@@ -520,8 +520,6 @@ export class LeaksWhenAnalysisComponent {
         </table>`
     );
 
-    $modal.find('.modal-title').text('BPMN LeaksWhen Report');
-
     $modal.find('table thead').html(function () {
       let output = `<th></th>`;
 
