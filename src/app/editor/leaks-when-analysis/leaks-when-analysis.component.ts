@@ -258,8 +258,9 @@ export class LeaksWhenAnalysisComponent {
     for (var i in this.registry._elements) {
       var node = this.registry._elements[i].element;
       if (is(node.businessObject, 'bpmn:DataObjectReference')) {
-        if (!allDtos.find(x => x.id == node.businessObject.id))
+        if (!allDtos.find(x => x.id == node.businessObject.id)) {
           allDtos.push(node.businessObject);
+        }
       }
     }
     return allDtos;
@@ -270,8 +271,9 @@ export class LeaksWhenAnalysisComponent {
     for (var i in this.registry._elements) {
       var node = this.registry._elements[i].element;
       if (is(node.businessObject, 'bpmn:Task')) {
-        if (!allTasks.find(x => x.id == node.businessObject.id))
+        if (!allTasks.find(x => x.id == node.businessObject.id)) {
           allTasks.push(node.businessObject);
+        }
       }
     }
     allTasks = allTasks.sort((x, y) => {
@@ -335,8 +337,9 @@ export class LeaksWhenAnalysisComponent {
           }
         }
 
-        if (!rolesDisclosures[outputLane.label])
+        if (!rolesDisclosures[outputLane.label]) {
           rolesDisclosures[outputLane.label] = {};
+        }
 
         let parentLane = participants.find(x => !!x.dtos.find(y => y.orderingIndex == source.orderingIndex));
         parentLane.dtos.filter(x => x.orderingIndex < source.orderingIndex).forEach(x => x.visibility = "I");
@@ -372,8 +375,9 @@ export class LeaksWhenAnalysisComponent {
 
     while (st.length > 0) {
       let curr = st.pop();
-      if (!curr.orderingIndex)
+      if (!curr.orderingIndex) {
         curr.orderingIndex = maxPlaceNumberObj.maxPlaceNumber++;
+      }
       currentRun.push(curr);
 
       let inc = curr.incoming ? curr.incoming.map(x => x.sourceRef) : null;
@@ -416,8 +420,9 @@ export class LeaksWhenAnalysisComponent {
       if ((is(node.businessObject, 'bpmn:Task') || is(node.businessObject, 'bpmn:IntermediateCatchEvent'))) {
         if (node.businessObject.dataInputAssociations && node.businessObject.dataInputAssociations.length) {
           node.businessObject.dataInputAssociations.forEach(x => {
-            if (!x.sourceRef[0].orderingIndex)
+            if (!x.sourceRef[0].orderingIndex || node.businessObject.orderingIndex < x.sourceRef[0].orderingIndex) {
               x.sourceRef[0].orderingIndex = node.businessObject.orderingIndex;
+            }
           });
         }
       }
@@ -437,8 +442,10 @@ export class LeaksWhenAnalysisComponent {
       let sqlFlow = "";
       for (var j = 0; j < allTasks.length; j++) {
         let x = allTasks[j];
-        if (!!x.sqlScript && x.orderingIndex <= nextMessageFlow.target.orderingIndex)
+        if (!!x.sqlScript && (x.participant.id == nextMessageFlow.target.participant.id && x.orderingIndex <= nextMessageFlow.target.orderingIndex ||
+          (x.participant.id == nextMessageFlow.source.participant.id && x.orderingIndex <= nextMessageFlow.source.orderingIndex))) {
           sqlFlow += x.sqlScript + '\n\n'
+        }
       }
 
       sqlFlow = sqlFlow.toLowerCase();
@@ -586,7 +593,6 @@ export class LeaksWhenAnalysisComponent {
         const diffY = e.pageY - startY;
 
         $modalContainer.css('transform', `translate(${diffX + modalX}px, ${diffY + modalY}px)`);
-        // console.log('move');
       };
 
       $(document).on('mousemove', moveFunction);
@@ -618,7 +624,7 @@ export class LeaksWhenAnalysisComponent {
     }
   }
 
-  runLeaksWhenAnalysis(simplificationTarget: any = null, outputTarget: any = null): void {
+  runLeaksWhenAnalysis(simplificationTarget: string = null, outputTarget: any[] = null): void {
     if (!this.elementsHandler.selectedDataObjects.length && !outputTarget) {
       this.leaksWhenAnalysisInprogress = false;
       this.SQLLeaksWhenError = "Select at least one data object to run the analysis."
@@ -691,7 +697,7 @@ export class LeaksWhenAnalysisComponent {
     }
   }
 
-  sendPreparationRequest(diagramId, petri, matcher, selectedDataObjects, taskDtoOrdering, participants, simplificationTarget): any {
+  sendPreparationRequest(diagramId: string, petri: string, matcher: any, selectedDataObjects: any[], taskDtoOrdering: any[], participants: any[], simplificationTarget: string): any {
     return this.http.post(config.leakswhen.host + config.leakswhen.compute, { diagram_id: diagramId, petri: petri })
       .toPromise()
       .then(
@@ -737,7 +743,7 @@ export class LeaksWhenAnalysisComponent {
         });
   }
 
-  sendLeaksWhenRequest(diagramId, sqlCommands, processedLabels, policy, runNumber, simplificationTarget, selectedDataObjectName) {
+  sendLeaksWhenRequest(diagramId: string, sqlCommands, processedLabels, policy, runNumber, simplificationTarget: string, selectedDataObjectName) {
     const modelPath = `${diagramId}/run_${runNumber}/${processedLabels[0]}`;
     return this.http.post(config.leakswhen.host + config.leakswhen.report, { diagram_id: diagramId, simplificationTarget: simplificationTarget, run_number: runNumber, selected_dto: processedLabels[0], model: modelPath, targets: processedLabels.join(','), sql_script: sqlCommands, policy: policy })
       .toPromise()
@@ -900,8 +906,9 @@ export class LeaksWhenAnalysisComponent {
               if (is(node2.businessObject, 'bpmn:Task') || is(node2.businessObject, 'bpmn:IntermediateCatchEvent')) {
                 if (node2.businessObject.dataOutputAssociations && node2.businessObject.dataOutputAssociations.length) {
                   node2.businessObject.dataOutputAssociations.forEach(y => {
-                    if (y.targetRef.id == x.sourceRef[0].id)
+                    if (y.targetRef.id == x.sourceRef[0].id) {
                       isFoundInputForDTO = true;
+                    }
                   });
                 }
               }
@@ -919,8 +926,9 @@ export class LeaksWhenAnalysisComponent {
         if (node.businessObject.dataOutputAssociations && node.businessObject.dataOutputAssociations.length) {
           node.businessObject.dataOutputAssociations.forEach(x => {
             if (!!x.targetRef.sqlScript && !x.targetRef.isPropagated) {
-              if (petri[node.id].out.findIndex(y => y == x.targetRef.id) == -1)
+              if (petri[node.id].out.findIndex(y => y == x.targetRef.id) == -1) {
                 petri[node.id].out.push(x.targetRef.id);
+              }
               if (!petri[x.targetRef.id]) {
                 petri[x.targetRef.id] = { type: "place", out: [], label: x.targetRef.name }
               }
@@ -978,14 +986,12 @@ export class LeaksWhenAnalysisComponent {
     // (because XOR state is not carrying logic so we can connect preceeding node directly to the following)
     for (var el in petriNet) {
       if (el.includes("ExclusiveGateway")) {
-        var copies = 0;
 
         if (petriNet[el].out.length > 1) {
 
           var preceedingNode = Object.values(petriNet).find(x => !!x["out"].find(z => z == el));
           preceedingNode["out"] = [];
           for (var i = 0; i < petriNet[el].out.length; i++) {
-            copies++;
             var copy = el + i;
             preceedingNode["out"].push(copy);
             petriNet[copy] = { type: petriNet[el].type, out: [petriNet[el].out[i]] };
@@ -994,7 +1000,6 @@ export class LeaksWhenAnalysisComponent {
         else {
           var preceedings = Object.values(petriNet).filter(x => !!x["out"].find(z => z == el));
           for (var i = 0; i < preceedings.length; i++) {
-            copies++;
             var copy = el + i;
             preceedings[i]["out"] = [copy];
             petriNet[copy] = { type: petriNet[el].type, out: [petriNet[el].out[0]] };
