@@ -35,9 +35,10 @@ import { DifferentialPrivacy } from "../stereotype/stereotypes/DifferentialPriva
 import { ProtectConfidentiality } from "../stereotype/stereotypes/ProtectConfidentiality";
 import { OpenConfidentiality } from "../stereotype/stereotypes/OpenConfidentiality";
 import { PETComputation } from "../stereotype/stereotypes/PETComputation";
+import { ABEncrypt } from "../stereotype/stereotypes/ABEncrypt";
+import { ABDecrypt } from "../stereotype/stereotypes/ABDecrypt";
 
 declare let $: any;
-let is = (element, type) => element.$instanceOf(type);
 
 export class TaskHandler {
 
@@ -102,7 +103,9 @@ export class TaskHandler {
     "DifferentialPrivacy",
     "ProtectConfidentiality",
     "OpenConfidentiality",
-    "PETComputation"
+    "PETComputation",
+    "ABEncrypt",
+    "ABDecrypt"
   ];
 
   normalOutputStereotypes: string[] = [
@@ -117,7 +120,8 @@ export class TaskHandler {
     "SGXProtect",
     "ProtectConfidentiality",
     "OpenConfidentiality",
-    "PETComputation"
+    "PETComputation",
+    "ABEncrypt",
   ];
   groupOutputStereotypes: string[] = [
     "AddSSComputation",
@@ -348,6 +352,9 @@ export class TaskHandler {
                 <td class="link-row SKEncrypt-button">SKEncrypt</td>
               </tr>
               <tr>
+                <td class="link-row ABEncrypt-button">ABEncrypt</td>
+              </tr>
+              <tr>
                 <td class="link-row SSSharing-button">SSSharing</td>
               </tr>
               <tr>
@@ -376,6 +383,9 @@ export class TaskHandler {
               </tr>
               <tr>
                 <td class="link-row SKDecrypt-button">SKDecrypt</td>
+              </tr>
+              <tr>
+                <td class="link-row ABDecrypt-button">ABDecrypt</td>
               </tr>
               <tr>
                 <td class="link-row SSReconstruction-button">SSReconstruction</td>
@@ -698,6 +708,10 @@ export class TaskHandler {
         st = new OpenConfidentiality(this);
       } else if (name === "PETComputation") {
         st = new PETComputation(this);
+      } else if (name === "ABEncrypt") {
+        st = new ABEncrypt(this);
+      } else if (name === "ABDecrypt") {
+        st = new ABDecrypt(this);
       }
     }
     return st;

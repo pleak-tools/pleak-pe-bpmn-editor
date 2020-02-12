@@ -1,0 +1,36 @@
+<div class="panel panel-default stereotype-options-panel" id="ABPublic-stereotype-options" style="display:none;">
+  <div class="panel-heading">
+    <h4><b>ABPublic options</b></h4>
+  </div>
+  <div class="panel-body">
+    <h3 class="stereotype-option" id="ABPublic-dataObjectName"></h3>
+    <div class="form-group" id="ABPublic-groupSelect-form-group">
+      <label class="text-16" for="ABPublic-groupSelect">Key pair ID</label>
+      <select class="form-control stereotype-option" id="ABPublic-groupSelect">
+      </select>
+      <span id="ABPublic-groupSelect-help" class="help-block">Select key pair.</span>
+      <span id="ABPublic-groupSelect-help2" class="help-block">All ABPublic keys of the group must have the same name.</span>
+    </div>
+    <div class="form-group" id="ABPublic-newGroup-form-group">
+      <label class="text-16" for="ABPublic-newGroup">Create new key pair</label>
+      <input class="form-control stereotype-option" type="text" id="ABPublic-newGroup"/>
+      <span class="help-block" id="ABPublic-newGroup-help">Insert key pair name.</span>
+      <br>
+      <button class="btn btn-success pull-right" type="button" id="ABPublic-add-button">Add</button>
+    </div>
+    <div class="form-group" id="ABPublic-attribute-set-form-group">
+      <label class="text-16" for="ABPublic-attribute-set">Add / update attribute set</label>
+      <br/>Use comma as a separator
+      <input class="form-control stereotype-option" type="text" id="ABPublic-attribute-set"/>
+      <span id="ABPublic-attribute-set-help" class="help-block">Attribute set must not be empty.</span>
+      <br/>
+    </div>
+    <hr>
+    <h3>ABPrivate key objects in the same pair</h3>
+    <div class="form-group" id="ABPublic-otherGroupObjects">
+    </div>
+  </div>
+  <div class="panel-footer">
+    <button class="btn btn-default" type="button" id="ABPublic-remove-button">Remove</button>
+  </div>
+</div>

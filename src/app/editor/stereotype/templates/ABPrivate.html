@@ -1,0 +1,41 @@
+<div class="panel panel-default stereotype-options-panel" id="ABPrivate-stereotype-options" style="display:none;">
+  <div class="panel-heading">
+    <h4><b>ABPrivate options</b></h4>
+  </div>
+  <div class="panel-body">
+    <h3 class="stereotype-option" id="ABPrivate-dataObjectName"></h3>
+    <div class="form-group" id="ABPrivate-groupSelect-form-group">
+      <label class="text-16" for="ABPrivate-groupSelect">Key pair ID</label>
+      <select class="form-control stereotype-option" id="ABPrivate-groupSelect">
+      </select>
+      <span id="ABPrivate-groupSelect-help" class="help-block">Select key pair.</span>
+    </div>
+    <div class="form-group" id="ABPrivate-newGroup-form-group">
+      <label class="text-16" for="ABPrivate-newGroup">Create new key pair</label>
+      <input class="form-control stereotype-option" type="text" id="ABPrivate-newGroup"/>
+      <span class="help-block" id="ABPrivate-newGroup-help">Insert key pair name.</span>
+      <br>
+      <button class="btn btn-success pull-right" type="button" id="ABPrivate-add-button">Add</button>
+    </div>
+    <div class="form-group" id="ABPrivate-attribute-set-form-group">
+      <label class="text-16" for="ABPrivate-attribute-set">Add / update attribute set</label>
+      <br/>Use comma as a separator
+      <input class="form-control stereotype-option" type="text" id="ABPrivate-attribute-set"/>
+      <input class="form-control stereotype-option" type="hidden" id="ABPrivate-attribute-set-temp"/>
+      <br/>
+      <button class="btn btn-success pull-right" type="button" id="ABPrivate-attribute-set-update-button">Add / update</button>
+    </div>
+    <div class="form-group" id="ABPrivate-attribute-subset-form-group" style="display:none">
+      <label class="text-16" for="ABPrivate-attribute-subset">Select attribute subset</label>
+      <div id="ABPrivate-attribute-subset">
+      </div>
+    </div>
+    <hr>
+    <h3>ABPublic key objects in the same pair</h3>
+    <div class="form-group" id="ABPrivate-otherGroupObjects">
+    </div>
+  </div>
+  <div class="panel-footer">
+    <button class="btn btn-default" type="button" id="ABPrivate-remove-button">Remove</button>
+  </div>
+</div>

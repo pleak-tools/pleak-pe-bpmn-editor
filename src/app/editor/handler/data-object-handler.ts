@@ -5,6 +5,8 @@ import { ValidationHandler } from "./validation-handler";
 import { DataObjectStereotype } from "../stereotype/data-object-stereotype";
 import { PKPublic } from "../stereotype/stereotypes/PKPublic";
 import { PKPrivate } from "../stereotype/stereotypes/PKPrivate";
+import { ABPublic } from "../stereotype/stereotypes/ABPublic";
+import { ABPrivate } from "../stereotype/stereotypes/ABPrivate";
 
 declare let $: any;
 let is = (element, type) => element.$instanceOf(type);
@@ -48,7 +50,9 @@ export class DataObjectHandler {
 
   supportedStereotypes: string[] = [
     "PKPublic",
-    "PKPrivate"
+    "PKPrivate",
+    "ABPublic",
+    "ABPrivate"
   ];
 
   getDataObjectId() {
@@ -309,8 +313,14 @@ export class DataObjectHandler {
                 <td class="link-row" id="PKPublic-button">PKPublic</td>
               </tr>
               <tr>
-              <td class="link-row" id="PKPrivate-button">PKPrivate</td>
-            </tr>
+                <td class="link-row" id="PKPrivate-button">PKPrivate</td>
+              </tr>
+              <tr>
+                <td class="link-row" id="ABPublic-button">ABPublic</td>
+              </tr>
+              <tr>
+                <td class="link-row" id="ABPrivate-button">ABPrivate</td>
+              </tr>
             </tbody>
           </table>
         </div>
@@ -364,6 +374,10 @@ export class DataObjectHandler {
         st = new PKPublic(this);
       } else if (name == "PKPrivate") {
         st = new PKPrivate(this);
+      } else if (name == "ABPublic") {
+        st = new ABPublic(this);
+      } else if (name == "ABPrivate") {
+        st = new ABPrivate(this);
       }
     }
     return st;

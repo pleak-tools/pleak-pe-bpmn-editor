@@ -1,0 +1,33 @@
+<div class="panel panel-default stereotype-options-panel" id="ABEncrypt-stereotype-options" style="display:none;">
+  <div class="panel-heading">
+    <h4><b>ABEncrypt options</b></h4>
+  </div>
+  <div class="panel-body">
+    <div class="form-group" id="ABEncrypt-inputData-form-group">
+      <label class="text-16" for="ABEncrypt-inputDataSelect">Input data</label>
+      <select class="form-control stereotype-option" id="ABEncrypt-inputDataSelect"></select>
+    </div>
+    <div class="form-group" id="ABEncrypt-key-form-group">
+      <label class="text-16" for="ABEncrypt-keySelect">Key</label>
+      <select class="form-control stereotype-option" id="ABEncrypt-keySelect"></select>
+    </div>
+    <div class="form-group" id="ABEncrypt-attribute-subset-form-group">
+      <label class="text-16" for="ABEncrypt-attribute-subset">Select attribute subset</label>
+      <div id="ABEncrypt-attribute-subset">
+      </div>
+      <span class="help-block" id="ABEncrypt-attribute-subset-help">Select at least one attribute.</span>
+    </div>
+    <div class="form-group">
+      <label class="text-16" for="ABEncrypt-outputObject">Output data</label>
+      <ul class="stereotype-option" id="ABEncrypt-outputObject"></ul>
+    </div>
+    <div class="form-group" id="ABEncrypt-conditions-form-group">
+      <span class="help-block" id="ABEncrypt-conditions-help">This task does not meet all the requirements of this stereotype (exactly 2 inputs and 1 output are required).</span>
+      <span class="help-block" id="ABEncrypt-conditions-help2">Input data and key must be different objects.</span>
+      <span class="help-block" id="ABEncrypt-conditions-help3">Key object must be of type ABPublic (must have ABPublic stereotype).</span>
+    </div>
+  </div>
+  <div class="panel-footer">
+    <button class="btn btn-default" type="button" id="ABEncrypt-remove-button">Remove</button>
+  </div>
+</div>
