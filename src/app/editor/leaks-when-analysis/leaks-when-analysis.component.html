@@ -26,6 +26,21 @@
   <div style="display:block; background-color: white; padding: 10px">
     <h3>BPMN leaks-when analysis failed</h3>
     <span style="font-size: 16px; color: darkred;">{{BPMNLeaksWhenError}}</span>
+    <br>
+  </div>
+</ng-container>
+<div *ngIf="isBPMNLeaksWhenActive()" [class.hidden]="!BPMNLeaksWhenExportReady" style="width:100%; text-align:right; background-color: white; padding: 10px">
+  <a class="btn btn-primary" type="button" id="download-modified-diagram">Export modified model</a>
+</div>
+
+<ng-container *ngIf="isBPMNLeaksWhenActive() && BPMNLeaksWhenScriptErrors.length > 0">
+  <div style="display:block; background-color: white; padding: 10px">
+    <h3>BPMN leaks-when script errors</h3>
+    <ol style="text-align: left" class="BPMNLeaksWhen-errors-list">
+      <li *ngFor="let error of BPMNLeaksWhenScriptErrors" style="font-size: 16px; color: darkred; cursor: pointer" class="BPMNLeaksWhen-errors-list-element BPMN-error-{{error.idx}}">
+        {{error.dOName}} - {{error.error}}
+      </li>
+    </ol>
   </div>
 </ng-container>
 

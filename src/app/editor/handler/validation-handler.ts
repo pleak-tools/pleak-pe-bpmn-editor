@@ -266,6 +266,7 @@ export class ValidationHandler {
   // Remove validation error higlights of tasks
   removeErrorHighlightsOfElement(elementId: string) {
     $('.error-list-element').css("font-weight", "");
+    $('.BPMNLeaksWhen-errors-list-element').css("font-weight", "");
     this.canvas.removeMarker(elementId, 'highlight-general-error');
     this.canvas.removeMarker(elementId, 'highlight-specific-error');
   }

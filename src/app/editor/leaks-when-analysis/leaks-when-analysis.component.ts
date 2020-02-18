@@ -3,6 +3,9 @@ import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../auth/auth.service';
 import { ElementsHandler } from '../handler/elements-handler';
 
+import Modeler from 'bpmn-js/lib/Modeler';
+import { SqlBPMNModdle } from '../bpmn-labels-extension';
+
 declare let $: any;
 let is = (element, type) => element.$instanceOf(type);
 declare function require(name: string);
@@ -52,13 +55,19 @@ export class LeaksWhenAnalysisComponent {
   scriptOfSelectedElement: string = null;
   policyOfSelectedElement: string = null;
 
-  BPMNLeaksWhenError: string = null;
+  SQLLeaksWhenResult: any[] = [];
   SQLLeaksWhenError: string = null;
 
-  SQLLeaksWhenResult: any[] = [];
   BPMNLeaksWhenResult: any = null;
+  BPMNLeaksWhenExportReady: boolean = false;
+  BPMNLeaksWhenError: string = null;
+  BPMNLeaksWhenScriptErrors: any[] = [];
 
   simpleLeaksWhenMessageFlowIndex: number = 0;
+
+  private tempModeler: any;
+  private tempModeling: any;
+  private tempElementRegistry: any = {};
 
   init(): void {
     if (this.viewer) {
@@ -243,9 +252,8 @@ export class LeaksWhenAnalysisComponent {
     }
 
     if (this.SelectedTarget.simplificationDto) {
-      const processedTarget = this.SelectedTarget.simplificationDto.name.trim();
       this.simpleLeaksWhenMessageFlowIndex = 0;
-      this.runLeaksWhenAnalysis(processedTarget, this.SelectedTarget.selectedTargetsForLeaksWhen[0]);
+      this.runLeaksWhenAnalysis(this.SelectedTarget.simplificationDto.name, this.SelectedTarget.selectedTargetsForLeaksWhen[0]);
     } else {
       this.leaksWhenAnalysisInprogress = false;
       this.SQLLeaksWhenError = "Select at least one data object to run the analysis."
@@ -474,6 +482,8 @@ export class LeaksWhenAnalysisComponent {
     this.init();
     this.scriptOfSelectedElement = null;
     this.policyOfSelectedElement = null;
+    this.BPMNLeaksWhenExportReady = false;
+    this.BPMNLeaksWhenScriptErrors = [];
     this.elementsHandler.terminateElementsEditing();
     if (this.viewer) {
       this.sendBPMNLeaksWhenAnalysisRequest();
@@ -483,36 +493,189 @@ export class LeaksWhenAnalysisComponent {
   }
 
   sendBPMNLeaksWhenAnalysisRequest(): void {
-    if (this.BPMNLeaksWhenResult && !this.areThereUnsavedLeaksWhenChanges() && !this.elementsHandler.areThereUnsavedChangesOnModel()) {
-      this.showBPMNLeaksWhenAnalysisResults(this.BPMNLeaksWhenResult);
-    } else {
-      this.leaksWhenAnalysisInprogress = true;
-      this.viewer.saveXML(
-        {
-          format: true
-        },
-        (err: any, xml: string) => {
-          if (err) {
-            this.leaksWhenAnalysisInprogress = false;
-            this.BPMNLeaksWhenError = "Unable to analyse the model. Make sure the model file is not corrupt.";
-            console.log(err);
-          } else {
-            this.BPMNLeaksWhenError = null;
-            this.http.post(config.backend.host + '/rest/sql-privacy/analyze-leaks-when', { model: xml }, AuthService.loadRequestOptions()).subscribe(
-              (response: any) => {
-                this.BPMNLeaksWhenResult = JSON.parse(response.result);
-                this.showBPMNLeaksWhenAnalysisResults(this.BPMNLeaksWhenResult);
-                this.BPMNLeaksWhenError = null;
-              },
-              () => {
-                this.leaksWhenAnalysisInprogress = false;
-                this.BPMNLeaksWhenResult = null;
-                this.BPMNLeaksWhenError = "Unable to analyse the model. Make sure the model and all input scripts are correct.";
-              }
-            );
-          }
+    this.checkForBPMNLeaksWhenErrors().then(() => {
+      if (this.BPMNLeaksWhenResult && !this.areThereUnsavedLeaksWhenChanges() && !this.elementsHandler.areThereUnsavedChangesOnModel()) {
+        this.showBPMNLeaksWhenAnalysisResults(this.BPMNLeaksWhenResult);
+      } else {
+        this.leaksWhenAnalysisInprogress = true;
+
+        this.viewer.saveXML(
+          {
+            format: true
+          },
+          (err: any, xml: string) => {
+            if (err) {
+              this.leaksWhenAnalysisInprogress = false;
+              this.BPMNLeaksWhenError = "Unable to analyse the model. Make sure the model file is not corrupt.";
+              console.log(err);
+            } else {
+              this.formatModelForBPMNLeaksWhenAnalysis(xml).then((modified) => {
+                if (modified) {
+                  this.BPMNLeaksWhenError = null;
+                  this.tempModeler.saveXML(
+                    {
+                      format: true
+                    },
+                    (err2: any, xml2: string) => {
+                      if (!err2) {
+                        console.log("modifications done")
+                        let encodedData = encodeURIComponent(xml2);
+                        if (xml2) {
+                          $(document).find('#download-modified-diagram').attr({
+                            'href': 'data:application/bpmn20-xml;charset=UTF-8,' + encodedData,
+                            'download': "modified_" + $('#fileName').text()
+                          });
+                        }
+                        this.analyseBPMNLeaksWhen(xml2).then((errors) => {
+                          if (errors) {
+                            this.BPMNLeaksWhenExportReady = true;
+                          }
+                        });
+                      }
+                    });
+                } else {
+                  console.log("no modifications done")
+                  this.analyseBPMNLeaksWhen(xml).then((errors) => {
+
+                  });
+                }
+              });
+            }
+          });
+      }
+    }).catch((errors) => {
+      this.BPMNLeaksWhenScriptErrors = errors;
+      for (let error of this.BPMNLeaksWhenScriptErrors) {
+        $(document).on('click', '.BPMN-error-' + error.idx, (e) => {
+          this.elementsHandler.validationHandler.highlightObjectWithErrorByIds([error.taskId], []);
+          $(e.target).css("font-weight", "bold");
         });
-    }
+      }
+    });
+  }
+
+  analyseBPMNLeaksWhen(xml: string): Promise<any> {
+    return new Promise((resolve) => {
+      this.http.post(config.backend.host + '/rest/sql-privacy/analyze-leaks-when', { model: xml }, AuthService.loadRequestOptions()).subscribe(
+        (response: any) => {
+          this.BPMNLeaksWhenResult = JSON.parse(response.result);
+          this.showBPMNLeaksWhenAnalysisResults(this.BPMNLeaksWhenResult);
+          this.BPMNLeaksWhenError = null;
+          resolve(false);
+        },
+        () => {
+          this.leaksWhenAnalysisInprogress = false;
+          this.BPMNLeaksWhenResult = null;
+          this.BPMNLeaksWhenError = "Unable to analyse the model. Make sure the model and all input scripts are correct.";
+          resolve(true);
+        }
+      );
+    });
+  }
+
+  formatModelForBPMNLeaksWhenAnalysis(xml: string): Promise<any> {
+    return new Promise((resolve) => {
+      let allMessageFlowHandlers = this.elementsHandler.getAllModelMessageFlowHandlers();
+      let regex = new RegExp(/\b(?<!\.|\")[A-Za-z0-9_[\]]+(?!\(|\")\b/, 'gm');
+
+      this.tempModeler = null;
+      this.tempModeling = null;
+      this.tempModeler = new Modeler({
+        container: '#tempCanvas',
+        moddleExtensions: {
+          sqlExt: SqlBPMNModdle
+        }
+      });
+      let flag = false;
+      this.tempModeler.importXML(xml, () => {
+        this.tempElementRegistry = this.tempModeler.get('elementRegistry');
+        this.tempModeling = this.tempModeler.get('modeling');
+        for (let messageFlowHandler of allMessageFlowHandlers) {
+          let inputDataObjects = messageFlowHandler.getMessageFlowInputObjects();
+          let outputDataObjects = messageFlowHandler.getMessageFlowOutputObjects();
+          let inputDataObjectsNames = inputDataObjects.map(obj => obj.businessObject.name.trim()).sort();
+          for (let outputDataObject of outputDataObjects) {
+            if (outputDataObject.businessObject && outputDataObject.businessObject.name) {
+              if (inputDataObjectsNames.indexOf(outputDataObject.businessObject.name.trim()) !== -1) {
+                let dataObject = this.tempElementRegistry.get(outputDataObject.id);
+                let dataObjectName = (' ' + dataObject.businessObject.name).slice(1);
+                let prefix = "x_" + dataObject.id.replace("DataObjectReference_", "") + "_";
+                // Update scripts related to dataObject
+                let dataObjectHandler = this.elementsHandler.getDataObjectHandlerByDataObjectId(outputDataObject.id);
+                let outgoingParentTasks = dataObjectHandler.getDataObjectOutgoingParentTasks();
+                for (let outgoingTask of outgoingParentTasks) {
+                  if (outgoingTask && outgoingTask.sqlScript) {
+                    let taskObject = this.tempElementRegistry.get(outgoingTask.id);
+                    taskObject.businessObject.sqlScript = taskObject.businessObject.sqlScript.replace(regex, (x) => {
+                      if (dataObjectName && x.trim() == dataObjectName.trim()) {
+                        return prefix + x;
+                      } else {
+                        return x;
+                      }
+                    });
+                  }
+                }
+                // Update dataObject's name
+                this.tempModeling.updateProperties(dataObject, {
+                  name: prefix + dataObjectName.trim()
+                });
+                flag = true;
+              }
+            }
+          }
+        }
+        resolve(flag);
+      });
+    });
+  }
+
+  checkForBPMNLeaksWhenErrors(): Promise<any> {
+    return new Promise((resolve, reject) => {
+      let errors = [];
+      let regex = new RegExp(/\b(?<!\.|\")[A-Za-z0-9_[\]]+(?!\(|\")\b/, 'gm');
+      let allTaskHandlers = this.elementsHandler.getAllModelTaskHandlers();
+      let i = 0;
+      for (let taskHandler of allTaskHandlers) {
+        let task = taskHandler.task;
+        if (task && task.sqlScript) {
+          let inputDataObjectsNames = taskHandler.getTaskInputObjects().map((dO) => dO.businessObject.name);
+          let outputDataObjectsNames = taskHandler.getTaskOutputObjects().map((dO) => dO.businessObject.name);
+          if (task.sqlScript.indexOf("=") === -1) {
+            for (let dO of task.sqlScript.match(regex)) {
+              if (inputDataObjectsNames.indexOf(dO) === -1) {
+                errors.push({ taskId: task.id, dOName: dO, type: "input", error: "No such input data object", idx: i });
+                i++;
+              }
+            }
+          } else {
+            let rows = task.sqlScript.split('\n');
+            for (let row of rows) {
+              let splits = row.split('=');
+              let outputs = splits[0];
+              let inputs = splits[1];
+
+              for (let dO of inputs.match(regex)) {
+                if (inputDataObjectsNames.indexOf(dO) === -1) {
+                  errors.push({ taskId: task.id, dOName: dO, type: "input", error: "No such input data object", idx: i });
+                  i++;
+                }
+              }
+              for (let dO of outputs.match(regex)) {
+                if (outputDataObjectsNames.indexOf(dO) === -1) {
+                  errors.push({ taskId: task.id, dOName: dO, type: "output", error: "No such output data object", idx: i });
+                  i++;
+                }
+              }
+            }
+          }
+        }
+      }
+      if (errors.length > 0) {
+        reject(errors);
+      } else {
+        resolve();
+      }
+    });
   }
 
   showBPMNLeaksWhenAnalysisResults(response: any): void {
@@ -679,8 +842,7 @@ export class LeaksWhenAnalysisComponent {
                     this.simpleLeaksWhenMessageFlowIndex++;
                     if (this.SelectedTarget.selectedTargetsForLeaksWhen[this.simpleLeaksWhenMessageFlowIndex]) {
                       let currentIndex = this.simpleLeaksWhenMessageFlowIndex;
-                      const processedTarget = this.SelectedTarget.simplificationDto.name.trim();
-                      this.runLeaksWhenAnalysis(processedTarget, this.SelectedTarget.selectedTargetsForLeaksWhen[currentIndex]);
+                      this.runLeaksWhenAnalysis(this.SelectedTarget.simplificationDto.name, this.SelectedTarget.selectedTargetsForLeaksWhen[currentIndex]);
                     } else {
                       this.leaksWhenAnalysisInprogress = false;
                       this.SQLLeaksWhenError = null;
@@ -745,7 +907,7 @@ export class LeaksWhenAnalysisComponent {
 
   sendLeaksWhenRequest(diagramId: string, sqlCommands, processedLabels, policy, runNumber, simplificationTarget: string, selectedDataObjectName) {
     const modelPath = `${diagramId}/run_${runNumber}/${processedLabels[0]}`;
-    return this.http.post(config.leakswhen.host + config.leakswhen.report, { diagram_id: diagramId, simplificationTarget: simplificationTarget, run_number: runNumber, selected_dto: processedLabels[0], model: modelPath, targets: processedLabels.join(','), sql_script: sqlCommands, policy: policy })
+    return this.http.post(config.leakswhen.host + config.leakswhen.report, { diagram_id: diagramId, simplificationTarget: simplificationTarget.split(' ').map(word => word.toLowerCase()).join('_'), run_number: runNumber, selected_dto: processedLabels[0], model: modelPath, targets: processedLabels.join(','), sql_script: sqlCommands, policy: policy })
       .toPromise()
       .then(
         (res: any) => {
