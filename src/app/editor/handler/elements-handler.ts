@@ -140,7 +140,7 @@ export class ElementsHandler {
               });
             }
             if (toBeEditedelementHandler.length > 0) {
-              if (!this.isPEBPMModeActive() || !this.canEdit && (is(e.element.businessObject, 'bpmn:Task') || is(e.element.businessObject, 'bpmn:DataObjectReference') || is(e.element.businessObject, 'bpmn:DataStoreReference') || is(e.element.businessObject, 'bpmn:MessageFlow'))) {
+              if (!this.canEdit && (is(e.element.businessObject, 'bpmn:Task') || is(e.element.businessObject, 'bpmn:DataObjectReference') || is(e.element.businessObject, 'bpmn:DataStoreReference') || is(e.element.businessObject, 'bpmn:MessageFlow'))) {
                 toBeEditedelementHandler[0].initPublicStereotypeView();
               } else {
                 toBeEditedelementHandler[0].initStereotypeEditProcess();
@@ -266,10 +266,13 @@ export class ElementsHandler {
       $(document).find('#stereotype-options-hide-button').on('click', () => {
         elementHandler.checkForUnsavedChanges();
       });
-      $(document).find('#stereotype-options-save-button').off('click');
-      $(document).find('#stereotype-options-save-button').on('click', () => {
-        this.saveStereotypes(elementHandler);
-      });
+      if (this.canEdit) {
+        $(document).find('#stereotype-options-save-button').removeClass('hidden');
+        $(document).find('#stereotype-options-save-button').off('click');
+        $(document).find('#stereotype-options-save-button').on('click', () => {
+          this.saveStereotypes(elementHandler);
+        });
+      }
       $(document).find('#stereotype-options-sidebar').removeClass('hidden');
     }
   }

@@ -3,12 +3,12 @@
 <div id="sidebar">
 
   <button type="button" class="btn btn-default" (click)="setPEBPMNMode()"
-    [disabled]=isPEBPMModeActive()>PE-BPMN</button>
+    [disabled]="isPEBPMModeActive() || !modelLoaded()">PE-BPMN</button>
 
-  <button type="button" class="btn btn-default" (click)="setBPMNLeaksWhenMode()" [disabled]=isBPMNLeaksWhenActive()>BPMN
+  <button type="button" class="btn btn-default" (click)="setBPMNLeaksWhenMode()" [disabled]="isBPMNLeaksWhenActive() || !modelLoaded()">BPMN
     leaks-when</button>
 
-  <button type="button" class="btn btn-default" (click)="setSQLLeaksWhenMode()" [disabled]=isSQLLeaksWhenActive()>SQL
+  <button type="button" class="btn btn-default" (click)="setSQLLeaksWhenMode()" [disabled]="isSQLLeaksWhenActive() || !modelLoaded()">SQL
     leaks-when</button>
 
   <hr>
@@ -30,7 +30,7 @@
       </div>
       <div class="panel-body" id="stereotype-options"></div>
       <div class="panel-footer blue-panel-footer text-right">
-        <button class="btn btn-success" type="button" id="stereotype-options-save-button">Save</button>
+        <button class="btn btn-success hidden" type="button" id="stereotype-options-save-button">Save</button>
       </div>
     </div>
     <div class="analysis-spinner" style="display:none">

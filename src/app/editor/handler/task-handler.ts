@@ -211,6 +211,7 @@ export class TaskHandler {
       sType.initStereotypePublicView();
     }
     this.initElementStereotypeSettings();
+    this.initStereotypeSettingsPanel();
     this.beingEdited = false;
     this.stereotypeSelectorHidden = true;
     this.stereotypeSelector = null;

@@ -12,7 +12,7 @@
     "bpmn-js": "^2.5.1"
   },
   "peerDependencies": {
-    "@angular/common": "^5.2.0",
-    "@angular/http": "^5.2.0"
+    "@angular/common": "^8.2.13",
+    "@angular/http": "^8.2.13"
   }
 }
