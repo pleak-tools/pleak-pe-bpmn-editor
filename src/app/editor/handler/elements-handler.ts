@@ -140,7 +140,7 @@ export class ElementsHandler {
               });
             }
             if (toBeEditedelementHandler.length > 0) {
-              if (!this.canEdit && (is(e.element.businessObject, 'bpmn:Task') || is(e.element.businessObject, 'bpmn:DataObjectReference') || is(e.element.businessObject, 'bpmn:DataStoreReference') || is(e.element.businessObject, 'bpmn:MessageFlow'))) {
+              if (!this.isPEBPMModeActive() || !this.canEdit && (is(e.element.businessObject, 'bpmn:Task') || is(e.element.businessObject, 'bpmn:DataObjectReference') || is(e.element.businessObject, 'bpmn:DataStoreReference') || is(e.element.businessObject, 'bpmn:MessageFlow'))) {
                 toBeEditedelementHandler[0].initPublicStereotypeView();
               } else {
                 toBeEditedelementHandler[0].initStereotypeEditProcess();
