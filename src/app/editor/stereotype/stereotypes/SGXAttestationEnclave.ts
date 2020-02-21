@@ -6,7 +6,6 @@ import { SGXComputation } from "./SGXComputation";
 import { SGXProtect } from "./SGXProtect";
 
 declare let $: any;
-let is = (element, type) => element.$instanceOf(type);
 
 export class SGXAttestationEnclave extends TaskStereotype {
 

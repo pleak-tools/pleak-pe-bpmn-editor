@@ -3,6 +3,9 @@ import { TaskStereotype, TaskStereotypeGroupObject } from "../task-stereotype";
 import { TaskHandler } from "../../handler/task-handler";
 
 declare let $: any;
+declare let CodeMirror: any;
+
+let inputScriptCodeMirror;
 
 export class SSComputation extends TaskStereotype {
 
@@ -28,9 +31,13 @@ export class SSComputation extends TaskStereotype {
     }
   }
 
+  getSavedStereotypeScript() {
+    return this.task.sqlScript != null ? this.task.sqlScript : "";
+  }
+
   getCurrentStereotypeSettings() {
     let group = this.settingsPanelContainer.find('#SSComputation-groupSelect').val();
-    let inputScript = this.settingsPanelContainer.find('#SSComputation-inputScript').val();
+    let inputScript = this.getSavedStereotypeSettings() ? this.getSavedStereotypeSettings().inputScript : ""; // this.settingsPanelContainer.find('#SSComputation-inputScript').val();
     let inputObjects = this.getTaskInputObjects();
     let inputs = [];
     let groupTasks = this.getSSComputationGroupTasks(group);
@@ -85,7 +92,7 @@ export class SSComputation extends TaskStereotype {
     let groups;
     let inputObjects = "";
     let outputObjects = "";
-    let inputScript;
+    let inputScript = this.getSavedStereotypeScript();
 
     this.loadAllSSComputationGroupsTasks();
 
@@ -110,7 +117,7 @@ export class SSComputation extends TaskStereotype {
       groupTasks = this.getSSComputationGroupTasks(selectedGroupId);
     }
 
-    inputScript = this.getSSComputationGroupInputScript(selectedGroupId);
+    // inputScript = this.getSSComputationGroupInputScript(selectedGroupId);
     this.highlightSSComputationGroupMembersAndTheirInputsOutputs(selectedGroupId);
 
     for (let group of SSComputationGroups) {
@@ -226,6 +233,21 @@ export class SSComputation extends TaskStereotype {
 
     this.settingsPanelContainer.find('#SSComputation-groupSelect').html(groups);
     this.settingsPanelContainer.find('#SSComputation-inputScript').val(inputScript);
+    if (inputScriptCodeMirror) {
+      inputScriptCodeMirror.toTextArea();
+    }
+    inputScriptCodeMirror = CodeMirror.fromTextArea(document.getElementById("SSComputation-inputScript"), {
+      mode: "text/x-mysql",
+      readOnly: true,
+      lineNumbers: false,
+      showCursorWhenSelecting: true,
+      lineWiseCopyCut: false,
+      height: 100
+    });
+    setTimeout(() => {
+      inputScriptCodeMirror.refresh();
+    }, 10);
+
     this.settingsPanelContainer.find('#SSComputation-inputObjects').html(inputObjects);
     this.settingsPanelContainer.find('#SSComputation-outputObjects').html(outputObjects);
     this.settingsPanelContainer.find('#SSComputation-newGroup').html('');
@@ -235,6 +257,9 @@ export class SSComputation extends TaskStereotype {
 
   terminateStereotypeSettings() {
     super.terminateStereotypeSettings();
+    if (inputScriptCodeMirror) {
+      inputScriptCodeMirror.toTextArea();
+    }
     this.terminateAddGroupButton();
     this.terminateGroupSelectDropdown();
     this.removeAllSSComputationGroupsAndTheirInputsOutputsHighlights();
@@ -290,7 +315,7 @@ export class SSComputation extends TaskStereotype {
   removeStereotype() {
     if (confirm('Are you sure you wish to remove the stereotype?')) {
       let group = this.getGroup();
-      let inputScript = this.getSSComputationGroupInputScript(group);
+      let inputScript = this.getSavedStereotypeScript(); // this.getSSComputationGroupInputScript(group);
       if (this.getSSComputationGroupTasks(group).length > 1 && this.getSavedStereotypeSettings().inputs) {
         let inputs = [];
         let savedInputs = this.getSSComputationGroupInputs(group);
@@ -522,25 +547,25 @@ export class SSComputation extends TaskStereotype {
     return objects;
   }
 
-  getSSComputationGroupInputScript(group: string) {
-    let script = "";
-    if (group != null) {
-      let groupTasks = this.getSSComputationGroupTasks(group);
-      if (groupTasks.length === 1) {
-        if (groupTasks[0].businessObject.SSComputation) {
-          script = JSON.parse(groupTasks[0].businessObject.SSComputation).inputScript;
-        }
-      } else {
-        for (let groupTask of groupTasks) {
-          if (groupTask.id != this.task.id) {
-            script = JSON.parse(groupTask.businessObject.SSComputation).inputScript;
-            break;
-          }
-        }
-      }
-    }
-    return script;
-  }
+  // getSSComputationGroupInputScript(group: string) {
+  //   let script = "";
+  //   if (group != null) {
+  //     let groupTasks = this.getSSComputationGroupTasks(group);
+  //     if (groupTasks.length === 1) {
+  //       if (groupTasks[0].businessObject.SSComputation) {
+  //         script = JSON.parse(groupTasks[0].businessObject.SSComputation).inputScript;
+  //       }
+  //     } else {
+  //       for (let groupTask of groupTasks) {
+  //         if (groupTask.id != this.task.id) {
+  //           script = JSON.parse(groupTask.businessObject.SSComputation).inputScript;
+  //           break;
+  //         }
+  //       }
+  //     }
+  //   }
+  //   return script;
+  // }
 
   getSSComputationGroupInputs(group: string) {
     let inputs = [];

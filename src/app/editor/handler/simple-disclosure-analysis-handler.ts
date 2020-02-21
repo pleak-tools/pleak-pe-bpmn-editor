@@ -4,7 +4,6 @@ import { ElementsHandler } from "./elements-handler";
 import { ValidationHandler } from './validation-handler';
 
 declare let $: any;
-let is = (element, type) => element.$instanceOf(type);
 
 export class SimpleDisclosureAnalysisHandler {
 

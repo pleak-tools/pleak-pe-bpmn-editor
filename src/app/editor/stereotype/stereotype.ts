@@ -2,7 +2,6 @@ import * as Viewer from 'bpmn-js/lib/NavigatedViewer';
 import { ValidationHandler, ValidationErrorObject } from '../handler/validation-handler';
 
 declare let $: any;
-let is = (element, type) => element.$instanceOf(type);
 
 declare function require(name: string);
 let config = require('../../../config.json');

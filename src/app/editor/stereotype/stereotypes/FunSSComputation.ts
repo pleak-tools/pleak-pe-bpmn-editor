@@ -3,7 +3,6 @@ import { TaskStereotype, TaskStereotypeGroupObject } from "../task-stereotype";
 import { TaskHandler } from "../../handler/task-handler";
 
 declare let $: any;
-let is = (element, type) => element.$instanceOf(type);
 
 export class FunSSComputation extends TaskStereotype {
 

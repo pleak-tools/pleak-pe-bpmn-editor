@@ -4,7 +4,6 @@ import { DataObjectHandler } from "../../handler/data-object-handler";
 import { PKPrivate } from "./PKPrivate";
 
 declare let $: any;
-let is = (element, type) => element.$instanceOf(type);
 
 interface PKPublicGroupDataObject {
   groupId: string;

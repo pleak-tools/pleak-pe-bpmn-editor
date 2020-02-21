@@ -3,7 +3,9 @@ import { TaskStereotype } from "../task-stereotype";
 import { TaskHandler } from "../../handler/task-handler";
 
 declare let $: any;
-let is = (element, type) => element.$instanceOf(type);
+declare let CodeMirror: any;
+
+let inputScriptCodeMirror;
 
 export class DifferentialPrivacy extends TaskStereotype {
 
@@ -24,12 +26,16 @@ export class DifferentialPrivacy extends TaskStereotype {
     }
   }
 
+  getSavedStereotypeScript() {
+    return this.task.sqlScript != null ? this.task.sqlScript : "";
+  }
+
   // Returns an object with properties:
   // inputScript
   // delta
   // epsilons
   getCurrentStereotypeSettings() {
-    let inputScript = this.settingsPanelContainer.find('#DifferentialPrivacy-inputScript').val();
+    let inputScript = this.getSavedStereotypeSettings() ? this.getSavedStereotypeSettings().inputScript : ""; // this.settingsPanelContainer.find('#DifferentialPrivacy-inputScript').val();
     let delta = this.settingsPanelContainer.find('#DifferentialPrivacy-delta').val();
     let epsilons = $("input[name='epsilons\\[\\]']").map(function () {
       let input = $(this).data('input');
@@ -51,7 +57,7 @@ export class DifferentialPrivacy extends TaskStereotype {
 
     this.highlightTaskInputAndOutputObjects();
 
-    let inputScript;
+    let inputScript = this.getSavedStereotypeScript();
     let delta = 0;
     let epsilons;
     let inputObjects = "";
@@ -59,7 +65,7 @@ export class DifferentialPrivacy extends TaskStereotype {
 
     let savedStereotypeSettings = this.getSavedStereotypeSettings();
     if (this.getSavedStereotypeSettings() != null) {
-      inputScript = savedStereotypeSettings.inputScript;
+      // inputScript = savedStereotypeSettings.inputScript;
       delta = savedStereotypeSettings.delta;
       epsilons = savedStereotypeSettings.epsilons;
     }
@@ -91,6 +97,21 @@ export class DifferentialPrivacy extends TaskStereotype {
     epsilonPairsTable += '</tbody></table>';
 
     this.settingsPanelContainer.find('#DifferentialPrivacy-inputScript').val(inputScript);
+    if (inputScriptCodeMirror) {
+      inputScriptCodeMirror.toTextArea();
+    }
+    inputScriptCodeMirror = CodeMirror.fromTextArea(document.getElementById("DifferentialPrivacy-inputScript"), {
+      mode: "text/x-mysql",
+      readOnly: true,
+      lineNumbers: false,
+      showCursorWhenSelecting: true,
+      lineWiseCopyCut: false,
+      height: 100
+    });
+    setTimeout(() => {
+      inputScriptCodeMirror.refresh();
+    }, 10);
+
     this.settingsPanelContainer.find('#DifferentialPrivacy-inputObjects').html(inputObjects);
     this.settingsPanelContainer.find('#DifferentialPrivacy-outputObjects').html(outputObjects);
     this.settingsPanelContainer.find('#DifferentialPrivacy-delta').val(delta);
@@ -100,6 +121,9 @@ export class DifferentialPrivacy extends TaskStereotype {
 
   terminateStereotypeSettings() {
     super.terminateStereotypeSettings();
+    if (inputScriptCodeMirror) {
+      inputScriptCodeMirror.toTextArea();
+    }
     this.removeTaskInputsOutputsHighlights();
   }
 

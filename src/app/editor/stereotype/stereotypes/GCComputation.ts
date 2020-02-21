@@ -3,7 +3,9 @@ import { TaskStereotype, TaskStereotypeGroupObject } from "../task-stereotype";
 import { TaskHandler } from "../../handler/task-handler";
 
 declare let $: any;
-let is = (element, type) => element.$instanceOf(type);
+declare let CodeMirror: any;
+
+let inputScriptCodeMirror;
 
 export class GCComputation extends TaskStereotype {
 
@@ -29,12 +31,16 @@ export class GCComputation extends TaskStereotype {
     }
   }
 
+  getSavedStereotypeScript() {
+    return this.task.sqlScript != null ? this.task.sqlScript : "";
+  }
+
   // Returns an object with properties:
   // groupId
   // inputScript
   getCurrentStereotypeSettings() {
     let group = this.settingsPanelContainer.find('#GCComputation-groupSelect').val();
-    let inputScript = this.settingsPanelContainer.find('#GCComputation-inputScript').val();
+    let inputScript = this.getSavedStereotypeSettings() ? this.getSavedStereotypeSettings().inputScript : ""; // this.settingsPanelContainer.find('#GCComputation-inputScript').val();
     return { groupId: group, inputScript: inputScript };
   }
 
@@ -63,7 +69,7 @@ export class GCComputation extends TaskStereotype {
     let groups;
     let inputObjects = "";
     let outputObjects = "";
-    let inputScript;
+    let inputScript = this.getSavedStereotypeScript();
 
     this.loadAllGCComputationGroupsTasks();
 
@@ -81,7 +87,7 @@ export class GCComputation extends TaskStereotype {
       }
     }
 
-    inputScript = this.getGCComputationGroupInputScript(selectedGroupId);
+    // inputScript = this.getGCComputationGroupInputScript(selectedGroupId);
     this.highlightGCComputationGroupMembersAndTheirInputsOutputs(selectedGroupId);
 
     for (let group of this.getModelGCComputationGroups()) {
@@ -138,6 +144,21 @@ export class GCComputation extends TaskStereotype {
 
     this.settingsPanelContainer.find('#GCComputation-groupSelect').html(groups);
     this.settingsPanelContainer.find('#GCComputation-inputScript').val(inputScript);
+    if (inputScriptCodeMirror) {
+      inputScriptCodeMirror.toTextArea();
+    }
+    inputScriptCodeMirror = CodeMirror.fromTextArea(document.getElementById("GCComputation-inputScript"), {
+      mode: "text/x-mysql",
+      readOnly: true,
+      lineNumbers: false,
+      showCursorWhenSelecting: true,
+      lineWiseCopyCut: false,
+      height: 100
+    });
+    setTimeout(() => {
+      inputScriptCodeMirror.refresh();
+    }, 10);
+
     this.settingsPanelContainer.find('#GCComputation-inputObjects').html(inputObjects);
     this.settingsPanelContainer.find('#GCComputation-outputObjects').html(outputObjects);
     this.settingsPanelContainer.find('#GCComputation-newGroup').html('');
@@ -147,6 +168,9 @@ export class GCComputation extends TaskStereotype {
 
   terminateStereotypeSettings() {
     super.terminateStereotypeSettings();
+    if (inputScriptCodeMirror) {
+      inputScriptCodeMirror.toTextArea();
+    }
     this.terminateAddGroupButton();
     this.terminateGroupSelectDropdown();
     this.removeAllGCComputationGroupsAndTheirInputsOutputsHighlights();
@@ -387,25 +411,25 @@ export class GCComputation extends TaskStereotype {
     return objects;
   }
 
-  getGCComputationGroupInputScript(group: string) {
-    let script = "";
-    if (group != null) {
-      let groupTasks = this.getGCComputationGroupTasks(group);
-      if (groupTasks.length === 1) {
-        if (groupTasks[0].businessObject.GCComputation) {
-          script = JSON.parse(groupTasks[0].businessObject.GCComputation).inputScript;
-        }
-      } else {
-        for (let groupTask of groupTasks) {
-          if (groupTask.id != this.task.id) {
-            script = JSON.parse(groupTask.businessObject.GCComputation).inputScript;
-            break;
-          }
-        }
-      }
-    }
-    return script;
-  }
+  // getGCComputationGroupInputScript(group: string) {
+  //   let script = "";
+  //   if (group != null) {
+  //     let groupTasks = this.getGCComputationGroupTasks(group);
+  //     if (groupTasks.length === 1) {
+  //       if (groupTasks[0].businessObject.GCComputation) {
+  //         script = JSON.parse(groupTasks[0].businessObject.GCComputation).inputScript;
+  //       }
+  //     } else {
+  //       for (let groupTask of groupTasks) {
+  //         if (groupTask.id != this.task.id) {
+  //           script = JSON.parse(groupTask.businessObject.GCComputation).inputScript;
+  //           break;
+  //         }
+  //       }
+  //     }
+  //   }
+  //   return script;
+  // }
 
   /** Simple disclosure analysis functions */
   getDataObjectVisibilityStatus(dataObjectId: string) {

@@ -4,7 +4,6 @@ import { TaskHandler } from "../../handler/task-handler";
 import { SGXAttestationEnclave } from "./SGXAttestationEnclave";
 
 declare let $: any;
-let is = (element, type) => element.$instanceOf(type);
 
 export class SGXAttestationChallenge extends TaskStereotype {
 

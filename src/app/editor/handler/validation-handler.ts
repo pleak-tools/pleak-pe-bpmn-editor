@@ -8,10 +8,8 @@ import { SimpleDisclosureAnalysisHandler } from "./simple-disclosure-analysis-ha
 import { ExtendedSimpleDisclosureAnalysisHandler } from "./extended-simple-disclosure-analysis-handler";
 import { DataDependenciesAnalysisHandler } from './data-dependencies-analysis-handler';
 import { LeakageDetectionComponent } from '../leakage-detection/leakage-detection.component';
-import { LeaksWhenAnalysisComponent } from '../leaks-when-analysis/leaks-when-analysis.component';
 
 declare let $: any;
-let is = (element, type) => element.$instanceOf(type);
 
 export interface ValidationErrorObject {
   error: string;

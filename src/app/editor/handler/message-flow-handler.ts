@@ -7,7 +7,6 @@ import { SecureChannel } from "../stereotype/stereotypes/SecureChannel";
 import { CommunicationProtection } from "../stereotype/stereotypes/CommunicationProtection";
 
 declare let $: any;
-let is = (element, type) => element.$instanceOf(type);
 
 export class MessageFlowHandler {
 

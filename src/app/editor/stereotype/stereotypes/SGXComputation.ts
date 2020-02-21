@@ -5,7 +5,9 @@ import { SGXProtect } from "./SGXProtect";
 import { SGXAttestationEnclave } from "./SGXAttestationEnclave";
 
 declare let $: any;
-let is = (element, type) => element.$instanceOf(type);
+declare let CodeMirror: any;
+
+let inputScriptCodeMirror;
 
 export class SGXComputation extends TaskStereotype {
 
@@ -31,6 +33,10 @@ export class SGXComputation extends TaskStereotype {
     }
   }
 
+  getSavedStereotypeScript() {
+    return this.task.sqlScript != null ? this.task.sqlScript : "";
+  }
+
   // Returns an object with properties:
   // groupId
   // inputScript
@@ -43,7 +49,7 @@ export class SGXComputation extends TaskStereotype {
     let inputScript;
     if (this.settingsPanelContainer.find('#SGXComputation-inputScriptType-script').is('.link-selected')) {
       inputScriptType = "script";
-      inputScriptContents = this.settingsPanelContainer.find('#SGXComputation-inputScript').val();
+      inputScriptContents = this.getSavedStereotypeSettings() ? this.getSavedStereotypeSettings().inputScript : ""; // this.settingsPanelContainer.find('#SGXComputation-inputScript').val();
     } else if (this.settingsPanelContainer.find('#SGXComputation-inputScriptType-stereotype').is('.link-selected')) {
       inputScriptType = "stereotype";
       inputScriptContents = this.settingsPanelContainer.find('#SGXComputation-inputStereotypeSelect').val();
@@ -120,7 +126,7 @@ export class SGXComputation extends TaskStereotype {
     }
 
     if (inputScript && inputScript.type && inputScript.type == "script") {
-      this.settingsPanelContainer.find('#SGXComputation-inputScript').val(inputScript.contents);
+      this.settingsPanelContainer.find('#SGXComputation-inputScript').val(this.getSavedStereotypeScript());
       this.settingsPanelContainer.find('#SGXComputation-inputScriptType-stereotype').removeClass('link-selected').addClass('link-not-selected');
       this.settingsPanelContainer.find('#SGXComputation-inputScriptType-script').removeClass('link-not-selected').addClass('link-selected');
       this.settingsPanelContainer.find('#SGXComputation-scriptInput').show();
@@ -133,11 +139,27 @@ export class SGXComputation extends TaskStereotype {
       this.settingsPanelContainer.find('#SGXComputation-stereotypeInput').show();
       this.settingsPanelContainer.find('#SGXComputation-scriptInput').hide();
     } else {
+      this.settingsPanelContainer.find('#SGXComputation-inputScript').val(this.getSavedStereotypeScript());
       this.settingsPanelContainer.find('#SGXComputation-inputScriptType-stereotype').removeClass('link-selected').addClass('link-not-selected');
       this.settingsPanelContainer.find('#SGXComputation-inputScriptType-script').removeClass('link-not-selected').addClass('link-selected');
       this.settingsPanelContainer.find('#SGXComputation-scriptInput').show();
       this.settingsPanelContainer.find('#SGXComputation-stereotypeInput').hide();
     }
+
+    if (inputScriptCodeMirror) {
+      inputScriptCodeMirror.toTextArea();
+    }
+    inputScriptCodeMirror = CodeMirror.fromTextArea(document.getElementById("SGXComputation-inputScript"), {
+      mode: "text/x-mysql",
+      readOnly: true,
+      lineNumbers: false,
+      showCursorWhenSelecting: true,
+      lineWiseCopyCut: false,
+      height: 100
+    });
+    setTimeout(() => {
+      inputScriptCodeMirror.refresh();
+    }, 10);
 
     let stObjects = "";
     for (let stereotype of this.getAllTaskStereotypeInstances()) {
@@ -262,6 +284,9 @@ export class SGXComputation extends TaskStereotype {
 
   terminateStereotypeSettings() {
     super.terminateStereotypeSettings();
+    if (inputScriptCodeMirror) {
+      inputScriptCodeMirror.toTextArea();
+    }
     this.terminateAddGroupButton();
     this.terminateGroupSelectDropdown();
     this.terminateInputScriptSelectLinks();

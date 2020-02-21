@@ -2,9 +2,6 @@ import { ValidationErrorObject } from "../../handler/validation-handler";
 import { MessageFlowStereotype } from "../message-flow-stereotype";
 import { MessageFlowHandler } from "../../handler/message-flow-handler";
 
-declare let $: any;
-let is = (element, type) => element.$instanceOf(type);
-
 export class SecureChannel extends MessageFlowStereotype {
 
   constructor(messageFlowHandler: MessageFlowHandler) {

@@ -4,7 +4,6 @@ import { TaskHandler } from "../../handler/task-handler";
 import { OTReceive } from "./OTReceive";
 
 declare let $: any;
-let is = (element, type) => element.$instanceOf(type);
 
 export class OTSend extends TaskStereotype {
 

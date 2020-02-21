@@ -3,7 +3,9 @@ import { TaskStereotype } from "../task-stereotype";
 import { TaskHandler } from "../../handler/task-handler";
 
 declare let $: any;
-let is = (element, type) => element.$instanceOf(type);
+declare let CodeMirror: any;
+
+let inputScriptCodeMirror;
 
 export class PETComputation extends TaskStereotype {
 
@@ -24,12 +26,16 @@ export class PETComputation extends TaskStereotype {
     }
   }
 
+  getSavedStereotypeScript() {
+    return this.task.sqlScript != null ? this.task.sqlScript : "";
+  }
+
   // Returns an object with properties:
   // inputScript
   // inputTypes
   // outputTypes
   getCurrentStereotypeSettings() {
-    let inputScript = this.settingsPanelContainer.find('#PETComputation-inputScript').val();
+    let inputScript = this.getSavedStereotypeSettings() ? this.getSavedStereotypeSettings().inputScript : ""; // this.settingsPanelContainer.find('#PETComputation-inputScript').val();
     let inputTypes = [];
     let outputTypes = [];
     for (let inputObject of this.getTaskInputObjects()) {
@@ -54,7 +60,7 @@ export class PETComputation extends TaskStereotype {
 
     this.highlightTaskInputAndOutputObjects();
 
-    let inputScript;
+    let inputScript = this.getSavedStereotypeScript();
     let inputObjects = "";
     let outputObjects = "";
     let selected = null;
@@ -63,7 +69,7 @@ export class PETComputation extends TaskStereotype {
 
     if (this.getSavedStereotypeSettings() != null) {
       selected = this.getSavedStereotypeSettings();
-      inputScript = selected.inputScript;
+      // inputScript = selected.inputScript;
       if (selected.inputTypes) {
         inputTypes = selected.inputTypes
       }
@@ -131,6 +137,21 @@ export class PETComputation extends TaskStereotype {
     }
 
     this.settingsPanelContainer.find('#PETComputation-inputScript').val(inputScript);
+    if (inputScriptCodeMirror) {
+      inputScriptCodeMirror.toTextArea();
+    }
+    inputScriptCodeMirror = CodeMirror.fromTextArea(document.getElementById("PETComputation-inputScript"), {
+      mode: "text/x-mysql",
+      readOnly: true,
+      lineNumbers: false,
+      showCursorWhenSelecting: true,
+      lineWiseCopyCut: false,
+      height: 100
+    });
+    setTimeout(() => {
+      inputScriptCodeMirror.refresh();
+    }, 10);
+
     this.settingsPanelContainer.find('#PETComputation-inputObjects').html(inputObjects);
     this.settingsPanelContainer.find('#PETComputation-outputObjects').html(outputObjects);
     this.settingsPanelContainer.show();
@@ -138,6 +159,9 @@ export class PETComputation extends TaskStereotype {
 
   terminateStereotypeSettings() {
     super.terminateStereotypeSettings();
+    if (inputScriptCodeMirror) {
+      inputScriptCodeMirror.toTextArea();
+    }
     this.removeTaskInputsOutputsHighlights();
   }
 

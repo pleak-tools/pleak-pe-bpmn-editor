@@ -4,7 +4,9 @@ import { TaskHandler } from "../../handler/task-handler";
 import { GCEvaluate } from "./GCEvaluate";
 
 declare let $: any;
-let is = (element, type) => element.$instanceOf(type);
+declare let CodeMirror: any;
+
+let inputScriptCodeMirror;
 
 export class GCGarble extends TaskStereotype {
 
@@ -30,6 +32,10 @@ export class GCGarble extends TaskStereotype {
     }
   }
 
+  getSavedStereotypeScript() {
+    return this.task.sqlScript != null ? this.task.sqlScript : "";
+  }
+
   // Returns an object with properties:
   // groupId
   // inputScript
@@ -37,7 +43,7 @@ export class GCGarble extends TaskStereotype {
   // inputEncoding
   getCurrentStereotypeSettings() {
     let group = this.settingsPanelContainer.find('#GCGarble-groupSelect').val();
-    let inputScript = this.settingsPanelContainer.find('#GCGarble-inputScript').val();
+    let inputScript = this.getSavedStereotypeSettings() ? this.getSavedStereotypeSettings().inputScript : ""; // this.settingsPanelContainer.find('#GCGarble-inputScript').val();
     let garbledCircuit = this.settingsPanelContainer.find('#GCGarble-garbledCircuitSelect').val();
     let inputEncoding = this.settingsPanelContainer.find('#GCGarble-inputEncodingSelect').val();
     return { groupId: group, inputScript: inputScript, garbledCircuit: garbledCircuit, inputEncoding: inputEncoding };
@@ -66,7 +72,7 @@ export class GCGarble extends TaskStereotype {
 
     let selectedGroupId = null;
     let groups;
-    let inputScript;
+    let inputScript = this.getSavedStereotypeScript();
     let garbledCircuit;
     let inputEncoding;
     let selected = null;
@@ -88,7 +94,7 @@ export class GCGarble extends TaskStereotype {
       }
     }
 
-    inputScript = this.getGCGarbleAndGCEvaluateGroupInputScript(selectedGroupId);
+    // inputScript = this.getGCGarbleAndGCEvaluateGroupInputScript(selectedGroupId);
     this.highlightGCGarbleAndGCEvaluateGroupMembersAndTheirInputsOutputs(selectedGroupId);
 
     for (let group of this.getModelGCGarbleAndGCEvaluateGroups()) {
@@ -151,6 +157,21 @@ export class GCGarble extends TaskStereotype {
 
     this.settingsPanelContainer.find('#GCGarble-groupSelect').html(groups);
     this.settingsPanelContainer.find('#GCGarble-inputScript').val(inputScript);
+    if (inputScriptCodeMirror) {
+      inputScriptCodeMirror.toTextArea();
+    }
+    inputScriptCodeMirror = CodeMirror.fromTextArea(document.getElementById("GCGarble-inputScript"), {
+      mode: "text/x-mysql",
+      readOnly: true,
+      lineNumbers: false,
+      showCursorWhenSelecting: true,
+      lineWiseCopyCut: false,
+      height: 100
+    });
+    setTimeout(() => {
+      inputScriptCodeMirror.refresh();
+    }, 10);
+
     this.settingsPanelContainer.find('#GCGarble-garbledCircuitSelect').html(garbledCircuit);
     this.settingsPanelContainer.find('#GCGarble-inputEncodingSelect').html(inputEncoding);
     this.settingsPanelContainer.find('#GCGarble-newGroup').html('');
@@ -160,6 +181,9 @@ export class GCGarble extends TaskStereotype {
 
   terminateStereotypeSettings() {
     super.terminateStereotypeSettings();
+    if (inputScriptCodeMirror) {
+      inputScriptCodeMirror.toTextArea();
+    }
     this.terminateAddGroupButton();
     this.terminateGroupSelectDropdown();
     this.removeAllGCGarbleAndGCEvaluateGroupsAndTheirInputsOutputsHighlights();
@@ -433,29 +457,29 @@ export class GCGarble extends TaskStereotype {
     return objects;
   }
 
-  getGCGarbleAndGCEvaluateGroupInputScript(group: string) {
-    let script = "";
-    if (group != null) {
-      let groupTasks = this.getGCGarbleAndGCEvaluateGroupTasks(group);
-      if (groupTasks.length === 1) {
-        if (groupTasks[0].businessObject.GCGarble) {
-          script = JSON.parse(groupTasks[0].businessObject.GCGarble).inputScript;
-        }
-      } else {
-        for (let groupTask of groupTasks) {
-          if (groupTask.id != this.task.id && groupTask.businessObject.GCEvaluate != null) {
-            script = JSON.parse(groupTask.businessObject.GCEvaluate).inputScript;
-            break;
-          }
-          if (groupTask.id != this.task.id && groupTask.businessObject.GCGarble != null) {
-            script = JSON.parse(groupTask.businessObject.GCGarble).inputScript;
-            break;
-          }
-        }
-      }
-    }
-    return script;
-  }
+  // getGCGarbleAndGCEvaluateGroupInputScript(group: string) {
+  //   let script = "";
+  //   if (group != null) {
+  //     let groupTasks = this.getGCGarbleAndGCEvaluateGroupTasks(group);
+  //     if (groupTasks.length === 1) {
+  //       if (groupTasks[0].businessObject.GCGarble) {
+  //         script = JSON.parse(groupTasks[0].businessObject.GCGarble).inputScript;
+  //       }
+  //     } else {
+  //       for (let groupTask of groupTasks) {
+  //         if (groupTask.id != this.task.id && groupTask.businessObject.GCEvaluate != null) {
+  //           script = JSON.parse(groupTask.businessObject.GCEvaluate).inputScript;
+  //           break;
+  //         }
+  //         if (groupTask.id != this.task.id && groupTask.businessObject.GCGarble != null) {
+  //           script = JSON.parse(groupTask.businessObject.GCGarble).inputScript;
+  //           break;
+  //         }
+  //       }
+  //     }
+  //   }
+  //   return script;
+  // }
 
   getMessageFlowsOfOutgoingPath() {
     let outgMessageFlows = [];

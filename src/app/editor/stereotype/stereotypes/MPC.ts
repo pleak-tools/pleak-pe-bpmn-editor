@@ -3,7 +3,9 @@ import { TaskStereotype, TaskStereotypeGroupObject } from "../task-stereotype";
 import { TaskHandler } from "../../handler/task-handler";
 
 declare let $: any;
-let is = (element, type) => element.$instanceOf(type);
+declare let CodeMirror: any;
+
+let inputScriptCodeMirror;
 
 export class MPC extends TaskStereotype {
 
@@ -29,12 +31,16 @@ export class MPC extends TaskStereotype {
     }
   }
 
+  getSavedStereotypeScript() {
+    return this.task.sqlScript != null ? this.task.sqlScript : "";
+  }
+
   // Returns an object with properties:
   // groupId
   // inputScript
   getCurrentStereotypeSettings() {
     let group = this.settingsPanelContainer.find('#MPC-groupSelect').val();
-    let inputScript = this.settingsPanelContainer.find('#MPC-inputScript').val();
+    let inputScript = this.getSavedStereotypeSettings() ? this.getSavedStereotypeSettings().inputScript : ""; // this.settingsPanelContainer.find('#MPC-inputScript').val();
     return { groupId: group, inputScript: inputScript };
   }
 
@@ -63,7 +69,7 @@ export class MPC extends TaskStereotype {
     let groups;
     let inputObjects = "";
     let outputObjects = "";
-    let inputScript;
+    let inputScript = this.getSavedStereotypeScript();
 
     this.loadAllMPCGroupsTasks();
 
@@ -81,7 +87,7 @@ export class MPC extends TaskStereotype {
       }
     }
 
-    inputScript = this.getMPCGroupInputScript(selectedGroupId);
+    // inputScript = this.getMPCGroupInputScript(selectedGroupId);
     this.highlightMPCGroupMembersAndTheirInputsOutputs(selectedGroupId);
 
     for (let group of this.getModelMPCGroups()) {
@@ -138,6 +144,21 @@ export class MPC extends TaskStereotype {
 
     this.settingsPanelContainer.find('#MPC-groupSelect').html(groups);
     this.settingsPanelContainer.find('#MPC-inputScript').val(inputScript);
+    if (inputScriptCodeMirror) {
+      inputScriptCodeMirror.toTextArea();
+    }
+    inputScriptCodeMirror = CodeMirror.fromTextArea(document.getElementById("MPC-inputScript"), {
+      mode: "text/x-mysql",
+      readOnly: true,
+      lineNumbers: false,
+      showCursorWhenSelecting: true,
+      lineWiseCopyCut: false,
+      height: 100
+    });
+    setTimeout(() => {
+      inputScriptCodeMirror.refresh();
+    }, 10);
+
     this.settingsPanelContainer.find('#MPC-inputObjects').html(inputObjects);
     this.settingsPanelContainer.find('#MPC-outputObjects').html(outputObjects);
     this.settingsPanelContainer.find('#MPC-newGroup').html('');
@@ -147,6 +168,9 @@ export class MPC extends TaskStereotype {
 
   terminateStereotypeSettings() {
     super.terminateStereotypeSettings();
+    if (inputScriptCodeMirror) {
+      inputScriptCodeMirror.toTextArea();
+    }
     this.terminateAddGroupButton();
     this.terminateGroupSelectDropdown();
     this.removeAllMPCGroupsAndTheirInputsOutputsHighlights();
@@ -377,25 +401,25 @@ export class MPC extends TaskStereotype {
     return objects;
   }
 
-  getMPCGroupInputScript(group: string) {
-    let script = "";
-    if (group != null) {
-      let groupTasks = this.getMPCGroupTasks(group);
-      if (groupTasks.length === 1) {
-        if (groupTasks[0].businessObject.MPC) {
-          script = JSON.parse(groupTasks[0].businessObject.MPC).inputScript;
-        }
-      } else {
-        for (let groupTask of groupTasks) {
-          if (groupTask.id != this.task.id) {
-            script = JSON.parse(groupTask.businessObject.MPC).inputScript;
-            break;
-          }
-        }
-      }
-    }
-    return script;
-  }
+  // getMPCGroupInputScript(group: string) {
+  //   let script = "";
+  //   if (group != null) {
+  //     let groupTasks = this.getMPCGroupTasks(group);
+  //     if (groupTasks.length === 1) {
+  //       if (groupTasks[0].businessObject.MPC) {
+  //         script = JSON.parse(groupTasks[0].businessObject.MPC).inputScript;
+  //       }
+  //     } else {
+  //       for (let groupTask of groupTasks) {
+  //         if (groupTask.id != this.task.id) {
+  //           script = JSON.parse(groupTask.businessObject.MPC).inputScript;
+  //           break;
+  //         }
+  //       }
+  //     }
+  //   }
+  //   return script;
+  // }
 
   /** Simple disclosure analysis functions */
   getDataObjectVisibilityStatus(dataObjectId: string) {

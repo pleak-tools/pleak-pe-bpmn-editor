@@ -4,7 +4,6 @@ import { DataObjectHandler } from "../../handler/data-object-handler";
 import { ABPrivate } from "./ABPrivate";
 
 declare let $: any;
-let is = (element, type) => element.$instanceOf(type);
 
 interface ABPublicGroupDataObject {
   groupId: string;

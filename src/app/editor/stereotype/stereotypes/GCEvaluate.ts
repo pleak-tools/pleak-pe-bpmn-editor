@@ -4,7 +4,6 @@ import { TaskHandler } from "../../handler/task-handler";
 import { GCGarble } from "./GCGarble";
 
 declare let $: any;
-let is = (element, type) => element.$instanceOf(type);
 
 export class GCEvaluate extends TaskStereotype {
 
@@ -30,6 +29,10 @@ export class GCEvaluate extends TaskStereotype {
     }
   }
 
+  getSavedStereotypeScript() {
+    return this.task.sqlScript != null ? this.task.sqlScript : "";
+  }
+
   // Returns an object with properties:
   // groupId
   // inputScript
@@ -39,7 +42,7 @@ export class GCEvaluate extends TaskStereotype {
     let group = this.settingsPanelContainer.find('#GCEvaluate-groupSelect').val();
     let garbledCircuit = this.settingsPanelContainer.find('#GCEvaluate-garbledCircuitSelect').val();
     let inputEncoding = this.settingsPanelContainer.find('#GCEvaluate-inputEncodingSelect').val();
-    return { groupId: group, inputScript: this.getGCGarbleAndGCEvaluateGroupInputScript(group), garbledCircuit: garbledCircuit, inputEncoding: inputEncoding };
+    return { groupId: group, inputScript: this.getSavedStereotypeScript(), garbledCircuit: garbledCircuit, inputEncoding: inputEncoding };
   }
 
   getGroup() {
@@ -210,7 +213,7 @@ export class GCEvaluate extends TaskStereotype {
           if (task.id == this.task.id) {
             task.businessObject.GCEvaluate = JSON.stringify(currentStereotypeSettings);
           } else {
-            task.businessObject.GCGarble = JSON.stringify({ groupId: group, inputScript: this.getGCGarbleAndGCEvaluateGroupInputScript(group), garbledCircuit: JSON.parse(task.businessObject.GCGarble).garbledCircuit, inputEncoding: JSON.parse(task.businessObject.GCGarble).inputEncoding });
+            task.businessObject.GCGarble = JSON.stringify({ groupId: group, inputScript: this.getSavedStereotypeScript(), garbledCircuit: JSON.parse(task.businessObject.GCGarble).garbledCircuit, inputEncoding: JSON.parse(task.businessObject.GCGarble).inputEncoding });
           }
         }
         this.settingsPanelContainer.find('.form-group').removeClass('has-error');
@@ -431,29 +434,29 @@ export class GCEvaluate extends TaskStereotype {
     return objects;
   }
 
-  getGCGarbleAndGCEvaluateGroupInputScript(group: string) {
-    let script = "";
-    if (group != null) {
-      let groupTasks = this.getGCGarbleAndGCEvaluateGroupTasks(group);
-      if (groupTasks.length === 1) {
-        if (groupTasks[0].businessObject.GCEvaluate) {
-          script = JSON.parse(groupTasks[0].businessObject.GCEvaluate).inputScript;
-        }
-      } else {
-        for (let groupTask of groupTasks) {
-          if (groupTask.id != this.task.id && groupTask.businessObject.GCGarble != null) {
-            script = JSON.parse(groupTask.businessObject.GCGarble).inputScript;
-            break;
-          }
-          if (groupTask.id != this.task.id && groupTask.businessObject.GCEvaluate != null) {
-            script = JSON.parse(groupTask.businessObject.GCEvaluate).inputScript;
-            break;
-          }
-        }
-      }
-    }
-    return script;
-  }
+  // getGCGarbleAndGCEvaluateGroupInputScript(group: string) {
+  //   let script = "";
+  //   if (group != null) {
+  //     let groupTasks = this.getGCGarbleAndGCEvaluateGroupTasks(group);
+  //     if (groupTasks.length === 1) {
+  //       if (groupTasks[0].businessObject.GCEvaluate) {
+  //         script = JSON.parse(groupTasks[0].businessObject.GCEvaluate).inputScript;
+  //       }
+  //     } else {
+  //       for (let groupTask of groupTasks) {
+  //         if (groupTask.id != this.task.id && groupTask.businessObject.GCGarble != null) {
+  //           script = JSON.parse(groupTask.businessObject.GCGarble).inputScript;
+  //           break;
+  //         }
+  //         if (groupTask.id != this.task.id && groupTask.businessObject.GCEvaluate != null) {
+  //           script = JSON.parse(groupTask.businessObject.GCEvaluate).inputScript;
+  //           break;
+  //         }
+  //       }
+  //     }
+  //   }
+  //   return script;
+  // }
 
   getMessageFlowsOfIncomingPath() {
     let incMessageFlows = [];
