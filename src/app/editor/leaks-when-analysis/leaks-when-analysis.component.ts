@@ -469,8 +469,11 @@ export class LeaksWhenAnalysisComponent {
         });
 
       if (outputDtos.length) {
+        let alreadyAddedDtos = this.SelectedTarget.selectedTargetsForLeaksWhen.map((Dto) => Dto.name);
         let outputDto = outputDtos[0];
-        this.SelectedTarget.selectedTargetsForLeaksWhen.push(outputDto);
+        if (alreadyAddedDtos.indexOf(outputDto.name) === -1) { // Filtering out by name
+          this.SelectedTarget.selectedTargetsForLeaksWhen.push(outputDto);
+        }
       }
     }
   }
@@ -642,7 +645,7 @@ export class LeaksWhenAnalysisComponent {
           let outputDataObjectsNames = taskHandler.getTaskOutputObjects().map((dO) => dO.businessObject.name);
           if (task.sqlScript.indexOf("=") === -1) {
             for (let dO of task.sqlScript.match(regex)) {
-              if (inputDataObjectsNames.indexOf(dO) === -1) {
+              if (inputDataObjectsNames.indexOf(dO) === -1 && typeof Number(dO) !== 'number') {
                 errors.push({ taskId: task.id, dOName: dO, type: "input", error: "No such input data object", idx: i });
                 i++;
               }
@@ -655,13 +658,13 @@ export class LeaksWhenAnalysisComponent {
               let inputs = splits[1];
 
               for (let dO of inputs.match(regex)) {
-                if (inputDataObjectsNames.indexOf(dO) === -1) {
+                if (inputDataObjectsNames.indexOf(dO) === -1 && typeof Number(dO) !== 'number') {
                   errors.push({ taskId: task.id, dOName: dO, type: "input", error: "No such input data object", idx: i });
                   i++;
                 }
               }
               for (let dO of outputs.match(regex)) {
-                if (outputDataObjectsNames.indexOf(dO) === -1) {
+                if (outputDataObjectsNames.indexOf(dO) === -1 && typeof Number(dO) !== 'number') {
                   errors.push({ taskId: task.id, dOName: dO, type: "output", error: "No such output data object", idx: i });
                   i++;
                 }
@@ -869,6 +872,17 @@ export class LeaksWhenAnalysisComponent {
           runs = runs.filter(run => {
             return run.reduce((acc, cur) => acc || cur.includes('EndEvent'), false);
           });
+
+          let runs_unique = [];
+
+          runs.forEach(run => {
+            let included = runs_unique.reduce((acc, cur) => { return acc || (JSON.stringify(cur) === JSON.stringify(run)) }, false);
+            if (!included) {
+              runs_unique.push(run);
+            }
+          });
+
+          runs = runs_unique;
 
           return runs.reduce((acc, run, runNumber) => acc.then(() => {
             const sqlCommands = run.reduce((acc, id) => acc + (matcher[id] ? matcher[id] + '\n' : ''), '');
