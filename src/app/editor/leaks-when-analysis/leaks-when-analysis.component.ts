@@ -253,7 +253,7 @@ export class LeaksWhenAnalysisComponent {
 
     if (this.SelectedTarget.simplificationDto) {
       this.simpleLeaksWhenMessageFlowIndex = 0;
-      this.runLeaksWhenAnalysis(this.SelectedTarget.simplificationDto.name, this.SelectedTarget.selectedTargetsForLeaksWhen[0]);
+      this.runLeaksWhenAnalysis(this.SelectedTarget.simplificationDto.name.split(' ').map(word => word.toLowerCase()).join('_'), this.SelectedTarget.selectedTargetsForLeaksWhen[0]);
     } else {
       this.leaksWhenAnalysisInprogress = false;
       this.SQLLeaksWhenError = "Select at least one data object to run the analysis."
@@ -848,15 +848,16 @@ export class LeaksWhenAnalysisComponent {
                     this.simpleLeaksWhenMessageFlowIndex++;
                     if (this.SelectedTarget.selectedTargetsForLeaksWhen[this.simpleLeaksWhenMessageFlowIndex]) {
                       let currentIndex = this.simpleLeaksWhenMessageFlowIndex;
-                      this.runLeaksWhenAnalysis(this.SelectedTarget.simplificationDto.name, this.SelectedTarget.selectedTargetsForLeaksWhen[currentIndex]);
+                      this.runLeaksWhenAnalysis(this.SelectedTarget.simplificationDto.name.split(' ').map(word => word.toLowerCase()).join('_'), this.SelectedTarget.selectedTargetsForLeaksWhen[currentIndex]);
                     } else {
                       this.leaksWhenAnalysisInprogress = false;
                       this.SQLLeaksWhenError = null;
                     }
                   },
-                  () => {
+                  (error) => {
                     this.leaksWhenAnalysisInprogress = false;
-                    this.SQLLeaksWhenError = "Unable to analyse the model. Make sure the model and all input scripts are correct."
+                    this.SQLLeaksWhenError = "Unable to analyse the model. Make sure the model and all input scripts are correct.";
+                    console.log(error);
                   });
             }
           });
@@ -924,7 +925,7 @@ export class LeaksWhenAnalysisComponent {
 
   sendLeaksWhenRequest(diagramId: string, sqlCommands, processedLabels, policy, runNumber, simplificationTarget: string, selectedDataObjectName) {
     const modelPath = `${diagramId}/run_${runNumber}/${processedLabels[0]}`;
-    return this.http.post(config.leakswhen.host + config.leakswhen.report, { diagram_id: diagramId, simplificationTarget: simplificationTarget.split(' ').map(word => word.toLowerCase()).join('_'), run_number: runNumber, selected_dto: processedLabels[0], model: modelPath, targets: processedLabels.join(','), sql_script: sqlCommands, policy: policy })
+    return this.http.post(config.leakswhen.host + config.leakswhen.report, { diagram_id: diagramId, simplificationTarget: simplificationTarget, run_number: runNumber, selected_dto: processedLabels[0], model: modelPath, targets: processedLabels.join(','), sql_script: sqlCommands, policy: policy })
       .toPromise()
       .then(
         (res: any) => {
