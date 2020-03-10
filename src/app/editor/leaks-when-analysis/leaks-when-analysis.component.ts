@@ -644,7 +644,8 @@ export class LeaksWhenAnalysisComponent {
           let inputDataObjectsNames = taskHandler.getTaskInputObjects().map((dO) => dO.businessObject.name);
           let outputDataObjectsNames = taskHandler.getTaskOutputObjects().map((dO) => dO.businessObject.name);
           if (task.sqlScript.indexOf("=") === -1) {
-            for (let dO of task.sqlScript.match(regex)) {
+            let matches = task.sqlScript.match(regex) && task.sqlScript.match(regex).length > 0 ? task.sqlScript.match(regex) : [];
+            for (let dO of matches) {
               if (inputDataObjectsNames.indexOf(dO) === -1 && typeof Number(dO) !== 'number') {
                 errors.push({ taskId: task.id, dOName: dO, type: "input", error: "No such input data object", idx: i });
                 i++;
@@ -657,13 +658,15 @@ export class LeaksWhenAnalysisComponent {
               let outputs = splits[0];
               let inputs = splits[1];
 
-              for (let dO of inputs.match(regex)) {
+              let inputMatches = inputs.match(regex) && inputs.match(regex).length > 0 ? inputs.match(regex) : [];
+              for (let dO of inputMatches) {
                 if (inputDataObjectsNames.indexOf(dO) === -1 && typeof Number(dO) !== 'number') {
                   errors.push({ taskId: task.id, dOName: dO, type: "input", error: "No such input data object", idx: i });
                   i++;
                 }
               }
-              for (let dO of outputs.match(regex)) {
+              let outputMatches = outputs.match(regex) && outputs.match(regex).length > 0 ? outputs.match(regex) : [];
+              for (let dO of outputMatches) {
                 if (outputDataObjectsNames.indexOf(dO) === -1 && typeof Number(dO) !== 'number') {
                   errors.push({ taskId: task.id, dOName: dO, type: "output", error: "No such output data object", idx: i });
                   i++;
