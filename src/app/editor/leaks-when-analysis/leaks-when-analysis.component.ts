@@ -646,7 +646,7 @@ export class LeaksWhenAnalysisComponent {
           if (task.sqlScript.indexOf("=") === -1) {
             let matches = task.sqlScript.match(regex) && task.sqlScript.match(regex).length > 0 ? task.sqlScript.match(regex) : [];
             for (let dO of matches) {
-              if (inputDataObjectsNames.indexOf(dO) === -1 && typeof Number(dO) !== 'number') {
+              if (inputDataObjectsNames.indexOf(dO) === -1 && isNaN(dO)) {
                 errors.push({ taskId: task.id, dOName: dO, type: "input", error: "No such input data object", idx: i });
                 i++;
               }
@@ -660,14 +660,14 @@ export class LeaksWhenAnalysisComponent {
 
               let inputMatches = inputs.match(regex) && inputs.match(regex).length > 0 ? inputs.match(regex) : [];
               for (let dO of inputMatches) {
-                if (inputDataObjectsNames.indexOf(dO) === -1 && typeof Number(dO) !== 'number') {
+                if (inputDataObjectsNames.indexOf(dO) === -1 && isNaN(dO)) {
                   errors.push({ taskId: task.id, dOName: dO, type: "input", error: "No such input data object", idx: i });
                   i++;
                 }
               }
               let outputMatches = outputs.match(regex) && outputs.match(regex).length > 0 ? outputs.match(regex) : [];
               for (let dO of outputMatches) {
-                if (outputDataObjectsNames.indexOf(dO) === -1 && typeof Number(dO) !== 'number') {
+                if (outputDataObjectsNames.indexOf(dO) === -1 && isNaN(dO)) {
                   errors.push({ taskId: task.id, dOName: dO, type: "output", error: "No such output data object", idx: i });
                   i++;
                 }
