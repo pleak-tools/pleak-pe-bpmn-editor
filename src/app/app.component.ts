@@ -58,6 +58,8 @@ export class AppComponent implements OnInit {
   canSave = false;
   authenticated: Boolean;
 
+  fileLoaded: boolean = false;
+
   isAuthenticated() {
     return this.authenticated;
   }

@@ -147,4 +147,31 @@ export class EditorComponent {
     $(window).off('wheel');
   }
 
+  initExportButton(): void {
+    this.loadExportButton();
+    $(document).off('click', '#download-diagram');
+    $(document).on('click', '#download-diagram', (e) => {
+      this.loadExportButton();
+    });
+
+  }
+
+  loadExportButton(): void {
+    this.viewer.saveXML(
+      {
+        format: true
+      },
+      (err: any, xml: string) => {
+        let encodedData = encodeURIComponent(xml);
+        if (xml) {
+          $('#download-diagram-container').removeClass('hidden');
+          $('#download-diagram').addClass('active').attr({
+            'href': 'data:application/bpmn20-xml;charset=UTF-8,' + encodedData,
+            'download': $('#fileName').text()
+          });
+        }
+      }
+    );
+  }
+
 }

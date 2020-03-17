@@ -75,6 +75,7 @@ export class ElementsHandler {
                 this.prepareTaskAndDataObjectHandlersForAnalysis().then(() => {
                   this.validationHandler.init().then(() => {
                     $('#stereotype-options').html('');
+                    this.parent.initExportButton();
                     this.modelLoaded = true;
                     resolve();
                   });

@@ -69,6 +69,9 @@ export class LeaksWhenAnalysisComponent {
   private tempModeling: any;
   private tempElementRegistry: any = {};
 
+  private lastModelContent: string = "";
+  private previousModelContent: string = "";
+
   init(): void {
     if (this.viewer) {
       this.registry = this.viewer.get('elementRegistry');
@@ -148,8 +151,24 @@ export class LeaksWhenAnalysisComponent {
     this.checkForUnsavedLeaksWhenChanges();
   }
 
+  getCurrentModelXML(): string {
+    let content = "";
+    this.viewer.saveXML(
+      {
+        format: true
+      },
+      (err: any, xml: string) => {
+        if (!err) {
+          content = xml;
+        }
+      }
+    );
+    return content;
+  }
+
   save(): void {
     this.init();
+    this.previousModelContent = this.getCurrentModelXML().length > 0 ? this.getCurrentModelXML() : this.previousModelContent;
     let savedScript = this.registry.get(this.getSelectedElement().id).businessObject.sqlScript;
     let savedPolicy = this.registry.get(this.getSelectedElement().id).businessObject.policyScript;
     let currentScript = this.scriptOfSelectedElement;
@@ -169,6 +188,7 @@ export class LeaksWhenAnalysisComponent {
         },
         (err: any, xml: string) => {
           this.elementsHandler.updateModelContentVariable(xml);
+          this.lastModelContent = xml;
         }
       );
       this.scriptOfSelectedElement = null;
@@ -179,17 +199,28 @@ export class LeaksWhenAnalysisComponent {
 
   areThereUnsavedLeaksWhenChanges(): boolean {
     let currentElement = this.getSelectedElement();
+    let flag = false;
     if (currentElement) {
-      let currentScriptInRegistry = this.registry.get(currentElement.id).businessObject.sqlScript;
-      if ((this.scriptOfSelectedElement === "" || this.scriptOfSelectedElement && this.scriptOfSelectedElement.length > 0) && (currentScriptInRegistry && this.scriptOfSelectedElement.toString() !== currentScriptInRegistry.toString() || !currentScriptInRegistry)) {
-        return true;
+      if (this.isBPMNLeaksWhenActive() || this.isSQLLeaksWhenActive()) {
+        let currentScriptInRegistry = this.registry.get(currentElement.id).businessObject.sqlScript;
+        if ((this.scriptOfSelectedElement === "" || this.scriptOfSelectedElement && this.scriptOfSelectedElement.length > 0) && (currentScriptInRegistry && this.scriptOfSelectedElement.toString() !== currentScriptInRegistry.toString() || !currentScriptInRegistry)) {
+          flag = true;
+        }
       }
-      let currentPolicyInRegistry = this.registry.get(currentElement.id).businessObject.policyScript;
-      if ((this.policyOfSelectedElement === "" || this.policyOfSelectedElement && this.policyOfSelectedElement.length > 0) && (currentPolicyInRegistry && this.policyOfSelectedElement.toString() !== currentPolicyInRegistry.toString() || !currentPolicyInRegistry)) {
-        return true;
+      if (this.isSQLLeaksWhenActive()) {
+        let currentPolicyInRegistry = this.registry.get(currentElement.id).businessObject.policyScript;
+        if ((this.policyOfSelectedElement === "" || this.policyOfSelectedElement && this.policyOfSelectedElement.length > 0) && (currentPolicyInRegistry && this.policyOfSelectedElement.toString() !== currentPolicyInRegistry.toString() || !currentPolicyInRegistry)) {
+          flag = true;
+        }
+      }
+    } else {
+      if (this.previousModelContent != this.lastModelContent) {
+        flag = true;
+        this.previousModelContent = this.getCurrentModelXML().length > 0 ? this.getCurrentModelXML() : this.previousModelContent;
+        this.lastModelContent = this.getCurrentModelXML().length > 0 ? this.getCurrentModelXML() : this.lastModelContent;
       }
     }
-    return false;
+    return flag;
   }
 
   checkForUnsavedLeaksWhenChanges(): boolean | void {
