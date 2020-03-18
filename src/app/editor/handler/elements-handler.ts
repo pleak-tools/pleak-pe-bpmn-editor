@@ -275,6 +275,7 @@ export class ElementsHandler {
         });
       }
       $(document).find('#stereotype-options-sidebar').removeClass('hidden');
+      this.moveStereotypeSettingsPanel();
     }
   }
 
@@ -282,6 +283,20 @@ export class ElementsHandler {
     $(document).find('#stereotype-options-title').text('');
     $(document).find('#stereotype-options-hide-button').off('click');
     $(document).find('#stereotype-options-sidebar').addClass('hidden');
+  }
+
+  moveAnalysisResultsPanel(): void {
+    let PEBPMNanalysisPanel = $('#PEBPMN-analysis-sidebar');
+    PEBPMNanalysisPanel.detach();
+    $('#sidebar-panels').prepend(PEBPMNanalysisPanel);
+    $('#sidebar').scrollTop(0);
+  }
+
+  moveStereotypeSettingsPanel(): void {
+    let stereotypeSettingsPanel = $('#stereotype-options-sidebar');
+    stereotypeSettingsPanel.detach();
+    $('#sidebar-panels').prepend(stereotypeSettingsPanel);
+    $('#sidebar').scrollTop(0);
   }
 
   saveStereotypes(elementHandler: any) {

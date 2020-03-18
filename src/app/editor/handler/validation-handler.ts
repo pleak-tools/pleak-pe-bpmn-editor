@@ -157,6 +157,7 @@ export class ValidationHandler {
         this.extendedSimpleDisclosureAnalysisHandler.showModal();
       }
     }
+    this.elementsHandler.moveAnalysisResultsPanel();
   }
 
   showErrorsIfChecksFinished(errors) {

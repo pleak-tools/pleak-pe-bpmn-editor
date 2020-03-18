@@ -13,7 +13,7 @@
 
   <hr>
 
-  <div style="margin-top:15px; margin-bottom:15px; text-align:right" *ngIf=isPEBPMModeActive()>
+  <div style="margin-top:15px; margin-bottom:-5px; text-align:right" *ngIf=isPEBPMModeActive()>
     <button type="button" class="btn btn-success" (click)="validateModel()" [disabled]=!modelLoaded()>Run
       analysis</button>
   </div>
@@ -22,7 +22,64 @@
     [elementsHandler]="elementsHandler" [activeMode]="activeMode" (open)=scriptPolicyModal.openModal($event)>
   </app-leaks-when-analysis>
 
-  <div [class.hidden]=!isPEBPMModeActive()>
+  <div id="sidebar-panels" [class.hidden]=!isPEBPMModeActive()>
+
+    <div id="PEBPMN-analysis-sidebar">
+      <div class="analysis-spinner" style="display:none">
+        <div class="double-bounce1-2"></div>
+        <div class="double-bounce2-2"></div>
+      </div>
+      <div id="model-errors" class="hidden">
+        <h3>Errors in model</h3>
+        <div id="errors-list"></div>
+      </div>
+      <div id="model-correct" class="hidden">
+        <h3><i class="fa fa-check-square-o" aria-hidden="true"></i> Passed validation!</h3>
+      </div>
+      <div id="analysis" class="hidden">
+        <h3>Simple disclosure analysis</h3>
+        <div class="text-left">
+          <ul class="buttons analyze">
+            <li>
+              <a class="active" id="analyze-simple-disclosure" title="Analyze simple disclosure" href="#">
+                <span class="glyphicon glyphicon-equalizer"></span> Analyze
+              </a>
+            </li>
+          </ul>
+        </div>
+        <h3>Extended simple disclosure analysis</h3>
+        <div class="text-left">
+          <ul class="buttons analyze">
+            <li>
+              <a class="active" id="extended-analyze-simple-disclosure" title="Analyze simple disclosure" href="#">
+                <span class="glyphicon glyphicon-equalizer"></span> Analyze
+              </a>
+            </li>
+          </ul>
+        </div>
+        <h3>Data dependencies analysis</h3>
+        <div class="text-left">
+          <ul class="buttons analyze">
+            <li>
+              <a class="active" id="analyze-dependencies" title="Analyze" href="#">
+                <span class="glyphicon glyphicon-equalizer"></span> Analyze
+              </a>
+            </li>
+          </ul>
+        </div>
+        <h3>Leakage detection</h3>
+        <div class="text-left">
+          <ul class="buttons analyze">
+            <li>
+              <a class="active" id="detect-leakages" title="Analyze" href="#">
+                <span class="glyphicon glyphicon-equalizer"></span> Analyze
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
     <div class="panel panel-default hidden" id="stereotype-options-sidebar">
       <div class="panel-heading blue-panel-heading">
         <button class="btn btn-default pull-right" type="button" id="stereotype-options-hide-button">X</button>
@@ -33,59 +90,7 @@
         <button class="btn btn-success hidden" type="button" id="stereotype-options-save-button">Save</button>
       </div>
     </div>
-    <div class="analysis-spinner" style="display:none">
-      <div class="double-bounce1-2"></div>
-      <div class="double-bounce2-2"></div>
-    </div>
-    <div id="model-errors" class="hidden">
-      <h3>Errors in model</h3>
-      <div id="errors-list"></div>
-    </div>
-    <div id="model-correct" class="hidden">
-      <h3><i class="fa fa-check-square-o" aria-hidden="true"></i> Passed validation!</h3>
-    </div>
-    <div id="analysis" class="hidden">
-      <h3>Simple disclosure analysis</h3>
-      <div class="text-left">
-        <ul class="buttons analyze">
-          <li>
-            <a class="active" id="analyze-simple-disclosure" title="Analyze simple disclosure" href="#">
-              <span class="glyphicon glyphicon-equalizer"></span> Analyze
-            </a>
-          </li>
-        </ul>
-      </div>
-      <h3>Extended simple disclosure analysis</h3>
-      <div class="text-left">
-        <ul class="buttons analyze">
-          <li>
-            <a class="active" id="extended-analyze-simple-disclosure" title="Analyze simple disclosure" href="#">
-              <span class="glyphicon glyphicon-equalizer"></span> Analyze
-            </a>
-          </li>
-        </ul>
-      </div>
-      <h3>Data dependencies analysis</h3>
-      <div class="text-left">
-        <ul class="buttons analyze">
-          <li>
-            <a class="active" id="analyze-dependencies" title="Analyze" href="#">
-              <span class="glyphicon glyphicon-equalizer"></span> Analyze
-            </a>
-          </li>
-        </ul>
-      </div>
-      <h3>Leakage detection</h3>
-      <div class="text-left">
-        <ul class="buttons analyze">
-          <li>
-            <a class="active" id="detect-leakages" title="Analyze" href="#">
-              <span class="glyphicon glyphicon-equalizer"></span> Analyze
-            </a>
-          </li>
-        </ul>
-      </div>
-    </div>
+
   </div>
 
 </div>
