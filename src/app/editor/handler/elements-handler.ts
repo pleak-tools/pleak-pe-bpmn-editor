@@ -160,7 +160,6 @@ export class ElementsHandler {
     if ((element.type === "bpmn:DataObjectReference" || element.type === "bpmn:DataStoreReference") && element.incoming && element.incoming.length > 0) {
       this.reloadDataObjectSelectMenu(element);
     }
-
   }
 
   reloadDataObjectSelectMenu(element: any): void {

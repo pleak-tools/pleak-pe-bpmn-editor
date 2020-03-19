@@ -138,6 +138,22 @@ export class EditorComponent {
       }
     });
 
+    $('#resize-inc').on('click', () => {
+      if ($('#sidebar').width() < 0.4 * window.innerWidth) {
+        $('#sidebar').width($('#sidebar').width() * 1.3);
+      }
+      this.loadResizeButtonsMode();
+    });
+
+    $('#resize-dec').on('click', () => {
+      if ($('#sidebar').width() > 270) {
+        $('#sidebar').width($('#sidebar').width() / 1.3);
+      }
+      this.loadResizeButtonsMode();
+    });
+
+    this.loadResizeButtonsMode();
+
   }
 
   removeEventHandlers(): void {
@@ -145,6 +161,20 @@ export class EditorComponent {
     $(window).off('keydown');
     $(window).unbind('beforeunload');
     $(window).off('wheel');
+  }
+
+  loadResizeButtonsMode(): void {
+    if ($('#sidebar').width() <= 270) {
+      $('#resize-dec').prop('disabled', true);
+    } else {
+      $('#resize-dec').prop('disabled', false);
+    }
+
+    if ($('#sidebar').width() >= 0.4 * window.innerWidth) {
+      $('#resize-inc').prop('disabled', true);
+    } else {
+      $('#resize-inc').prop('disabled', false);
+    }
   }
 
   initExportButton(): void {
