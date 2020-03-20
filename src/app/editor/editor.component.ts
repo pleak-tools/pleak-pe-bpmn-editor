@@ -138,6 +138,10 @@ export class EditorComponent {
       }
     });
 
+    $(window).resize(() => {
+      $('#resize-buttons-container').width($('#sidebar').width());
+    });
+
     $('#resize-inc').on('click', () => {
       if ($('#sidebar').width() < 0.4 * window.innerWidth) {
         $('#sidebar').width($('#sidebar').width() * 1.3);
@@ -146,8 +150,12 @@ export class EditorComponent {
     });
 
     $('#resize-dec').on('click', () => {
-      if ($('#sidebar').width() > 270) {
-        $('#sidebar').width($('#sidebar').width() / 1.3);
+      if ($('#sidebar').width() > 250) {
+        if (($('#sidebar').width() / 1.3) < 250) {
+          $('#sidebar').width(250);
+        } else {
+          $('#sidebar').width($('#sidebar').width() / 1.3);
+        }
       }
       this.loadResizeButtonsMode();
     });
@@ -164,7 +172,7 @@ export class EditorComponent {
   }
 
   loadResizeButtonsMode(): void {
-    if ($('#sidebar').width() <= 270) {
+    if ($('#sidebar').width() <= 250) {
       $('#resize-dec').prop('disabled', true);
     } else {
       $('#resize-dec').prop('disabled', false);
@@ -175,6 +183,7 @@ export class EditorComponent {
     } else {
       $('#resize-inc').prop('disabled', false);
     }
+    $("#resize-buttons-container").css('width', $('#sidebar').width());
   }
 
   initExportButton(): void {
