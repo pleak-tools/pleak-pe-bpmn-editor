@@ -1,14 +1,17 @@
 <div class="leakageDetectionPanel text-center">
   <h4>Choose analysis type</h4>
-  <button class="btn btn-success" type="button" (click)="taskVerification()"
-          [disabled]="leakageAnalysisInprogress"
-          [class.active]="verificationType == 1">Task verification</button>
+  <button class="btn btn-success" type="button" (click)="taskVerification()" [disabled]="leakageAnalysisInprogress"
+    [class.active]="verificationType == 1">Task verification</button>
   <button class="btn btn-success" type="button" (click)="participantVerification()"
-          [disabled]="leakageAnalysisInprogress"
-          [class.active]="verificationType == 2">Participant verification</button>
-  <button class="btn btn-success" type="button" (click)="sssharingVerification()"
-          [disabled]="leakageAnalysisInprogress"
-          [class.active]="verificationType == 3">SSSharing verification</button>
+    [disabled]="leakageAnalysisInprogress" [class.active]="verificationType == 2">Participant verification</button>
+  <button class="btn btn-success" type="button" (click)="sssharingVerification()" [disabled]="leakageAnalysisInprogress"
+    [class.active]="verificationType == 3">SSSharing verification</button>
+  <button class="btn btn-success" type="button" (click)="reconstructionVerification()"
+    [disabled]="leakageAnalysisInprogress" [class.active]="verificationType == 4" style="margin-top:5px">Reconstruction
+    verification</button>
+  <button class="btn btn-success" type="button" (click)="encryptionVerification()"
+    [disabled]="leakageAnalysisInprogress" [class.active]="verificationType == 5" style="margin-top:5px">PK/SK
+    encryption verification</button>
 
   <div class="panel panel-default analysis-description-panel" *ngIf="leakageAnalysisTypeDescription"
     style="margin-top:20px">
@@ -27,10 +30,9 @@
     </div>
     <div class="panel-body text-left" *ngIf="!step2collapsed">
       <div class="element-row" *ngFor="let element of leakagesStep2Elements"
-           (click)="toggleStep2SelectedElements(element.id)"
-           [class.selected-link]="element.selected == true"
-           [class.not-selected-link]="element.selected != true">
-        <span >{{element.name}}</span>
+        (click)="toggleStep2SelectedElements(element.id)" [class.selected-link]="element.selected == true"
+        [class.not-selected-link]="element.selected != true">
+        <span>{{element.name}}</span>
       </div>
     </div>
     <div class="panel-footer text-right" *ngIf="!step2collapsed">
@@ -45,10 +47,9 @@
     </div>
     <div class="panel-body text-left" *ngIf="!step3collapsed">
       <div class="element-row" *ngFor="let element of leakagesStep3Elements"
-           (click)="toggleStep3SelectedElements(element.name)"
-           [class.selected-link]="element.selected == true"
-           [class.not-selected-link]="element.selected != true">
-        <span >{{element.name}}</span>
+        (click)="toggleStep3SelectedElements(element.name)" [class.selected-link]="element.selected == true"
+        [class.not-selected-link]="element.selected != true">
+        <span>{{element.name}}</span>
       </div>
     </div>
     <div class="panel-footer text-right" *ngIf="!step3collapsed">
@@ -70,10 +71,14 @@
       <span *ngIf="!leakagesResults.success && leakagesResults.error == 'error1'"><b>No</b></span>
       <span *ngIf="!leakagesResults.success && leakagesResults.error == 'error2'"><b>Element has never this number of
           parameters.</b></span>
-      <span *ngIf="!leakagesResults.success && leakagesResults.error == 'error3'"><b>There is no SSSharing PET on this model.</b></span>
+      <span *ngIf="!leakagesResults.success && leakagesResults.error == 'error3'"><b>There is no SSSharing PET on this
+          model.</b></span>
       <span *ngIf="!leakagesResults.success && leakagesResults.error == 'error4'" style="color:orangered"><b>Analyser
           failed to compute the result,
           please try again.</b></span>
+      <span *ngIf="!leakagesResults.success && leakagesResults.error == 'error5'"><b>There is no reconstruction task
+          (reconstruction PET) in this
+          model.</b></span>
     </div>
   </div>
 

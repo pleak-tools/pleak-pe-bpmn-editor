@@ -25,10 +25,6 @@ export class AppComponent implements OnInit {
     if (pathname[2] === 'viewer') {
       this.modelId = pathname[3];
       this.viewerType = 'public';
-    } else if (pathname[2] === 'export') { // TODO - remove this part
-      this.modelId = pathname[3];
-      this.exportType = pathname[4];
-      this.export();
     } else {
       this.modelId = pathname[2];
       this.viewerType = 'private';
@@ -152,48 +148,6 @@ export class AppComponent implements OnInit {
       }
     }
     return false;
-  }
-
-  // TODO: remove export() function
-  export(): void {
-    this.http.get(config.backend.host + '/rest/directories/files/' + (this.viewerType === 'public' ? 'public/' : '') + this.modelId, AuthService.loadRequestOptions()).subscribe(
-      (response: any) => {
-        let file = response;
-        let viewer = null;
-        if (file.content.length === 0) {
-          this.toastr.error('File cannot be found or opened!', '', { disableTimeOut: true });
-        }
-        if (this.viewerType === 'public' && this.isAuthenticated()) {
-          this.getExportedFilePermissions(file.id);
-        } else {
-          if (file.content && viewer == null) {
-            viewer = new NavigatedViewer({
-              container: '#canvas',
-              keyboard: {
-                bindTo: document
-              },
-              moddleExtensions: {
-                sqlExt: SqlBPMNModdle
-              }
-            });
-
-            let elementsHandler = new ElementsHandler(viewer, file.content, this, this.canEditExportedFile(file));
-            elementsHandler.init().then(() => {
-              let message = "";
-              if (this.exportType == "esd") {
-                message = JSON.stringify(elementsHandler.validationHandler.extendedSimpleDisclosureAnalysisHandler.getExtendedSimpleDisclosureReportTable());
-              } else {
-                message = JSON.stringify("error");
-              }
-              localStorage.setItem('esdInfo', message);
-              localStorage.setItem('esdInfoStatus', 'done');
-            });
-          }
-        }
-      },
-      (fail) => {
-      }
-    );
   }
 
   private getExportedFilePermissions(file): void {

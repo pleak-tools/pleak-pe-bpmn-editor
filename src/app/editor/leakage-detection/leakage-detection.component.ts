@@ -104,7 +104,7 @@ export class LeakageDetectionComponent {
   }
 
   getFormattedResults(resultString: string): any {
-    if (resultString != "false" && resultString != "NEVER HAS THIS NUMBER OF PARAMETERS" && resultString != "No SSsharing PET over this model") {
+    if (resultString != "false" && resultString != "NEVER HAS THIS NUMBER OF PARAMETERS" && resultString != "No SSsharing PET over this model" && resultString != "No reconstruction task in the model") {
       let tmp = resultString.replace('\n', '').replace(/^\s+|\s+$/gm, '').replace(/\(/g, '"').replace(/\)/g, '"');
       tmp = tmp.substring(1, tmp.length - 1);
       let tmp2 = tmp.split('",');
@@ -123,6 +123,9 @@ export class LeakageDetectionComponent {
       return { success: false, error: "error2" };
     } else if (resultString == "No SSsharing PET over this model") {
       return { success: false, error: "error3" };
+    } else if (resultString == "No reconstruction task in the model") {
+      // error4 reserved for analyser error
+      return { success: false, error: "error5" };
     }
     return { success: false, error: resultString };
   }
@@ -134,15 +137,22 @@ export class LeakageDetectionComponent {
       if (requestData.verificationType === 1 || requestData.verificationType === 2) {
         let tmp = [];
         for (let element of resultData.trim().split("\n")) {
-          let id = element.substring(4, element.indexOf("NAME:")).trim();
-          let name = element.substring(element.indexOf("NAME:") + 6, element.length) ? element.substring(element.indexOf("NAME:") + 6, element.length) : "unnamed";
-          let obj = { id: id, name: name, selected: false };
-          tmp.push(obj);
+          if (element.indexOf("NAME:") !== -1) {
+            let id = element.substring(4, element.indexOf("NAME:")).trim();
+            let name = element.substring(element.indexOf("NAME:") + 6, element.length) ? element.substring(element.indexOf("NAME:") + 6, element.length) : "unnamed";
+            let obj = { id: id, name: name, selected: false };
+            tmp.push(obj);
+          } else {
+            let id = element.trim().replace("ID: ", "");
+            let name = id;
+            let obj = { id: id, name: name, selected: false };
+            tmp.push(obj);
+          }
         }
         this.leakagesStep2Elements = tmp;
         this.toggleStep2SelectedElements(tmp[0].id);
         this.leakagesStepType = requestData.verificationType;
-      } else if (requestData.verificationType === 3) {
+      } else if (requestData.verificationType === 3 || requestData.verificationType === 4 || requestData.verificationType === 5) {
         this.leakagesResults = this.getFormattedResults(resultData);
       }
     } else if (step === 2) {
@@ -213,6 +223,32 @@ export class LeakageDetectionComponent {
       this.leakagesStep3Elements = [];
       this.leakagesResults = "";
       this.leakageAnalysisTypeDescription = "Is it ever possible that the SSSharing is violated in the model?";
+      this.detectLeakagesAnalysisRequest(obj, 1, 0, 1);
+    }
+  }
+
+  reconstructionVerification(): void {
+    this.analysisStopped = false;
+    this.verificationType = 4;
+    let obj = { modelId: this.modelId, verificationType: 4 };
+    if (this.isRequestNew(obj.verificationType, 1, "", "")) {
+      this.leakagesStep2Elements = [];
+      this.leakagesStep3Elements = [];
+      this.leakagesResults = "";
+      this.leakageAnalysisTypeDescription = "Is reconstruction always possible?";
+      this.detectLeakagesAnalysisRequest(obj, 1, 0, 1);
+    }
+  }
+
+  encryptionVerification(): void {
+    this.analysisStopped = false;
+    this.verificationType = 4;
+    let obj = { modelId: this.modelId, verificationType: 5 };
+    if (this.isRequestNew(obj.verificationType, 1, "", "")) {
+      this.leakagesStep2Elements = [];
+      this.leakagesStep3Elements = [];
+      this.leakagesResults = "";
+      this.leakageAnalysisTypeDescription = "Is it ever possible that the PK/SK encryption is violated in the model?";
       this.detectLeakagesAnalysisRequest(obj, 1, 0, 1);
     }
   }
