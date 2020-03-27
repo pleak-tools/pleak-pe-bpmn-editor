@@ -23,6 +23,7 @@ export class LeakageDetectionComponent {
   @Input() authenticated: Boolean;
   @Input() modelId: number;
   @Input() viewer: any;
+  @Input() elementsHandler: any;
 
   public canvas: any;
   public registry: any;
@@ -54,6 +55,8 @@ export class LeakageDetectionComponent {
   public analysisStopped: boolean = false;
 
   detectLeakagesAnalysisRequest(requestData, requestType, redirectCount, step): Promise<any> {
+    this.canvas = this.viewer.get('canvas');
+    this.registry = this.viewer.get('elementRegistry');
     if (!this.analysisStopped) {
       this.leakageAnalysisInprogress = true;
       redirectCount = redirectCount || 0;
@@ -113,8 +116,8 @@ export class LeakageDetectionComponent {
         let elems = c.replace(/^\s+|\s+$/gm, '').replace(/\"/g, '').split(',[');
         let task = elems[0];
         let dObjects = elems[1].substring(0, elems[1].length - 1);
-        let taskName = this.registry.get(task).businessObject.name ? this.registry.get(task).businessObject.name.trim() : "unnamed";
-        result.push({ task: taskName, dataObjects: dObjects });
+        let taskName = this.registry.get(task) && this.registry.get(task).businessObject.name ? this.registry.get(task).businessObject.name.trim() : "unnamed";
+        result.push({ taskId: task, task: taskName, dataObjects: dObjects });
       }
       return { success: true, result: result };
     } else if (resultString == "false") {
@@ -131,8 +134,6 @@ export class LeakageDetectionComponent {
   }
 
   showRequestResult(requestData, resultData, step): void {
-    this.canvas = this.viewer.get('canvas');
-    this.registry = this.viewer.get('elementRegistry');
     if (step === 1) {
       if (requestData.verificationType === 1 || requestData.verificationType === 2) {
         let tmp = [];
@@ -242,7 +243,7 @@ export class LeakageDetectionComponent {
 
   encryptionVerification(): void {
     this.analysisStopped = false;
-    this.verificationType = 4;
+    this.verificationType = 5;
     let obj = { modelId: this.modelId, verificationType: 5 };
     if (this.isRequestNew(obj.verificationType, 1, "", "")) {
       this.leakagesStep2Elements = [];
@@ -283,7 +284,6 @@ export class LeakageDetectionComponent {
     }
   }
 
-
   toggleStep2SelectedElements(elementId: string): void {
     this.leakagesStep2Elements = this.leakagesStep2Elements.map((element) => {
       if (element.id === elementId) {
@@ -321,9 +321,9 @@ export class LeakageDetectionComponent {
       return element.selected === true;
     }).map((element) => {
       return element.name;
-    }).join();
+    }).join(',');
     if (selectedElements && selectedElements.length > 0) {
-      return selectedElements;
+      return selectedElements.replace(/^,|,$/g,'');
     }
     return "";
   }
@@ -358,6 +358,43 @@ export class LeakageDetectionComponent {
     this.analysisStopped = true;
     this.leakageAnalysisInprogress = false;
     this.previousSuccessfulRequestAndResults = {};
+  }
+
+  initPathHighlight(): void {
+    this.terminatePathHiglight();
+    if (this.leakagesResults && this.leakagesResults.result) {
+      for (let row of this.leakagesResults.result) {
+        let taskId = row.taskId;
+        if (this.registry.get(taskId)) {
+          this.canvas.addMarker(taskId, 'highlight-dd-between');
+        }
+        for (let dO of row.dataObjects.split(',')) {
+          let dOHandlers = [];
+          let tmp = this.elementsHandler.getAllModelDataObjectHandlers().filter((obj) => {
+            return obj.dataObject.name.trim() == dO.trim() || obj.dataObject.name.trim().replace('.', '_') == dO.trim();
+          });
+          if (tmp.length > 0) {
+            dOHandlers = tmp;
+          }
+          if (dO && dOHandlers.length > 0) {
+            for (let dOHandler of dOHandlers) {
+              this.canvas.addMarker(dOHandler.dataObject.id, 'highlight-dd-between');
+            }
+          }
+        }
+      }
+    }
+  }
+
+  terminatePathHiglight(): void {
+    for (let dataObjectId of this.elementsHandler.getAllModelDataObjectHandlers().map(a => a.dataObject.id)) {
+      this.canvas.removeMarker(dataObjectId, 'highlight-dd-input');
+      this.canvas.removeMarker(dataObjectId, 'highlight-dd-output');
+      this.canvas.removeMarker(dataObjectId, 'highlight-dd-between');
+    }
+    for (let taskId of this.elementsHandler.getAllModelTaskHandlers().map(a => a.task.id)) {
+      this.canvas.removeMarker(taskId, 'highlight-dd-between');
+    }
   }
 
 }

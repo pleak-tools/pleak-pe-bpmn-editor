@@ -92,7 +92,7 @@
     </div>
 
   </div>
-  <div id="resize-buttons-container">
+  <div id="resize-buttons-container" [class.hidden]="!modelLoaded()">
     <span id="resize-buttons-label">Sidebar width:</span>
     <button class="btn btn-default" id="resize-dec">-</button>
     <button class="btn btn-default" id="resize-inc">+</button>
@@ -164,7 +164,7 @@
           </h4>
         </div>
         <div class="modal-body">
-          <app-leakage-detection [authenticated]="authenticated" [modelId]="modelId" [viewer]="viewer">
+          <app-leakage-detection [authenticated]="authenticated" [modelId]="modelId" [viewer]="viewer" [elementsHandler]="elementsHandler">
           </app-leakage-detection>
         </div>
         <div class="modal-footer">

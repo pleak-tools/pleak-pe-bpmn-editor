@@ -64,9 +64,12 @@
       <h4>Results</h4>
     </div>
     <div class="panel-body" *ngIf="!resultsCollapsed">
-      <div *ngIf="leakagesResults.success"><span><b>Yes</b></span><br><br>
+      <div *ngIf="leakagesResults.success"><span><b>Yes, one possible path:</b></span><br><br>
         <span
           *ngFor="let elem of leakagesResults.result"><b>{{elem.task}}:</b><br>&nbsp;&nbsp;&nbsp;{{elem.dataObjects}}<br></span>
+      </div>
+      <div *ngIf="leakagesResults.success" class="">
+        <button type="button" class="btn btn-default pull-right" (click)="initPathHighlight()" data-dismiss="modal">Higlight path on model</button>
       </div>
       <span *ngIf="!leakagesResults.success && leakagesResults.error == 'error1'"><b>No</b></span>
       <span *ngIf="!leakagesResults.success && leakagesResults.error == 'error2'"><b>Element has never this number of

@@ -126,6 +126,9 @@ export class DataDependenciesAnalysisHandler {
       this.canvas.removeMarker(dataObjectId, 'highlight-dd-output');
       this.canvas.removeMarker(dataObjectId, 'highlight-dd-between');
     }
+    for (let taskId of this.elementsHandler.getAllModelTaskHandlers().map(a => a.task.id)) {
+      this.canvas.removeMarker(taskId, 'highlight-dd-between');
+    }
     $(document).find('.dd-col-h, .dd-row-h').css('background-color', '#f5f5f5').css('color', 'black');
     $(document).find('.dd-col, .dd-row').css('background-color', 'white').css('color', 'black');
     $(document).find('#dataDependenciesAnalysisReportModal').find('.modal-dialog').removeClass('dd-transparent');

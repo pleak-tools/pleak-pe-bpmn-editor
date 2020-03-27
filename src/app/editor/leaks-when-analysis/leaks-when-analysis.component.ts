@@ -973,7 +973,7 @@ export class LeaksWhenAnalysisComponent {
               let resultObject = { name: selectedDataObjectName, links: [], input: simplificationTarget ? simplificationTarget : "" };
               let linksObject = legendObject[Object.keys(legendObject)[0]];
               for (let link of linksObject) {
-                let viewUrl = config.frontend.host + namePathMapping[link].replace("leaks-when/data", "graph2").split('.')[0]; // TODO - change to "graph"
+                let viewUrl = config.frontend.host + namePathMapping[link].replace("leaks-when/data", "graph").split('.')[0]; // TODO - change to "graph"
                 let downloadUrl = config.frontend.host + namePathMapping[link].replace("leaks-when/", "pleak-leaks-when-ast-transformation/");
                 resultObject.links.push({ view: viewUrl, download: downloadUrl });
               }
