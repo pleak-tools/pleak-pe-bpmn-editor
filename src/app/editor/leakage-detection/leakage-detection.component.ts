@@ -323,7 +323,7 @@ export class LeakageDetectionComponent {
       return element.name;
     }).join(',');
     if (selectedElements && selectedElements.length > 0) {
-      return selectedElements.replace(/^,|,$/g,'');
+      return selectedElements.replace(/^,|,$/g, '');
     }
     return "";
   }
@@ -367,19 +367,76 @@ export class LeakageDetectionComponent {
         let taskId = row.taskId;
         if (this.registry.get(taskId)) {
           this.canvas.addMarker(taskId, 'highlight-dd-between');
-        }
-        for (let dO of row.dataObjects.split(',')) {
-          let dOHandlers = [];
-          let tmp = this.elementsHandler.getAllModelDataObjectHandlers().filter((obj) => {
-            return obj.dataObject.name.trim() == dO.trim() || obj.dataObject.name.trim().replace('.', '_') == dO.trim();
-          });
-          if (tmp.length > 0) {
-            dOHandlers = tmp;
-          }
-          if (dO && dOHandlers.length > 0) {
-            for (let dOHandler of dOHandlers) {
-              this.canvas.addMarker(dOHandler.dataObject.id, 'highlight-dd-between');
+          if (this.registry.get(taskId).type === "bpmn:Task") {
+            let taskHandler = this.elementsHandler.getTaskHandlerByTaskId(taskId);
+            let taskInputs = taskHandler.getTaskInputObjects();
+            let taskOutputs = taskHandler.getTaskOutputObjects();
+            let allTaskDataObjectIds = taskInputs.concat(taskOutputs).map((obj) => obj.businessObject.id);
+
+            for (let dO of row.dataObjects.split(',')) {
+              let dOHandlers = [];
+              let tmp = this.elementsHandler.getAllModelDataObjectHandlers().filter((obj) => {
+                return obj.dataObject.name.trim() == dO.trim() || obj.dataObject.name.trim().replace('.', '_') == dO.trim();
+              });
+              if (tmp.length > 0) {
+                dOHandlers = tmp;
+              }
+              if (dO && dOHandlers.length > 0) {
+                for (let dOHandler of dOHandlers) {
+                  if (allTaskDataObjectIds.indexOf(dOHandler.dataObject.id) !== -1) {
+                    this.canvas.addMarker(dOHandler.dataObject.id, 'highlight-dd-between');
+                  }
+                }
+              }
             }
+          } else if (this.registry.get(taskId).type === "bpmn:IntermediateCatchEvent") {
+            let event = this.registry.get(taskId);
+            if (event.incoming && event.incoming.length > 0) {
+              for (let con of event.incoming) {
+                if (con.type == "bpmn:DataInputAssociation") {
+                  for (let dO of row.dataObjects.split(',')) {
+                    let dOHandlers = [];
+                    let tmp = this.elementsHandler.getAllModelDataObjectHandlers().filter((obj) => {
+                      return obj.dataObject.name.trim() == dO.trim() || obj.dataObject.name.trim().replace('.', '_') == dO.trim();
+                    });
+                    if (tmp.length > 0) {
+                      dOHandlers = tmp;
+                    }
+                    if (dO && dOHandlers.length > 0) {
+                      for (let dOHandler of dOHandlers) {
+                        if (con.source && con.source.id == dOHandler.dataObject.id) {
+                          this.canvas.addMarker(dOHandler.dataObject.id, 'highlight-dd-between');
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+            if (event.outgoing && event.outgoing.length > 0) {
+              for (let con of event.outgoing) {
+                if (con.type == "bpmn:DataOutputAssociation") {
+                  for (let dO of row.dataObjects.split(',')) {
+                    let dOHandlers = [];
+                    let tmp = this.elementsHandler.getAllModelDataObjectHandlers().filter((obj) => {
+                      return obj.dataObject.name.trim() == dO.trim() || obj.dataObject.name.trim().replace('.', '_') == dO.trim();
+                    });
+                    if (tmp.length > 0) {
+                      dOHandlers = tmp;
+                    }
+                    if (dO && dOHandlers.length > 0) {
+                      for (let dOHandler of dOHandlers) {
+                        if (con.target && con.target.id == dOHandler.dataObject.id) {
+                          this.canvas.addMarker(dOHandler.dataObject.id, 'highlight-dd-between');
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          } else {
+            console.log(taskId, " not higlighted");
           }
         }
       }
