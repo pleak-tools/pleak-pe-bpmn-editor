@@ -69,11 +69,11 @@ export class LeakageDetectionComponent {
       return new Promise((resolve) => {
         let requestUrl = '';
         if (requestType === 1) {
-          requestUrl = '/rest/leak-detect/verification';
+          requestUrl = '/rest/pe-bpmn-leaks-when/leakage-detection-analysis-verification';
         } else if (requestType === 2) {
-          requestUrl = '/rest/leak-detect/analysis';
+          requestUrl = '/rest/pe-bpmn-leaks-when/leakage-detection-analysis-step1';
         } else if (requestType === 3) {
-          requestUrl = '/rest/leak-detect/analysis2';
+          requestUrl = '/rest/pe-bpmn-leaks-when/leakage-detection-analysis-step2';
         }
 
         this.http.post(config.backend.host + requestUrl, requestData, AuthService.loadRequestOptions({ observe: 'response' })).pipe(

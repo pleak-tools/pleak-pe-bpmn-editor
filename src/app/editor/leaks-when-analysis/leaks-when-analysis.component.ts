@@ -590,7 +590,7 @@ export class LeaksWhenAnalysisComponent {
 
   analyseBPMNLeaksWhen(xml: string): Promise<any> {
     return new Promise((resolve) => {
-      this.http.post(config.backend.host + '/rest/sql-privacy/analyze-leaks-when', { model: xml }, AuthService.loadRequestOptions()).subscribe(
+      this.http.post(config.backend.host + '/rest/pe-bpmn-leaks-when/bpmn-leaks-when-analysis', { model: xml }, AuthService.loadRequestOptions()).subscribe(
         (response: any) => {
           this.BPMNLeaksWhenResult = JSON.parse(response.result);
           this.showBPMNLeaksWhenAnalysisResults(this.BPMNLeaksWhenResult);
@@ -973,7 +973,7 @@ export class LeaksWhenAnalysisComponent {
               let resultObject = { name: selectedDataObjectName, links: [], input: simplificationTarget ? simplificationTarget : "" };
               let linksObject = legendObject[Object.keys(legendObject)[0]];
               for (let link of linksObject) {
-                let viewUrl = config.frontend.host + namePathMapping[link].replace("leaks-when/data", "graph").split('.')[0]; // TODO - change to "graph"
+                let viewUrl = config.frontend.host + namePathMapping[link].replace("leaks-when/data", "graph").split('.')[0];
                 let downloadUrl = config.frontend.host + namePathMapping[link].replace("leaks-when/", "pleak-leaks-when-ast-transformation/");
                 resultObject.links.push({ view: viewUrl, download: downloadUrl });
               }
