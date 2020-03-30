@@ -1,6 +1,6 @@
 {
   "name": "@pleak-tools/pe-bpmn-editor",
-  "description": "Pleak PE-BPMN editor",
+  "description": "Pleak PE-BPMN & Leaks-When editor",
   "version": "0.1.0",
   "private": false,
   "repository": {

@@ -91,7 +91,7 @@ export class AppComponent implements OnInit {
 
         this.file = response;
         this.fileOpenedTime = new Date().getTime();
-        document.title = 'Pleak PE-BPMN editor - ' + this.file.title;
+        document.title = 'Pleak PE-BPMN & Leaks-When editor - ' + this.file.title;
         if (this.viewerType === 'public' && this.isAuthenticated()) {
           this.getPermissions(this.file.id);
         } else {
