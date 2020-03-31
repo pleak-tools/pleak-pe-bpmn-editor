@@ -578,6 +578,7 @@ export class LeaksWhenAnalysisComponent {
           });
       }
     }).catch((errors) => {
+      console.log(errors)
       this.BPMNLeaksWhenScriptErrors = errors;
       for (let error of this.BPMNLeaksWhenScriptErrors) {
         $(document).on('click', '.BPMN-error-' + error.idx, (e) => {
@@ -610,7 +611,8 @@ export class LeaksWhenAnalysisComponent {
   formatModelForBPMNLeaksWhenAnalysis(xml: string): Promise<any> {
     return new Promise((resolve) => {
       let allMessageFlowHandlers = this.elementsHandler.getAllModelMessageFlowHandlers();
-      let regex = new RegExp(/\b(?<!\.|\")[A-Za-z0-9_[\]]+(?!\(|\")\b/, 'gm');
+      // let regex = new RegExp(/\b(?<!\.|\")[A-Za-z0-9_[\]]+(?!\(|\")\b/, 'gm');
+      let regex = new RegExp(/\b[A-Za-z0-9_[\]]+(?!\(|\")?[\.|\"]\b/, 'gm'); // Without negative lookbehind, but matched names contain dot-s in the end
 
       this.tempModeler = null;
       this.tempModeling = null;
@@ -641,7 +643,8 @@ export class LeaksWhenAnalysisComponent {
                   if (outgoingTask && outgoingTask.sqlScript) {
                     let taskObject = this.tempElementRegistry.get(outgoingTask.id);
                     taskObject.businessObject.sqlScript = taskObject.businessObject.sqlScript.replace(regex, (x) => {
-                      if (dataObjectName && x.trim() == dataObjectName.trim()) {
+                      let cleaned = x.replace(".", "");
+                      if (dataObjectName && cleaned.trim() == dataObjectName.trim()) {
                         return prefix + x;
                       } else {
                         return x;
@@ -663,54 +666,115 @@ export class LeaksWhenAnalysisComponent {
     });
   }
 
+  getTaskInputObjectsByTaskId(taskId: string): any[] {
+    let objects = [];
+    if (taskId != null) {
+      let task = this.registry.get(taskId).businessObject;
+      if (task.dataInputAssociations) {
+        for (let i = 0; i < task.dataInputAssociations.length; i++) {
+          if (task.dataInputAssociations[i].sourceRef) {
+            objects.push(this.registry.get(task.dataInputAssociations[i].sourceRef[0].id));
+          }
+        }
+      }
+    }
+    return objects;
+  }
+
+  getTaskOutputObjectsByTaskId(taskId: string): any[] {
+    let objects = [];
+    if (taskId != null) {
+      let task = this.registry.get(taskId).businessObject;
+      if (task.dataOutputAssociations) {
+        for (let i = 0; i < task.dataOutputAssociations.length; i++) {
+          if (task.dataOutputAssociations[i].targetRef) {
+            objects.push(this.registry.get(task.dataOutputAssociations[i].targetRef.id));
+          }
+        }
+      }
+    }
+    return objects;
+  }
+
   checkForBPMNLeaksWhenErrors(): Promise<any> {
     return new Promise((resolve, reject) => {
-      let errors = [];
-      let regex = new RegExp(/\b(?<!\.|\")[A-Za-z0-9_[\]]+(?!\(|\")\b/, 'gm');
-      let allTaskHandlers = this.elementsHandler.getAllModelTaskHandlers();
-      let i = 0;
-      for (let taskHandler of allTaskHandlers) {
-        let task = taskHandler.task;
-        if (task && task.sqlScript) {
-          let inputDataObjectsNames = taskHandler.getTaskInputObjects().map((dO) => dO.businessObject.name);
-          let outputDataObjectsNames = taskHandler.getTaskOutputObjects().map((dO) => dO.businessObject.name);
-          if (task.sqlScript.indexOf("=") === -1) {
-            let matches = task.sqlScript.match(regex) && task.sqlScript.match(regex).length > 0 ? task.sqlScript.match(regex) : [];
-            for (let dO of matches) {
-              if (inputDataObjectsNames.indexOf(dO) === -1 && isNaN(dO)) {
-                errors.push({ taskId: task.id, dOName: dO, type: "input", error: "No such input data object", idx: i });
-                i++;
-              }
-            }
-          } else {
-            let rows = task.sqlScript.split('\n');
-            for (let row of rows) {
-              let splits = row.split('=');
-              let outputs = splits[0];
-              let inputs = splits[1];
+      try {
+        let errors = [];
+        // let regex = new RegExp(/\b(?<!\.|\")[A-Za-z0-9_[\]]+(?!\(|\")\b/, 'gm');
+        let regex = new RegExp(/\b[A-Za-z0-9_[\]]+\b[\|]?[A-Za-z0-9_[\]]+(?!\(|\")|\b[A-Za-z0-9_[\]]+(?!\(|\")?[\.|\"]\b/, 'gm'); // Without negative lookbehind, but some matched names contain dot-s in the end
 
-              let inputMatches = inputs.match(regex) && inputs.match(regex).length > 0 ? inputs.match(regex) : [];
-              for (let dO of inputMatches) {
-                if (inputDataObjectsNames.indexOf(dO) === -1 && isNaN(dO)) {
-                  errors.push({ taskId: task.id, dOName: dO, type: "input", error: "No such input data object", idx: i });
+        let currentModelTasks = this.registry.filter((obj) => {
+          return obj.type === 'bpmn:Task' && obj.businessObject;
+        });
+
+        let i = 0;
+        for (let taskHandler of currentModelTasks) {
+          let task = taskHandler.businessObject;
+          if (task && task.sqlScript) {
+            let inputDataObjectsNames = this.getTaskInputObjectsByTaskId(task.id).map((dO) => dO.businessObject.name);
+            let outputDataObjectsNames = this.getTaskOutputObjectsByTaskId(task.id).map((dO) => dO.businessObject.name);
+            if (task.sqlScript.indexOf("=") === -1) {
+              let matches = task.sqlScript.match(regex) && task.sqlScript.match(regex).length > 0 ? task.sqlScript.match(regex) : [];
+              for (let dO of matches) {
+                let cleaned = dO.replace(".", "");
+                if (inputDataObjectsNames.indexOf(cleaned) === -1 && isNaN(cleaned)) {
+                  if (outputDataObjectsNames && outputDataObjectsNames.indexOf(cleaned) !== -1) {
+                    errors.push({ taskId: task.id, dOName: cleaned, type: "input", error: "No such input data object, but there is such output data object", idx: i });
+                  } else {
+                    errors.push({ taskId: task.id, dOName: cleaned, type: "input", error: "No such input data object", idx: i });
+                  }
                   i++;
                 }
               }
-              let outputMatches = outputs.match(regex) && outputs.match(regex).length > 0 ? outputs.match(regex) : [];
-              for (let dO of outputMatches) {
-                if (outputDataObjectsNames.indexOf(dO) === -1 && isNaN(dO)) {
-                  errors.push({ taskId: task.id, dOName: dO, type: "output", error: "No such output data object", idx: i });
-                  i++;
+            } else {
+              let rows = task.sqlScript.split('\n');
+              if (rows) {
+                for (let row of rows) {
+                  let splits = row.split('=');
+                  if (splits) {
+                    let outputs = splits[0];
+                    let inputs = splits[1];
+                    if (inputs) {
+                      let inputMatches = inputs.match(regex) && inputs.match(regex).length > 0 ? inputs.match(regex) : [];
+                      for (let dO of inputMatches) {
+                        let cleaned = dO.replace(".", "");
+                        if (inputDataObjectsNames.indexOf(cleaned) === -1 && isNaN(cleaned)) {
+                          if (outputDataObjectsNames && outputDataObjectsNames.indexOf(cleaned) !== -1) {
+                            errors.push({ taskId: task.id, dOName: cleaned, type: "input", error: "No such input data object, but there is such output data object", idx: i });
+                          } else {
+                            errors.push({ taskId: task.id, dOName: cleaned, type: "input", error: "No such input data object", idx: i });
+                          }
+                          i++;
+                        }
+                      }
+                    }
+                    if (outputs) {
+                      let outputMatches = outputs.match(regex) && outputs.match(regex).length > 0 ? outputs.match(regex) : [];
+                      for (let dO of outputMatches) {
+                        let cleaned = dO.replace(".", "");
+                        if (outputDataObjectsNames.indexOf(cleaned) === -1 && isNaN(cleaned)) {
+                          if (inputDataObjectsNames && inputDataObjectsNames.indexOf(cleaned) !== -1) {
+                            errors.push({ taskId: task.id, dOName: cleaned, type: "output", error: "No such output data object, but there is such input data object", idx: i });
+                          } else {
+                            errors.push({ taskId: task.id, dOName: cleaned, type: "output", error: "No such output data object", idx: i });
+                          }
+                          i++;
+                        }
+                      }
+                    }
+                  }
                 }
               }
             }
           }
         }
-      }
-      if (errors.length > 0) {
-        reject(errors);
-      } else {
-        resolve();
+        if (errors.length > 0) {
+          reject(errors);
+        } else {
+          resolve();
+        }
+      } catch (err) {
+        console.log(err);
       }
     });
   }
