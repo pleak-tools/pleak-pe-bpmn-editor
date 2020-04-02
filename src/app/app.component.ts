@@ -5,11 +5,6 @@ import { ToastrService } from 'ngx-toastr';
 
 import { AuthService } from './auth/auth.service';
 import { EditorService } from './editor/editor.service';
-import { ElementsHandler } from './editor/handler/elements-handler';
-
-import { SqlBPMNModdle } from './editor/bpmn-labels-extension';
-import NavigatedViewer from 'bpmn-js/lib/NavigatedViewer';
-
 
 declare function require(name: string);
 const config = require('../config.json');
@@ -49,7 +44,6 @@ export class AppComponent implements OnInit {
   public viewerType;
   public file;
   private fileOpenedTime: number;
-  private exportType: string;
 
   canSave = false;
   authenticated: Boolean;
@@ -95,7 +89,7 @@ export class AppComponent implements OnInit {
         if (this.viewerType === 'public' && this.isAuthenticated()) {
           this.getPermissions(this.file.id);
         } else {
-          this.editorService.loadModel(this.file.content, this.canEdit(), this.modelId);
+          this.editorService.loadModel(this.file.content, this.canEdit(), this.file.id);
         }
       }
     );
@@ -128,10 +122,10 @@ export class AppComponent implements OnInit {
         this.file.permissions = response.permissions;
         this.file.user = response.user;
         this.file.md5Hash = response.md5Hash;
-        this.editorService.loadModel(this.file.content, this.canEdit(), this.modelId);
+        this.editorService.loadModel(this.file.content, this.canEdit(), id);
       },
       () => {
-        this.editorService.loadModel(this.file.content, this.canEdit(), this.modelId);
+        this.editorService.loadModel(this.file.content, this.canEdit(), id);
       }
     );
   }
@@ -139,29 +133,6 @@ export class AppComponent implements OnInit {
   canEdit() {
     const file = this.file;
 
-    if (!file || !this.isAuthenticated()) { return false; }
-    if ((this.authService.user && file.user) ? file.user.email === this.authService.user.email : false) { return true; }
-    for (let pIx = 0; pIx < file.permissions.length; pIx++) {
-      if (file.permissions[pIx].action.title === 'edit' &&
-        this.authService.user ? file.permissions[pIx].user.email === this.authService.user.email : false) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  private getExportedFilePermissions(file): void {
-    this.http.get(config.backend.host + '/rest/directories/files/' + file.id, AuthService.loadRequestOptions()).subscribe(
-      (response: any) => {
-        this.file.permissions = response.permissions;
-        this.file.user = response.user;
-        this.file.md5Hash = response.md5Hash;
-      },
-      () => { }
-    );
-  }
-
-  private canEditExportedFile(file: any): boolean {
     if (!file || !this.isAuthenticated()) { return false; }
     if ((this.authService.user && file.user) ? file.user.email === this.authService.user.email : false) { return true; }
     for (let pIx = 0; pIx < file.permissions.length; pIx++) {
