@@ -107,24 +107,34 @@ export class ValidationHandler {
 
   checkTaskErrors(errors) {
     $('.analysis-spinner').fadeIn();
-    for (let i = 0; i < this.taskHandlers.length; i++) {
-      let taskHandler = this.taskHandlers[i];
-      this.checkForErrorsInStereotypes(taskHandler.getAllTaskStereotypeInstances(), errors);
-      if (i == this.taskHandlers.length - 1) {
-        this.errorChecks.tasks = true;
-        this.checkDataObjectErrors(errors);
+    if (this.taskHandlers.length > 0) {
+      for (let i = 0; i < this.taskHandlers.length; i++) {
+        let taskHandler = this.taskHandlers[i];
+        this.checkForErrorsInStereotypes(taskHandler.getAllTaskStereotypeInstances(), errors);
+        if (i == this.taskHandlers.length - 1) {
+          this.errorChecks.tasks = true;
+          this.checkDataObjectErrors(errors);
+        }
       }
+    } else {
+      this.errorChecks.tasks = true;
+      this.checkDataObjectErrors(errors);
     }
   }
 
   checkDataObjectErrors(errors) {
-    for (let k = 0; k < this.dataObjectHandlers.length; k++) {
-      let dataObjectHandler = this.dataObjectHandlers[k];
-      this.checkForErrorsInStereotypes(dataObjectHandler.getAllDataObjectStereotypeInstances(), errors);
-      if (k == this.dataObjectHandlers.length - 1) {
-        this.errorChecks.dataObjects = true;
-        this.checkMessageFlowErrors(errors);
+    if (this.dataObjectHandlers.length > 0) {
+      for (let k = 0; k < this.dataObjectHandlers.length; k++) {
+        let dataObjectHandler = this.dataObjectHandlers[k];
+        this.checkForErrorsInStereotypes(dataObjectHandler.getAllDataObjectStereotypeInstances(), errors);
+        if (k == this.dataObjectHandlers.length - 1) {
+          this.errorChecks.dataObjects = true;
+          this.checkMessageFlowErrors(errors);
+        }
       }
+    } else {
+      this.errorChecks.dataObjects = true;
+      this.checkMessageFlowErrors(errors);
     }
   }
 
