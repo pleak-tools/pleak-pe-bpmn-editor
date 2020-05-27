@@ -612,7 +612,7 @@ export class LeaksWhenAnalysisComponent {
     return new Promise((resolve) => {
       let allMessageFlowHandlers = this.elementsHandler.getAllModelMessageFlowHandlers();
       // let regex = new RegExp(/\b(?<!\.|\")[A-Za-z0-9_[\]]+(?!\(|\")\b/, 'gm');
-      let regex = new RegExp(/\b[A-Za-z0-9_[\]]+(?!\(|\")?[\.|\"]\b/, 'gm'); // Without negative lookbehind, but matched names contain dot-s in the end
+      let regex = new RegExp(/\b[A-Za-z0-9_\-[\]]+(?!\(|\")?[\.|\"]\b/, 'gm'); // Without negative lookbehind, but matched names contain dot-s in the end
 
       this.tempModeler = null;
       this.tempModeling = null;
@@ -701,7 +701,7 @@ export class LeaksWhenAnalysisComponent {
       try {
         let errors = [];
         // let regex = new RegExp(/\b(?<!\.|\")[A-Za-z0-9_[\]]+(?!\(|\")\b/, 'gm');
-        let regex = new RegExp(/\b[A-Za-z0-9_[\]]+\b[\|]?[A-Za-z0-9_[\]]+(?!\(|\")|\b[A-Za-z0-9_[\]]+(?!\(|\")?[\.|\"]\b/, 'gm'); // Without negative lookbehind, but some matched names contain dot-s in the end
+        let regex = new RegExp(/\b[A-Za-z0-9_\-[\]]+\b[\|]?[A-Za-z0-9_[\]]+(?!\(|\")|\b[A-Za-z0-9_[\]]+(?!\(|\")?[\.|\"]\b/, 'gm'); // Without negative lookbehind, but some matched names contain dot-s in the end
 
         let currentModelTasks = this.registry.filter((obj) => {
           return obj.type === 'bpmn:Task' && obj.businessObject;
