@@ -156,7 +156,7 @@ export class GCEvaluate extends TaskStereotype {
     this.settingsPanelContainer.find('#GCEvaluate-garbledCircuitSelect').html(garbledCircuit);
     this.settingsPanelContainer.find('#GCEvaluate-inputEncodingSelect').html(inputEncoding);
     this.settingsPanelContainer.find('#GCEvaluate-newGroup').html('');
-    this.settingsPanelContainer.find('#PKEncrypt-outputObject').html(outputObject);
+    this.settingsPanelContainer.find('#GCEvaluate-outputObject').html(outputObject);
     this.settingsPanelContainer.find('#GCEvaluate-otherGroupTasks').html(taskObjs);
     this.settingsPanelContainer.show();
   }
