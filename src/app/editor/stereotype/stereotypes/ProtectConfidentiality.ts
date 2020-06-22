@@ -97,6 +97,12 @@ export class ProtectConfidentiality extends TaskStereotype {
     let inputIds = this.getTaskInputObjects().map(a => a.id);
     let outputIds = this.getTaskOutputObjects().map(a => a.id);
     if (inputIds.indexOf(dataObjectId) !== -1) {
+      if (this.task.SGXComputation != null) {
+        let savedData = JSON.parse(this.task.SGXComputation);
+        if (savedData.inputScript.type == "stereotype") {
+          return this.getTaskHandlerByTaskId(this.task.id).getTaskStereotypeInstanceByName("SGXComputation").getDataObjectVisibilityStatus(dataObjectId);
+        }
+      }
       statuses.push("public-i");
     }
     if (outputIds.indexOf(dataObjectId) !== -1) {

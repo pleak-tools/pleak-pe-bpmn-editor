@@ -606,7 +606,16 @@ export class SGXComputation extends TaskStereotype {
     if (outputIds.indexOf(dataObjectId) !== -1) {
       let savedData = this.getSavedStereotypeSettings();
       if (savedData.inputScript.type == "stereotype" && savedData.inputScript.contents) {
-        if (this.taskHasStereotype(this.task, savedData.inputScript.contents) && (savedData.inputScript.contents == "PKEncrypt" || savedData.inputScript.contents == "SKEncrypt" || savedData.inputScript.contents == "SGXProtect")) {
+        if (this.taskHasStereotype(this.task, savedData.inputScript.contents) && (
+          savedData.inputScript.contents == "PKEncrypt" ||
+          savedData.inputScript.contents == "SKEncrypt" ||
+          savedData.inputScript.contents == "ABEncrypt" ||
+          savedData.inputScript.contents == "SSSharing" ||
+          savedData.inputScript.contents == "AddSSSharing" ||
+          savedData.inputScript.contents == "FunSSSharing" ||
+          savedData.inputScript.contents == "SGXProtect" ||
+          savedData.inputScript.contents == "ProtectConfidentiality"
+        )) {
           return this.getTaskHandlerByTaskId(this.task.id).getTaskStereotypeInstanceByName(savedData.inputScript.contents).getDataObjectVisibilityStatus(dataObjectId);
         }
       }
