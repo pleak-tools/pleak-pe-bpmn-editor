@@ -44,15 +44,15 @@ export class MessageFlowHandler {
     "CommunicationProtection"
   ];
 
-  getMessageFlowId() {
+  getMessageFlowId(): string {
     return this.messageFlow.id;
   }
 
-  getName() {
+  getName(): string {
     return this.messageFlow.name;
   }
 
-  init() {
+  init(): void {
     // Add stereotype instances to the messageFlow (based on xml of the model)
     for (let sType of this.supportedStereotypes) {
       if (this.messageFlow[(<any>sType)] != null) {
@@ -63,8 +63,17 @@ export class MessageFlowHandler {
     this.loadMessageFlowStereotypes();
   }
 
+  reloadElementInfo(): void {
+    const messageFlow = this.registry.get(this.getMessageFlowId());
+    if (messageFlow) {
+      if (messageFlow.businessObject) {
+        this.messageFlow = messageFlow.businessObject;
+      }
+    }
+  }
+
   // Add already existing stereotype labels to the model
-  loadMessageFlowStereotypes() {
+  loadMessageFlowStereotypes(): void {
     if (this.stereotypes.length > 0) {
       for (let stereotype of this.stereotypes) {
         this.addStereotypeLabelToElement(stereotype.getTitle());
@@ -73,7 +82,7 @@ export class MessageFlowHandler {
   }
 
   // Start messageFlow editing (stereotype adding) process
-  initStereotypeEditProcess() {
+  initStereotypeEditProcess(): void {
     if (this.stereotypeSelector == null) {
       this.initMessageFlowStereotypeSelector();
     }
@@ -84,7 +93,7 @@ export class MessageFlowHandler {
   }
 
   // Start stereotype public view for the viewer
-  initPublicStereotypeView() {
+  initPublicStereotypeView(): void {
     for (let sType of this.stereotypes) {
       sType.initStereotypePublicView();
     }
@@ -96,7 +105,7 @@ export class MessageFlowHandler {
   }
 
   // End messageFlow editing (stereotype adding) process
-  terminateStereotypeEditProcess() {
+  terminateStereotypeEditProcess(): void {
     this.terminateMessageFlowStereotypeSelector();
     this.terminateMessageFlowStereotypeSettings();
     this.terminateStereotypeSettingsPanel();
@@ -106,7 +115,7 @@ export class MessageFlowHandler {
   }
 
   // Init settings panels for all already added stereotypes
-  initElementStereotypeSettings() {
+  initElementStereotypeSettings(): void {
     for (let sType of this.stereotypes) {
       sType.isTempStereotype = false;
       sType.loadStereotypeTemplateAndInitStereotypeSettings();
@@ -114,7 +123,7 @@ export class MessageFlowHandler {
   }
 
   // Hide settings panels for all already added stereotypes
-  terminateMessageFlowStereotypeSettings() {
+  terminateMessageFlowStereotypeSettings(): void {
     for (let sType of this.stereotypes) {
       sType.terminateStereotypeSettings();
     }
@@ -124,7 +133,7 @@ export class MessageFlowHandler {
     }
   }
 
-  areThereUnsavedMessageFlowChanges() {
+  areThereUnsavedMessageFlowChanges(): boolean {
     if (this.tempStereotype == null) {
       for (let stereotype of this.stereotypes) {
         if (stereotype.areThereUnsavedChanges()) {
@@ -137,7 +146,7 @@ export class MessageFlowHandler {
     }
   }
 
-  checkForUnsavedChanges() {
+  checkForUnsavedChanges(): void | boolean {
     if (this.areThereUnsavedMessageFlowChanges()) {
       if (confirm('Are you sure you wish to revert unsaved stereotype settings?')) {
         this.terminateStereotypeEditProcess();
@@ -150,7 +159,7 @@ export class MessageFlowHandler {
   }
 
   // Show stereotype selector next to messageFlow element on the model
-  initMessageFlowStereotypeSelector() {
+  initMessageFlowStereotypeSelector(): void {
     let overlayHtml = `
     <div class="panel panel-default stereotype-editor" id="` + this.messageFlow.id + `-stereotype-selector">
       <div class="stereotype-editor-close-link" style="float: right; color: darkgray; cursor: pointer">X</div>
@@ -207,13 +216,13 @@ export class MessageFlowHandler {
   }
 
   // Remove stereotype selector
-  terminateMessageFlowStereotypeSelector() {
+  terminateMessageFlowStereotypeSelector(): void {
     this.overlays.remove({ id: this.stereotypeSelector });
     this.stereotypeSelector = null;
   }
 
   // Create and return new stereotype instance by name
-  createStereotypeByName(name: string) {
+  createStereotypeByName(name: string): any {
     let st = null;
     if (name) {
       if (name == "SecureChannel") {
@@ -226,12 +235,12 @@ export class MessageFlowHandler {
   }
 
   // Add stereotype instance to the messageFlow
-  addStereotypeToMessageFlow(stereotype: MessageFlowStereotype) {
+  addStereotypeToMessageFlow(stereotype: MessageFlowStereotype): void {
     this.stereotypes.push(stereotype);
   }
 
   // Start adding new stereotype to the messageFlow (open settings panel etc)
-  addStereotypeByName(name: string) {
+  addStereotypeByName(name: string): void {
     if (this.tempStereotype == null) {
       let st = this.createStereotypeByName(name);
       st.isTempStereotype = true;
@@ -251,13 +260,13 @@ export class MessageFlowHandler {
   }
 
   // Add new stereotype to the messageFlow (save)
-  addTempStereotypeToElement() {
+  addTempStereotypeToElement(): void {
     this.addStereotypeToMessageFlow(this.tempStereotype);
     this.addStereotypeLabelToElement(this.tempStereotype.getTitle());
   }
 
   // Remove stereotype from the messageFlow by stereotype name
-  removeStereotypeByName(name: string) {
+  removeStereotypeByName(name: string): void {
     if (this.getMessageFlowStereotypeInstanceByName(name)) {
       this.overlays.remove({ id: this.getMessageFlowStereotypeInstanceByName(name).getLabel() });
       this.stereotypes = this.stereotypes.filter(obj => obj.getTitle() !== name);
@@ -267,7 +276,7 @@ export class MessageFlowHandler {
   }
 
   // Get stereotype instance of the messageFlow by stereotype name
-  getMessageFlowStereotypeInstanceByName(name: string) {
+  getMessageFlowStereotypeInstanceByName(name: string): any {
     for (let sType of this.stereotypes) {
       if (sType.getTitle() == name) {
         return sType;
@@ -276,7 +285,7 @@ export class MessageFlowHandler {
   }
 
   // Add stereotype label to the messageFlow by stereotype name
-  addStereotypeLabelToElement(title: string) {
+  addStereotypeLabelToElement(title: string): void {
     if (title != null) {
       let messageFlowTypeLabel = $(
         `<div class="stereotype-label" id="` + this.messageFlow.id + `-` + title + `-label" style="padding:5px; border-radius:2px">
@@ -299,7 +308,7 @@ export class MessageFlowHandler {
   }
 
   // Get all input elements of the messageFlow
-  getMessageFlowInputObjects() {
+  getMessageFlowInputObjects(): any[] {
     let objects = [];
     if (this.messageFlow.id && this.messageFlow.sourceRef.dataInputAssociations) {
       for (let inputAssociation of this.messageFlow.sourceRef.dataInputAssociations) {
@@ -316,7 +325,7 @@ export class MessageFlowHandler {
   }
 
   // Get all output elements of the messageFlow
-  getMessageFlowOutputObjects() {
+  getMessageFlowOutputObjects(): any[] {
     let objects = [];
     if (this.messageFlow.id && this.messageFlow.targetRef.dataOutputAssociations) {
       for (let outputAssociation of this.messageFlow.targetRef.dataOutputAssociations) {
@@ -337,30 +346,30 @@ export class MessageFlowHandler {
   }
 
   // Return all task stereotype instances
-  getAllMessageFlowStereotypeInstances() {
+  getAllMessageFlowStereotypeInstances(): any[] {
     return this.stereotypes;
   }
 
 
   /** Wrappers to access elementsHandler functions*/
 
-  getMessageFlowHandlerByMessageFlowId(messageFlowId: string) {
+  getMessageFlowHandlerByMessageFlowId(messageFlowId: string): any {
     return this.elementsHandler.getMessageFlowHandlerByMessageFlowId(messageFlowId);
   }
 
-  getAllModelMessageFlowHandlers() {
+  getAllModelMessageFlowHandlers(): any[] {
     return this.elementsHandler.getAllModelMessageFlowHandlers();
   }
 
-  updateModelContentVariable(xml: string) {
+  updateModelContentVariable(xml: string): void {
     this.elementsHandler.updateModelContentVariable(xml);
   }
 
-  initStereotypeSettingsPanel() {
+  initStereotypeSettingsPanel(): void {
     this.elementsHandler.initStereotypeSettingsPanel(this);
   }
 
-  terminateStereotypeSettingsPanel() {
+  terminateStereotypeSettingsPanel(): void {
     this.elementsHandler.terminateStereotypeSettingsPanel();
   }
 

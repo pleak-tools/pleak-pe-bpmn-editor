@@ -54,7 +54,7 @@ export class ValidationHandler {
   numberOfErrorsInModel: Number = 0;
   errorChecks: any = { dataObjects: false, tasks: false, messageFlows: false };
 
-  init() {
+  init(): Promise<void> {
     return new Promise((resolve) => {
       // Add click event listener to init and terminate stereotype processes
       this.eventBus.on('element.click', (e) => {
@@ -72,7 +72,7 @@ export class ValidationHandler {
     });
   }
 
-  initHandlers() {
+  initHandlers(): void {
     this.taskHandlers = this.elementsHandler.getAllModelTaskHandlers();
     this.messageFlowHandlers = this.elementsHandler.getAllModelMessageFlowHandlers();
     this.dataObjectHandlers = this.elementsHandler.getAllModelDataObjectHandlers();
@@ -85,7 +85,7 @@ export class ValidationHandler {
   }
 
   // Add validation errors to the model validation errors list
-  addUniqueErrorToErrorsList(errors: ValidationErrorObject[], error: string, ids: string[], highlight: string[]) {
+  addUniqueErrorToErrorsList(errors: ValidationErrorObject[], error: string, ids: string[], highlight: string[]): void {
     let sameErrorMsgs = errors.filter(function (obj) {
       return obj.error == error && obj.object.toString() === ids.toString() && obj.highlight.toString() === highlight.toString();
     });
@@ -94,18 +94,18 @@ export class ValidationHandler {
     }
   }
 
-  isAnalysisResultsPanelHidden() {
+  isAnalysisResultsPanelHidden(): boolean {
     return this.successPanel.hasClass('hidden') && this.errorsPanel.hasClass('hidden');
   }
 
   // Check for errors in task stereotypes
-  checkForErrorsInStereotypes(stereotypes: any, existingErrors: ValidationErrorObject[]) {
+  checkForErrorsInStereotypes(stereotypes: any, existingErrors: ValidationErrorObject[]): void {
     for (let stereotype of stereotypes) {
       stereotype.checkForErrors(existingErrors);
     }
   }
 
-  checkTaskErrors(errors) {
+  checkTaskErrors(errors: ValidationErrorObject[]): void {
     $('.analysis-spinner').fadeIn();
     if (this.taskHandlers.length > 0) {
       for (let i = 0; i < this.taskHandlers.length; i++) {
@@ -122,7 +122,7 @@ export class ValidationHandler {
     }
   }
 
-  checkDataObjectErrors(errors) {
+  checkDataObjectErrors(errors: ValidationErrorObject[]): void {
     if (this.dataObjectHandlers.length > 0) {
       for (let k = 0; k < this.dataObjectHandlers.length; k++) {
         let dataObjectHandler = this.dataObjectHandlers[k];
@@ -138,7 +138,7 @@ export class ValidationHandler {
     }
   }
 
-  checkMessageFlowErrors(errors) {
+  checkMessageFlowErrors(errors: ValidationErrorObject[]): void {
     if (this.messageFlowHandlers.length > 0) {
       for (let j = 0; j < this.messageFlowHandlers.length; j++) {
         let messageFlowHandler = this.messageFlowHandlers[j];
@@ -155,7 +155,7 @@ export class ValidationHandler {
   }
 
   // Init validation checks for all stereotypes
-  checkForStereotypeErrorsAndShowErrorsList() {
+  checkForStereotypeErrorsAndShowErrorsList(): void {
     if (this.areThereChangesInModel() || this.isAnalysisResultsPanelHidden()) {
       let errors: ValidationErrorObject[] = [];
       this.errorChecks = { dataObjects: false, tasks: false, messageFlows: false };
@@ -170,14 +170,14 @@ export class ValidationHandler {
     this.elementsHandler.moveAnalysisResultsPanel();
   }
 
-  showErrorsIfChecksFinished(errors) {
+  showErrorsIfChecksFinished(errors: ValidationErrorObject[]): void {
     if (this.errorChecks.tasks && this.errorChecks.dataObjects && this.errorChecks.messageFlows) {
       this.createErrorsList(errors);
     }
   }
 
   // Create validation errors list
-  createErrorsList(errors: ValidationErrorObject[]) {
+  createErrorsList(errors: ValidationErrorObject[]): void {
     let areThereAnyErrorsOnModel = false;
     let areThereAnyWarningsOnModel = false;
     // Empty previous errors list
@@ -233,7 +233,7 @@ export class ValidationHandler {
     this.setChangesInModelStatus(false);
   }
 
-  emptyErrorsList() {
+  emptyErrorsList(): void {
     this.errorsList.html('');
     this.successPanel.addClass('hidden');
     this.removeAllErrorHighlights();
@@ -242,14 +242,14 @@ export class ValidationHandler {
   }
 
   // Remove click handler of valiation error list links
-  removeErrorsListClickHandlers() {
+  removeErrorsListClickHandlers(): void {
     for (let j = 0; j < this.numberOfErrorsInModel; j++) {
       this.errorsList.off('click', '.error-' + j);
     }
   }
 
   // Highlight objects with stereotype errors by ids
-  highlightObjectWithErrorByIds(generalIds: string[], highlightIds: string[]) {
+  highlightObjectWithErrorByIds(generalIds: string[], highlightIds: string[]): void {
     this.removeAllErrorHighlights();
     for (let id of generalIds) {
       this.canvas.addMarker(id, 'highlight-general-error');
@@ -260,7 +260,7 @@ export class ValidationHandler {
   }
 
   // Remove validation error higlights of all stereotypes
-  removeAllErrorHighlights() {
+  removeAllErrorHighlights(): void {
     for (let taskHandler of this.taskHandlers) {
       this.removeErrorHighlightsOfElement(taskHandler.getTaskId());
     }
@@ -273,7 +273,7 @@ export class ValidationHandler {
   }
 
   // Remove validation error higlights of tasks
-  removeErrorHighlightsOfElement(elementId: string) {
+  removeErrorHighlightsOfElement(elementId: string): void {
     $('.error-list-element').css("font-weight", "");
     $('.BPMNLeaksWhen-errors-list-element').css("font-weight", "");
     this.canvas.removeMarker(elementId, 'highlight-general-error');
@@ -283,7 +283,7 @@ export class ValidationHandler {
   /** Validation functions */
 
   // Return unique objects from array by their id property
-  getUniqueObjectsByIdFromArray(array: any[]) {
+  getUniqueObjectsByIdFromArray(array: any[]): any[] {
     let uniqueObjects = [];
     for (let object of array) {
       let objectAlreadyInArray = uniqueObjects.filter((obj) => {
@@ -297,7 +297,7 @@ export class ValidationHandler {
   }
 
   // Return unique objects from array
-  getUniqueObjectsFromArray(array: any[]) {
+  getUniqueObjectsFromArray(array: any[]): any[] {
     let uniqueObjects = [];
     for (let object of array) {
       let objectAlreadyInArray = uniqueObjects.filter((obj) => {
@@ -311,12 +311,12 @@ export class ValidationHandler {
   }
 
   // Return the list of lanes and pools
-  getModelLanesAndPools() {
+  getModelLanesAndPools(): any[] {
     return this.modelLanesAndPools;
   }
 
   // Add a lane or a pool to the list of lanes and pools
-  addLaneOrPoolToTheListOfModelLanesAndPools(laneOrPoolId: string) {
+  addLaneOrPoolToTheListOfModelLanesAndPools(laneOrPoolId: string): void {
     let idAlreadyInList = this.modelLanesAndPools.filter((obj) => {
       return obj.id == laneOrPoolId;
     });
@@ -326,7 +326,7 @@ export class ValidationHandler {
   }
 
   // Connect tasks with lanes and pools
-  loadTaskOntoParentLaneOrPool(parentId: string, taskId: string) {
+  loadTaskOntoParentLaneOrPool(parentId: string, taskId: string): void {
     let lanesAndPools = this.getModelLanesAndPools();
     for (let laneOrPool of lanesAndPools) {
       if (laneOrPool.id == parentId) {
@@ -340,19 +340,19 @@ export class ValidationHandler {
   }
 
   // Return the list of stereotypes with groups
-  getListOfModelGroupStereotypes() {
+  getListOfModelGroupStereotypes(): string[] {
     return this.groupStereotypesOnModel;
   }
 
   // Add a stereotype to the list of stereotypes with groups
-  addStereotypeToTheListOfGroupStereotypesOnModel(stereotype: string) {
+  addStereotypeToTheListOfGroupStereotypesOnModel(stereotype: string): void {
     if (this.groupStereotypesOnModel.indexOf(stereotype) === -1) {
       this.groupStereotypesOnModel.push(stereotype);
     }
   }
 
   // Check if task has a stereotype (by stereotype name)
-  taskHasStereotype(task: any, stereotype: string) {
+  taskHasStereotype(task: any, stereotype: string): boolean {
     if (task && task[(<any>stereotype)]) {
       return true;
     } else {
@@ -361,7 +361,7 @@ export class ValidationHandler {
   }
 
   // Get group name of a stereotype if task has one
-  getGroupOfTaskStereotypeIfTaskHasOne(taskId: string) {
+  getGroupOfTaskStereotypeIfTaskHasOne(taskId: string): string | null {
     for (let stereotype of this.getListOfModelGroupStereotypes()) {
       let task = this.registry.get(taskId).businessObject;
       if (this.taskHasStereotype(task, stereotype)) {
@@ -372,7 +372,7 @@ export class ValidationHandler {
   }
 
   // Return list of tasks with group stereotypes divided between lanes and pools
-  getLanesAndPoolsWithTasksWithGroupStereotypes() {
+  getLanesAndPoolsWithTasksWithGroupStereotypes(): any[] {
     let modelLanesAndPoolsWithTasks = this.getModelLanesAndPools();
     let lanesAndPoolsWithTasksWithGroupStereotypes = [];
     for (let laneOrPool of modelLanesAndPoolsWithTasks) {
@@ -405,7 +405,7 @@ export class ValidationHandler {
   }
 
   // Return the list of tasks with stereotype groups that are not in the same order on all lanes and pools
-  getGroupsTasksThatAreNotInSameOrderOnAllPoolsAndLanes() {
+  getGroupsTasksThatAreNotInSameOrderOnAllPoolsAndLanes(): string[] {
     let lanesAndPoolsWithTasksWithGroupStereotypes = this.getLanesAndPoolsWithTasksWithGroupStereotypes();
     let len = 999;
     let problematicTasks = [];
@@ -432,13 +432,13 @@ export class ValidationHandler {
   }
 
   // Check if the value is a number
-  isInteger(value: any) {
+  isInteger(value: any): boolean {
     value = Number(value);
     return typeof value === "number" && isFinite(value) && Math.floor(value) === value;
   }
 
   // Check if businessObject.name values are the same for all objects in the array
-  areNamesUnique(array: any[]) {
+  areNamesUnique(array: any[]): boolean {
     let tmpArr = [];
     for (let obj of array) {
       if (tmpArr.indexOf(obj.businessObject.name) < 0) {
@@ -451,7 +451,7 @@ export class ValidationHandler {
   }
 
   // Return number of occurences of the substring in the string
-  occurrences(string: string, subString: string) {
+  occurrences(string: string, subString: string): number {
     string += "";
     subString += "";
     if (subString.length <= 0) {
@@ -473,7 +473,7 @@ export class ValidationHandler {
   }
 
   // Build tree paths from {key, parent} objects
-  buildPaths(arr: any[], parent: any, c: any, result: any[]) {
+  buildPaths(arr: any[], parent: any, c: any, result: any[]): any[] {
     return arr.reduce((r, e) => {
       if (e.parent == parent) {
         var children = this.buildPaths(arr, e.key, c + e.key + '->', result);
@@ -490,7 +490,7 @@ export class ValidationHandler {
   }
 
   // Check if specific element (by id) is one of the inputs of current task
-  taskHasInputElement(taskId: string, elementId: string) {
+  taskHasInputElement(taskId: string, elementId: string): boolean {
     let elements = this.elementsHandler.getTaskHandlerByTaskId(taskId).getTaskInputObjects().filter(function (obj) {
       return obj.id == elementId;
     });
@@ -501,7 +501,7 @@ export class ValidationHandler {
   }
 
   // Check if specific element (by id) is one of the outputs of current task
-  taskHasOutputElement(taskId: string, elementId: string) {
+  taskHasOutputElement(taskId: string, elementId: string): boolean {
     let elements = this.elementsHandler.getTaskHandlerByTaskId(taskId).getTaskOutputObjects().filter(function (obj) {
       return obj.id == elementId;
     });
@@ -512,7 +512,7 @@ export class ValidationHandler {
   }
 
   // Check if specific task is in the incoming path of current task
-  taskIsInIncomingPathOfTask(taskId: string, pathTaskId: string) {
+  taskIsInIncomingPathOfTask(taskId: string, pathTaskId: string): boolean {
     let task = this.registry.get(pathTaskId).businessObject;
     if (this.getTasksOfIncomingPathByInputElement(task).indexOf(taskId) !== -1) {
       return true;
@@ -521,7 +521,7 @@ export class ValidationHandler {
   }
 
   // Check if specific task is in the outgoing path of current task
-  taskIsInOutgoingPathOfTask(taskId: string, pathTaskId: string) {
+  taskIsInOutgoingPathOfTask(taskId: string, pathTaskId: string): boolean {
     let task = this.registry.get(pathTaskId).businessObject;
     if (this.getTasksOfOutgoingPathByInputElement(task).indexOf(taskId) !== -1) {
       return true;
@@ -530,7 +530,7 @@ export class ValidationHandler {
   }
 
   // Return true if at least one on inputObjects is an output of the task
-  isOneOfInputObjectsInTaskStereotypeOutputs(taskId: string, inputObjects: any[]) {
+  isOneOfInputObjectsInTaskStereotypeOutputs(taskId: string, inputObjects: any[]): boolean {
     if (taskId) {
       let task = this.registry.get(taskId);
       if (task) {
@@ -558,7 +558,7 @@ export class ValidationHandler {
   }
 
   // Find all tasks from the incoming path of task
-  findIncomingPathTasks(incTasks: any, input: any, sourceInputId: string, type: string, counts: any) {
+  findIncomingPathTasks(incTasks: any[], input: any, sourceInputId: string, type: string, counts: any): void {
     if (!input) {
       return;
     }
@@ -615,7 +615,7 @@ export class ValidationHandler {
   }
 
   // Find all tasks from the outgoing path of task
-  findOutgoingPathTasks(incTasks: any, input: any, sourceInputId: string, type: string) {
+  findOutgoingPathTasks(incTasks: any[], input: any, sourceInputId: string, type: string): void {
     if (!input) {
       return;
     }
@@ -667,7 +667,7 @@ export class ValidationHandler {
   }
 
   // Find all exclusive gateways from the incoming path of task
-  findIncomingPathExclusiveGateways(incGateways: any, input: any) {
+  findIncomingPathExclusiveGateways(incGateways: any[], input: any): void {
     if (!incGateways) {
       return;
     }
@@ -714,7 +714,7 @@ export class ValidationHandler {
   }
 
   // Find all StartEvent and IntermediateEvent elements from the incoming path of task
-  findIncomingPathStartAndIntermediateEvents(incEvents: any, input: any, sourceInputId: string, incTasks: any) {
+  findIncomingPathStartAndIntermediateEvents(incEvents: any[], input: any, sourceInputId: string, incTasks: any): void {
     if (!incEvents) {
       return;
     }
@@ -770,7 +770,7 @@ export class ValidationHandler {
   }
 
   // Return all tasks from the incoming path of task
-  getTasksOfIncomingPathByInputElement(inputElement: any) {
+  getTasksOfIncomingPathByInputElement(inputElement: any): string[] {
     let incTasks = [];
     let counts = {};
     this.findIncomingPathTasks(incTasks, inputElement.incoming, inputElement.id, null, counts);
@@ -795,7 +795,7 @@ export class ValidationHandler {
   }
 
   // Return all tasks from the outgoing path of task
-  getTasksOfOutgoingPathByInputElement(inputElement: any) {
+  getTasksOfOutgoingPathByInputElement(inputElement: any): string[] {
     let outgTasks = [];
     this.findOutgoingPathTasks(outgTasks, inputElement.outgoing, inputElement.id, null);
     let rElements;
@@ -819,7 +819,7 @@ export class ValidationHandler {
   }
 
   // Return all (first) tasks from the incoming path of element
-  getFirstTasksOfIncomingPathOfInputElement(input: any) {
+  getFirstTasksOfIncomingPathOfInputElement(input: any): string[] {
     let incTasks = [];
     let counts = {};
     this.findIncomingPathTasks(incTasks, input.incoming, input.id, "first", counts);
@@ -844,7 +844,7 @@ export class ValidationHandler {
   }
 
   // Return all (first) tasks from the outgoing path of element
-  getFirstTasksOfOutgoingPathOfStartEventElements(input: any) {
+  getFirstTasksOfOutgoingPathOfStartEventElements(input: any): string[] {
     let outgTasks = [];
     this.findOutgoingPathTasks(outgTasks, input.outgoing, input.id, "first");
     let rElements;
@@ -868,7 +868,7 @@ export class ValidationHandler {
   }
 
   // Return all exclusive gateways from the incoming path of element
-  getExclusiveGatewaysOfIncomingPathOfInputElement(input: any) {
+  getExclusiveGatewaysOfIncomingPathOfInputElement(input: any): string[] {
     let incTasks = [];
     this.findIncomingPathExclusiveGateways(incTasks, input.incoming);
     let rElements;
@@ -892,7 +892,7 @@ export class ValidationHandler {
   }
 
   // Return all StartEvent and IntermediateEvent elements from the incoming path of task
-  getIncomingPathStartAndIntermediateEvents(task: any) {
+  getIncomingPathStartAndIntermediateEvents(task: any): string[] {
     let events = [];
     let tasks = []
     if (task) {
@@ -902,7 +902,7 @@ export class ValidationHandler {
   }
 
   // Return all paths from the process of current task
-  getAllPathsOfProcess(taskId: string) {
+  getAllPathsOfProcess(taskId: string): any[] {
     let allPathsOfProcess = [];
     let processTask = this.registry.get(taskId).businessObject;
     let startEventElementsOfCurrentTaskProcess = this.getIncomingPathStartAndIntermediateEvents(processTask);
@@ -937,7 +937,7 @@ export class ValidationHandler {
   }
 
   // Check if tasks (by id) are parallel
-  areTasksParallel(taskIds: string[]) {
+  areTasksParallel(taskIds: string[]): boolean {
     for (let taskId of taskIds) {
       for (let taskId2 of taskIds) {
         if (taskId !== taskId2) {
@@ -951,7 +951,7 @@ export class ValidationHandler {
   }
 
   // Check if tasks with group stereotypes are in the same order on all lanes and pools
-  areGroupsTasksInSameOrderOnAllPoolsAndLanes() {
+  areGroupsTasksInSameOrderOnAllPoolsAndLanes(): boolean {
     let problematicGroupsTasks = this.getGroupsTasksThatAreNotInSameOrderOnAllPoolsAndLanes();
     if (problematicGroupsTasks.length > 0) {
       return false;
@@ -960,7 +960,7 @@ export class ValidationHandler {
   }
 
   // Check if current task is in all paths that have exclusive gateways between their tasks
-  areAllGroupTasksAccesibleForTask(taskId: string) {
+  areAllGroupTasksAccesibleForTask(taskId: string): boolean {
     for (let paths of this.getAllPathsOfProcess(taskId)) {
       for (let path1 of paths) {
         for (let path2 of paths) {
@@ -1000,7 +1000,7 @@ export class ValidationHandler {
     return true;
   }
 
-  isThereAtLeastOneStartEventInCurrentTaskProcess(task: any) {
+  isThereAtLeastOneStartEventInCurrentTaskProcess(task: any): boolean {
     let events = this.getIncomingPathStartAndIntermediateEvents(task);
     if (task && events.length > 0) {
       return true;
@@ -1014,11 +1014,11 @@ export class ValidationHandler {
   }
 
   /* */
-  setChangesInModelStatus(status: boolean) {
+  setChangesInModelStatus(status: boolean): void {
     this.elementsHandler.setModelChanged(status);
   }
 
-  areThereChangesInModel() {
+  areThereChangesInModel(): boolean {
     return this.elementsHandler.getModelChanged();
   }
 

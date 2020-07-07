@@ -14,15 +14,15 @@ export class MessageFlowStereotype extends Stereotype {
   messageFlowHandler: MessageFlowHandler;
 
   /** Wrappers to access messageFlowHandler functions*/
-  getMessageFlowHandlerByMessageFlowId(messageFlowId: string) {
+  getMessageFlowHandlerByMessageFlowId(messageFlowId: string): any {
     return this.messageFlowHandler.getMessageFlowHandlerByMessageFlowId(messageFlowId);
   }
 
-  getMessageFlowInputObjects() {
+  getMessageFlowInputObjects(): any[] {
     return this.messageFlowHandler.getMessageFlowInputObjects();
   }
 
-  getMessageFlowOutputObjects() {
+  getMessageFlowOutputObjects(): any[] {
     return this.messageFlowHandler.getMessageFlowOutputObjects();
   }
 

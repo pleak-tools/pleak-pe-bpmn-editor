@@ -29,7 +29,7 @@ export class ElementsHandler {
   parent: any;
   canEdit: Boolean;
 
-  private changesInModel: boolean = true;
+  private changesInModel: boolean = false;
 
   validationHandler: ValidationHandler;
 
@@ -61,7 +61,7 @@ export class ElementsHandler {
     return this.parent.activeMode === "SQLleaks";
   }
 
-  init() {
+  init(): Promise<void> {
     return new Promise((resolve) => {
       this.validationHandler = new ValidationHandler(this.viewer, this.diagram, this);
       // Import model from xml file
@@ -212,7 +212,7 @@ export class ElementsHandler {
     }
   }
 
-  initWithoutClickHandlers() {
+  initWithoutClickHandlers(): void {
     this.validationHandler = new ValidationHandler(this.viewer, this.diagram, this);
     // Import model from xml file
     this.viewer.importXML(this.diagram, () => {
@@ -243,7 +243,7 @@ export class ElementsHandler {
   }
 
   // Check if another element (compared to the input id) is being currently edited
-  isAnotherTaskOrDataObjectBeingEdited(elementId: string) {
+  isAnotherTaskOrDataObjectBeingEdited(elementId: string): boolean {
     let beingEditedElementHandler = this.taskHandlers.filter(function (obj) {
       return obj.beingEdited;
     });
@@ -259,7 +259,7 @@ export class ElementsHandler {
     return false;
   }
 
-  initStereotypeSettingsPanel(elementHandler: any) {
+  initStereotypeSettingsPanel(elementHandler: any): void {
     if (elementHandler.stereotypes.length > 0 || elementHandler.tempStereotype != null) {
       $(document).find('#stereotype-options-title').text(elementHandler.getName());
       $(document).find('#stereotype-options-hide-button').off('click');
@@ -278,7 +278,7 @@ export class ElementsHandler {
     }
   }
 
-  terminateStereotypeSettingsPanel() {
+  terminateStereotypeSettingsPanel(): void {
     $(document).find('#stereotype-options-title').text('');
     $(document).find('#stereotype-options-hide-button').off('click');
     $(document).find('#stereotype-options-sidebar').addClass('hidden');
@@ -298,8 +298,9 @@ export class ElementsHandler {
     $('#sidebar').scrollTop(0);
   }
 
-  saveStereotypes(elementHandler: any) {
+  saveStereotypes(elementHandler: any): void {
     let flag = false;
+    this.setModelChanged(false);
     if (elementHandler.tempStereotype != null && !elementHandler.tempStereotype.saveStereotypeSettings()) {
       flag = true;
     }
@@ -316,13 +317,14 @@ export class ElementsHandler {
         },
         (err: any, xml: string) => {
           this.updateModelContentVariable(xml);
+          elementHandler.reloadElementInfo();
         }
       );
     }
   }
 
   // Create handler instance for each task / messageFlow of model
-  createElementHandlerInstances(definitions: any) {
+  createElementHandlerInstances(definitions: any): Promise<void> {
     return new Promise((resolve) => {
       for (let diagram of definitions.diagrams) {
         let element = diagram.plane.bpmnElement;
@@ -375,12 +377,13 @@ export class ElementsHandler {
     });
   }
 
-  updateModelContentVariable(xml: string) {
+  updateModelContentVariable(xml: string): void {
     if (xml) {
       this.parent.editorService.updateModel(xml);
       this.content = xml;
       if (this.content != this.lastContent) {
         this.setModelChanged(true);
+        this.lastContent = this.content;
         this.validationHandler.simpleDisclosureAnalysisHandler.terminate();
         this.validationHandler.dataDependenciesAnalysisHandler.terminate();
       }
@@ -388,7 +391,7 @@ export class ElementsHandler {
   }
 
   // Get taskHandler instance of task by task id
-  getTaskHandlerByTaskId(taskId: string) {
+  getTaskHandlerByTaskId(taskId: string): any {
     let taskHandler = null;
     let taskHandlerWithTaskId = this.getAllModelTaskHandlers().filter(function (obj) {
       return obj.task.id == taskId;
@@ -400,11 +403,11 @@ export class ElementsHandler {
   }
 
   // Get all taskHandler instances of the model
-  getAllModelTaskHandlers() {
+  getAllModelTaskHandlers(): any[] {
     return this.taskHandlers;
   }
 
-  terminateElementsEditing() {
+  terminateElementsEditing(): void {
     this.selectedElement = null;
     this.validationHandler.removeAllErrorHighlights();
     for (let taskHandler of this.getAllModelTaskHandlers()) {
@@ -418,8 +421,13 @@ export class ElementsHandler {
     }
   }
 
+  terminateElementsEditingLight(): void {
+    this.selectedElement = null;
+    this.validationHandler.removeAllErrorHighlights();
+  }
+
   // Get messageFlowHandler instance of messageFlow by messageFlow id
-  getMessageFlowHandlerByMessageFlowId(messageFlowId: string) {
+  getMessageFlowHandlerByMessageFlowId(messageFlowId: string): any {
     let messageFlowHandler = null;
     let messageFlowHandlerWithMessageFlowId = this.getAllModelMessageFlowHandlers().filter(function (obj) {
       return obj.messageFlow.id == messageFlowId;
@@ -431,12 +439,12 @@ export class ElementsHandler {
   }
 
   // Get all messageFlowHandler instances of the model
-  getAllModelMessageFlowHandlers() {
+  getAllModelMessageFlowHandlers(): any[] {
     return this.messageFlowHandlers;
   }
 
   // Get dataObjectHandler instance of dataObject by dataObject id
-  getDataObjectHandlerByDataObjectId(dataObjectId: string) {
+  getDataObjectHandlerByDataObjectId(dataObjectId: string): any {
     let dataObjectHandler = null;
     if (dataObjectId) {
       let dataObjectHandlerWithMessageFlowId = this.getAllModelDataObjectHandlers().filter(function (obj) {
@@ -450,11 +458,11 @@ export class ElementsHandler {
   }
 
   // Get all dataObjectHandler instances of the model
-  getAllModelDataObjectHandlers() {
+  getAllModelDataObjectHandlers(): any[] {
     return this.dataObjectHandlers;
   }
 
-  getDataObjectHandlersByDataObjectName(name: string) {
+  getDataObjectHandlersByDataObjectName(name: string): any[] {
     let handlers = [];
     let tmp = this.getAllModelDataObjectHandlers().filter((obj) => {
       return obj.dataObject.name.trim() == name.trim();
@@ -465,11 +473,11 @@ export class ElementsHandler {
     return handlers;
   }
 
-  initValidation() {
+  initValidation(): void {
     this.checkForStereotypeErrorsAndShowErrorsList();
   }
 
-  areThereUnsavedChangesOnModel() {
+  areThereUnsavedChangesOnModel(): boolean {
     let beingEditedElementHandler = this.taskHandlers.filter(function (obj) {
       return obj.beingEdited;
     });
@@ -483,7 +491,6 @@ export class ElementsHandler {
       if (beingEditedElementHandler[0].areThereUnsavedTaskChanges()) {
         return true;
       }
-
     }
     if (beingEditedDataObjectHandler.length > 0) {
       if (beingEditedDataObjectHandler[0].areThereUnsavedDataObjectChanges()) {
@@ -495,19 +502,20 @@ export class ElementsHandler {
         return true;
       }
     }
+    return false;
   }
 
-  setModelChanged(status: boolean) {
+  setModelChanged(status: boolean): void {
     this.changesInModel = status;
   }
 
-  getModelChanged() {
+  getModelChanged(): boolean {
     return this.changesInModel;
   }
 
   /** Wrappers to access validationHandler functions*/
 
-  checkForStereotypeErrorsAndShowErrorsList() {
+  checkForStereotypeErrorsAndShowErrorsList(): void {
     this.validationHandler.checkForStereotypeErrorsAndShowErrorsList();
   }
 

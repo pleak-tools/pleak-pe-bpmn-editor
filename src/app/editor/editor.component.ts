@@ -27,7 +27,7 @@ export class EditorComponent {
 
   elementsHandler: ElementsHandler;
 
-  modelId: number;
+  modelId: string;
 
   activeMode: string = "PEBPMN";
 

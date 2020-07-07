@@ -17,7 +17,6 @@ export class SimpleDisclosureAnalysisHandler {
     this.validationHandler = validationHandler;
     this.analysisPanel = validationHandler.analysisPanel;
     this.successPanel = validationHandler.successPanel;
-    this.dtoOwners = {};
   }
 
   viewer: Viewer;
@@ -25,7 +24,6 @@ export class SimpleDisclosureAnalysisHandler {
   eventBus: any;
   canvas: any;
   diagram: string;
-  dtoOwners: any;
 
   elementsHandler: ElementsHandler;
   validationHandler: ValidationHandler;
@@ -187,7 +185,7 @@ export class SimpleDisclosureAnalysisHandler {
   }
 
   // Get data objects groups based on stereotypes
-  getDataObjectsGroupsBasedOnStereotypes(uniqueDataObjects): any[] {
+  getDataObjectsGroupsBasedOnStereotypes(uniqueDataObjects: any[]): any[] {
     let simpleDisclosureData = this.getSimpleDisclosureData(uniqueDataObjects);
     let taskHandlers = this.elementsHandler.getAllModelTaskHandlers();
     let stereotypeBasedDataObjectsGroupInfo = [];
@@ -294,7 +292,7 @@ export class SimpleDisclosureAnalysisHandler {
   }
 
   // Get raw simple disclosure (unformatted for report tabel) data ojects groups
-  getSimpleDisclosureReportColumnGroupsRaw(uniqueDataObjectsByName): any[] {
+  getSimpleDisclosureReportColumnGroupsRaw(uniqueDataObjectsByName: any[]): any[] {
     let dataObjectsGroupsBasedOnStereotypes = this.getDataObjectsGroupsBasedOnStereotypes(uniqueDataObjectsByName);
     let getSimpleDisclosureDataMatrix = this.getSimpleDisclosureDataMatrix(uniqueDataObjectsByName);
     let groups = dataObjectsGroupsBasedOnStereotypes.map(a => ({ ...a }));
@@ -527,6 +525,7 @@ export class SimpleDisclosureAnalysisHandler {
     let dataObjectHandlers = this.elementsHandler.getAllModelDataObjectHandlers();
     let uniqueDataObjectsByName = [];
     for (let dataObjectHandler of dataObjectHandlers) {
+      dataObjectHandler.loadDataObjectVisibilityStatus();
       let visibleTo = this.validationHandler.getUniqueValuesOfArray(dataObjectHandler.getLanesAndPoolsDataObjectIsVisibleTo());
       let visibility = dataObjectHandler.getVisibilityStatus();
       if (dataObjectHandler.dataObject.name) {

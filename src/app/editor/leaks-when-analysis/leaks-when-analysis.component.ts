@@ -36,7 +36,6 @@ export class LeaksWhenAnalysisComponent {
   eventBus: any;
   canvas: any;
   diagram: string;
-  dtoOwners: any;
 
   analysisPanel: any;
   successPanel: any;
@@ -188,13 +187,12 @@ export class LeaksWhenAnalysisComponent {
         },
         (err: any, xml: string) => {
           this.elementsHandler.updateModelContentVariable(xml);
-          this.lastModelContent = xml;
         }
       );
       this.scriptOfSelectedElement = null;
       this.policyOfSelectedElement = null;
     }
-    this.elementsHandler.terminateElementsEditing();
+    this.elementsHandler.terminateElementsEditingLight();
   }
 
   areThereUnsavedLeaksWhenChanges(): boolean {
@@ -229,7 +227,7 @@ export class LeaksWhenAnalysisComponent {
       if (confirm('Are you sure you wish to revert unsaved settings?')) {
         this.scriptOfSelectedElement = null;
         this.policyOfSelectedElement = null;
-        this.elementsHandler.terminateElementsEditing();
+        this.elementsHandler.terminateElementsEditingLight();
       } else {
         this.canvas.addMarker(this.getSelectedElement().id, 'selected');
         return false;
@@ -237,7 +235,7 @@ export class LeaksWhenAnalysisComponent {
     }
     this.scriptOfSelectedElement = null;
     this.policyOfSelectedElement = null;
-    this.elementsHandler.terminateElementsEditing();
+    this.elementsHandler.terminateElementsEditingLight();
   }
 
   // Simple Disclosure leaks-when
@@ -528,7 +526,7 @@ export class LeaksWhenAnalysisComponent {
 
   sendBPMNLeaksWhenAnalysisRequest(): void {
     this.checkForBPMNLeaksWhenErrors().then(() => {
-      if (this.BPMNLeaksWhenResult && !this.areThereUnsavedLeaksWhenChanges() && !this.elementsHandler.areThereUnsavedChangesOnModel()) {
+      if (this.BPMNLeaksWhenResult != null && !this.areThereUnsavedLeaksWhenChanges() && !this.elementsHandler.getModelChanged() && !this.elementsHandler.areThereUnsavedChangesOnModel()) {
         this.showBPMNLeaksWhenAnalysisResults(this.BPMNLeaksWhenResult);
       } else {
         this.leaksWhenAnalysisInprogress = true;
@@ -577,6 +575,7 @@ export class LeaksWhenAnalysisComponent {
             }
           });
       }
+      this.elementsHandler.setModelChanged(false);
     }).catch((errors) => {
       console.log(errors)
       this.BPMNLeaksWhenScriptErrors = errors;
@@ -589,7 +588,7 @@ export class LeaksWhenAnalysisComponent {
     });
   }
 
-  analyseBPMNLeaksWhen(xml: string): Promise<any> {
+  analyseBPMNLeaksWhen(xml: string): Promise<boolean> {
     return new Promise((resolve) => {
       this.http.post(config.backend.host + '/rest/pe-bpmn-leaks-when/bpmn-leaks-when-analysis', { model: xml }, AuthService.loadRequestOptions()).subscribe(
         (response: any) => {
@@ -608,7 +607,7 @@ export class LeaksWhenAnalysisComponent {
     });
   }
 
-  formatModelForBPMNLeaksWhenAnalysis(xml: string): Promise<any> {
+  formatModelForBPMNLeaksWhenAnalysis(xml: string): Promise<boolean> {
     return new Promise((resolve) => {
       let allMessageFlowHandlers = this.elementsHandler.getAllModelMessageFlowHandlers();
       // let regex = new RegExp(/\b(?<!\.|\")[A-Za-z0-9_[\]]+(?!\(|\")\b/, 'gm');
@@ -1018,7 +1017,7 @@ export class LeaksWhenAnalysisComponent {
         });
   }
 
-  sendLeaksWhenRequest(diagramId: string, sqlCommands, processedLabels, policy, runNumber, simplificationTarget: string, selectedDataObjectName) {
+  sendLeaksWhenRequest(diagramId: string, sqlCommands: any, processedLabels: any, policy: any, runNumber: any, simplificationTarget: string, selectedDataObjectName: string) {
     const modelPath = `${diagramId}/run_${runNumber}/${processedLabels[0]}`;
     return this.http.post(config.leakswhen.host + config.leakswhen.report, { diagram_id: diagramId, simplificationTarget: simplificationTarget, run_number: runNumber, selected_dto: processedLabels[0], model: modelPath, targets: processedLabels.join(','), sql_script: sqlCommands, policy: policy })
       .toPromise()
@@ -1078,7 +1077,7 @@ export class LeaksWhenAnalysisComponent {
     }
   }
 
-  buildPetriNet(startBusinessObj, petri, maxPlaceNumberObj, taskDtoOrdering): any {
+  buildPetriNet(startBusinessObj: any, petri: any, maxPlaceNumberObj: any, taskDtoOrdering: any): any {
     let currentRun = [];
     let st = [startBusinessObj];
     let xorSplitStack = [];

@@ -54,7 +54,7 @@ export class LeakageDetectionComponent {
 
   public analysisStopped: boolean = false;
 
-  detectLeakagesAnalysisRequest(requestData, requestType, redirectCount, step): Promise<any> {
+  detectLeakagesAnalysisRequest(requestData: any, requestType: number, redirectCount: number, step: number): Promise<any> {
     this.canvas = this.viewer.get('canvas');
     this.registry = this.viewer.get('elementRegistry');
     if (!this.analysisStopped) {
@@ -133,7 +133,7 @@ export class LeakageDetectionComponent {
     return { success: false, error: resultString };
   }
 
-  showRequestResult(requestData, resultData, step): void {
+  showRequestResult(requestData: any, resultData: string, step: number): void {
     if (step === 1) {
       if (requestData.verificationType === 1 || requestData.verificationType === 2) {
         let tmp = [];
@@ -345,7 +345,7 @@ export class LeakageDetectionComponent {
     return false;
   }
 
-  static initLeakageDetectionModal(analysisPanel): void {
+  static initLeakageDetectionModal(analysisPanel: any): void {
     analysisPanel.off('click', '#detect-leakages');
     analysisPanel.on('click', '#detect-leakages', (e) => {
       let $selector = $('#leakageDetectionModal');

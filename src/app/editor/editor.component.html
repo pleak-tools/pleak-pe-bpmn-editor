@@ -22,7 +22,7 @@
     [elementsHandler]="elementsHandler" [activeMode]="activeMode" (open)=scriptPolicyModal.openModal($event)>
   </app-leaks-when-analysis>
 
-  <div id="sidebar-panels" [class.hidden]=!isPEBPMModeActive()>
+  <div id="sidebar-panels" [class.hidden]=isSQLLeaksWhenActive()>
 
     <div id="PEBPMN-analysis-sidebar">
       <div class="analysis-spinner" style="display:none">

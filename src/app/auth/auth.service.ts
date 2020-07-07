@@ -34,19 +34,19 @@ export class AuthService {
     return Object.assign({headers: {'JSON-Web-Token': localStorage.jwt || ''}}, input);
   }
 
-  setLoginCredentialsEmail(value: string) {
+  setLoginCredentialsEmail(value: string): void {
     this.loginCredentials.email = value;
   }
 
-  setLoginCredentialsPassword(value: string) {
+  setLoginCredentialsPassword(value: string): void {
     this.loginCredentials.password = value;
   }
 
-  authStatusChanged(status: boolean) {
+  authStatusChanged(status: boolean): void {
     this.authStatusBool.next(status);
   }
 
-  verifyToken() {
+  verifyToken(): boolean {
 
     this.http.get(config.backend.host + '/rest/auth', AuthService.loadRequestOptions()).subscribe(
       () => {
@@ -65,7 +65,7 @@ export class AuthService {
 
   }
 
-  loginREST(user) {
+  loginREST(user): void {
 
     this.http.post(config.backend.host + '/rest/auth/login', user, AuthService.loadRequestOptions({observe: 'response'})).subscribe(
       (response: HttpResponse<any>) => {
@@ -90,7 +90,7 @@ export class AuthService {
 
   }
 
-  logoutREST() {
+  logoutREST(): void {
 
     this.http.get(config.backend.host + '/rest/auth/logout', AuthService.loadRequestOptions()).subscribe(
       () => {
@@ -111,17 +111,17 @@ export class AuthService {
 
   }
 
-  login() {
+  login(): void {
     this.showLoginLoading();
     this.loginREST(this.loginCredentials);
   }
 
-  showLoginLoading() {
+  showLoginLoading(): void {
     $('#loginLoading').show();
     $('#loginForm').hide();
   }
 
-  loginSuccess() {
+  loginSuccess(): void {
     $('#loginLoading').fadeOut('slow', function () {
       $('#loginForm').trigger('reset').show();
       $('#loginForm .help-block').hide();
@@ -136,7 +136,7 @@ export class AuthService {
     };
   }
 
-  loginError(code) {
+  loginError(code): void {
     $('#loginLoading').fadeOut('slow', function () {
       $('#loginForm .help-block').hide();
       $('#loginForm .form-group').addClass('has-error');
@@ -149,7 +149,7 @@ export class AuthService {
     });
   }
 
-  logout() {
+  logout(): void {
     this.showLogoutLoading();
     this.logoutREST();
     this.loginCredentials = {
@@ -158,12 +158,12 @@ export class AuthService {
     };
   }
 
-  showLogoutLoading() {
+  showLogoutLoading(): void {
     $('#logoutLoading').show();
     $('#logoutText').hide();
   }
 
-  hideLogoutLoading() {
+  hideLogoutLoading(): void {
     $('#logoutLoading').fadeOut('slow', function () {
       $('#logoutText').show();
     });

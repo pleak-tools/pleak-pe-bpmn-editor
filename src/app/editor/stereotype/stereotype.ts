@@ -37,24 +37,24 @@ export class Stereotype {
   isTempStereotype: boolean = false;
 
   /** Functions for all subclasses */
-  getTitle() {
+  getTitle(): string {
     return this.title;
   }
 
-  setLabel(label: string) {
+  setLabel(label: string): void {
     this.label = label;
   }
 
-  getLabel() {
+  getLabel(): string {
     return this.label;
   }
 
-  getSettingsPanelContainer() {
+  getSettingsPanelContainer(): any {
     return this.settingsPanelContainer;
   }
 
   // Activated by elementHandler on click events (or manually)
-  loadStereotypeTemplateAndInitStereotypeSettings() {
+  loadStereotypeTemplateAndInitStereotypeSettings(): void {
     if ($('#stereotype-options').has('#' + this.getTitle() + '-stereotype-options').length) {
       this.initStereotypeSettings();
       this.markReadonlyFields();
@@ -67,7 +67,7 @@ export class Stereotype {
   }
 
   // Activated by elementHandler on click events (or manually)
-  loadStereotypeTemplateAndInitStereotypeSettingsWithHighlight() {
+  loadStereotypeTemplateAndInitStereotypeSettingsWithHighlight(): void {
     if ($('#stereotype-options').has('#' + this.getTitle() + '-stereotype-options').length) {
       this.initStereotypeSettings();
       this.bringSettingsPanelToTopAndHighlight();
@@ -82,15 +82,15 @@ export class Stereotype {
   }
 
   // Activated by elementHandler on click events (or manually)
-  initStereotypePublicView() { }
+  initStereotypePublicView(): void { }
 
   // Activated by elementHandler on click events (or manually)
-  initStereotypeSettings() {
+  initStereotypeSettings(): void {
     this.settingsPanelContainer = $('#' + this.getTitle() + '-stereotype-options');
     this.initRemoveButton();
   }
 
-  markReadonlyFields() {
+  markReadonlyFields(): void {
     if (!this.elementHandler.elementsHandler.canEdit) {
       this.settingsPanelContainer.find('[data-readonly]').each(function () {
         const type = $(this).data('readonly');
@@ -104,7 +104,7 @@ export class Stereotype {
   }
 
   // Activated by elementHandler on click events (or manually)
-  bringSettingsPanelToTopAndHighlight() {
+  bringSettingsPanelToTopAndHighlight(): void {
     let currentPanel = this.getSettingsPanelContainer();
     currentPanel.detach();
     $('#stereotype-options').prepend(currentPanel);
@@ -114,7 +114,7 @@ export class Stereotype {
   }
 
   // Activated by elementHandler on click events (or manually)
-  terminateStereotypeSettings() {
+  terminateStereotypeSettings(): void {
     let container = $('#stereotype-options');
     container.find('.stereotype-option').html('');
     container.find('.stereotype-option').val('');
@@ -127,22 +127,22 @@ export class Stereotype {
     this.terminateRemoveButton();
   }
 
-  terminateTempStereotypeSettings() {
+  terminateTempStereotypeSettings(): void {
     let container = $('#stereotype-options');
     this.terminateRemoveButton();
     container.find('#' + this.getTitle() + '-stereotype-options').remove();
     this.elementHandler.tempStereotype = null;
   }
 
-  saveStereotypeSettings() { }
+  saveStereotypeSettings(): void { }
 
-  removeStereotype() {
+  removeStereotype(): void {
     this.terminateStereotypeEditProcess();
     this.removeStereotypeFromElement();
     this.setNewModelContentVariableContent();
   }
 
-  initRemoveButton() {
+  initRemoveButton(): void {
     this.terminateRemoveButton();
     if (this.elementHandler.elementsHandler.canEdit) {
       this.settingsPanelContainer.one('click', '#' + this.getTitle() + '-remove-button', (e) => {
@@ -159,11 +159,11 @@ export class Stereotype {
     }
   }
 
-  terminateRemoveButton() {
+  terminateRemoveButton(): void {
     this.settingsPanelContainer.off('click', '#' + this.getTitle() + '-remove-button');
   }
 
-  setNewModelContentVariableContent() {
+  setNewModelContentVariableContent(): void {
     this.viewer.saveXML(
       {
         format: true
@@ -174,13 +174,13 @@ export class Stereotype {
     );
   }
 
-  checkForErrors(existingErrors: ValidationErrorObject[]) { }
+  checkForErrors(existingErrors: ValidationErrorObject[]): void { }
 
-  getCurrentStereotypeSettings() { };
+  getCurrentStereotypeSettings(): any { };
 
-  getSavedStereotypeSettings() { };
+  getSavedStereotypeSettings(): any { };
 
-  areThereUnsavedChanges() {
+  areThereUnsavedChanges(): boolean {
     let currentSettings = JSON.stringify(this.getCurrentStereotypeSettings());
     let savedSettings = JSON.stringify(this.getSavedStereotypeSettings());
     if (currentSettings !== savedSettings) {
@@ -190,28 +190,28 @@ export class Stereotype {
   }
 
   /** Wrappers to access elementHandler functions */
-  addStereotypeToElement() {
+  addStereotypeToElement(): void {
     this.elementHandler.addTempStereotypeToElement();
   }
 
-  removeStereotypeFromElement() {
+  removeStereotypeFromElement(): void {
     this.elementHandler.removeStereotypeByName(this.getTitle());
   }
 
-  initAllElementStereotypesSettings() {
+  initAllElementStereotypesSettings(): void {
     this.elementHandler.initElementStereotypeSettings();
   }
 
-  terminateStereotypeEditProcess() {
+  terminateStereotypeEditProcess(): void {
     this.elementHandler.terminateStereotypeEditProcess();
   }
 
-  updateModelContentVariable(xml: string) {
+  updateModelContentVariable(xml: string): void {
     this.elementHandler.updateModelContentVariable(xml);
   }
 
   /** Wrappers to access validationHandler functions */
-  addUniqueErrorToErrorsList(errors: ValidationErrorObject[], error: string, ids: string[], highlight: string[]) {
+  addUniqueErrorToErrorsList(errors: ValidationErrorObject[], error: string, ids: string[], highlight: string[]): void {
     this.validationHandler.addUniqueErrorToErrorsList(errors, error, ids, highlight);
   }
 

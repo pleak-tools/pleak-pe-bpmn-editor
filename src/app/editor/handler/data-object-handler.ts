@@ -55,45 +55,45 @@ export class DataObjectHandler {
     "ABPrivate"
   ];
 
-  getDataObjectId() {
+  getDataObjectId(): string {
     return this.dataObject.id;
   }
 
-  getName() {
+  getName(): string {
     return this.dataObject.name;
   }
 
-  getDataObjectParentLaneOrPool() {
+  getDataObjectParentLaneOrPool(): any {
     return this.parentLaneOrPool;
   }
 
-  getLanesAndPoolsDataObjectIsVisibleTo() {
+  getLanesAndPoolsDataObjectIsVisibleTo(): any[] {
     return this.tasksVisibleTo;
   }
 
-  getDataObjectParentTasks() {
+  getDataObjectParentTasks(): any[] {
     return this.incomingParentTasks.concat(this.outgoingParentTasks);
   }
 
-  getDataObjectIncomingParentTasks() {
+  getDataObjectIncomingParentTasks(): any[] {
     this.loadIncomingParentTasks();
     return this.incomingParentTasks;
   }
 
-  getDataObjectOutgoingParentTasks() {
+  getDataObjectOutgoingParentTasks(): any[] {
     this.loadOutgoingParentTasks();
     return this.outgoingParentTasks;
   }
 
-  getVisibilityStatus() {
+  getVisibilityStatus(): any[] {
     return this.visibilityStatus;
   }
 
-  getDataObjectType() {
+  getDataObjectType(): string {
     return this.dataObjectType;
   }
 
-  init() {
+  init(): void {
     // Add stereotype instances to the dataObject (based on xml of the model)
     for (let sType of this.supportedStereotypes) {
       if (this.dataObject[(<any>sType)] != null) {
@@ -102,6 +102,16 @@ export class DataObjectHandler {
       }
     }
     this.loadDataObjectStereotypes();
+  }
+
+  reloadElementInfo(): void {
+    const dataObject = this.registry.get(this.getDataObjectId());
+    if (dataObject) {
+      if (dataObject.businessObject) {
+        this.dataObject = dataObject.businessObject;
+      }
+    }
+    this.loadDataObjectVisibilityStatus();
   }
 
   prepareAnalysisDetails(): void {
@@ -113,7 +123,7 @@ export class DataObjectHandler {
     this.loadDataObjectType();
   }
 
-  loadDataObjectType() {
+  loadDataObjectType(): void {
     if (this.registry.get(this.dataObject.id) && this.registry.get(this.dataObject.id).incoming.length > 0 && this.registry.get(this.dataObject.id).outgoing.length > 0) {
       this.dataObjectType = "input-output";
     } else if (this.registry.get(this.dataObject.id) && this.registry.get(this.dataObject.id).incoming.length > 0) {
@@ -124,7 +134,7 @@ export class DataObjectHandler {
   }
 
   // Load data object's parent lane/pool information
-  loadParentLaneOrPool() {
+  loadParentLaneOrPool(): void {
     this.parentLaneOrPool = null;
     if (this.registry.get(this.dataObject.id).parent && this.registry.get(this.registry.get(this.dataObject.id).parent.id)) {
       this.parentLaneOrPool = this.registry.get(this.registry.get(this.dataObject.id).parent.id).businessObject;
@@ -132,7 +142,7 @@ export class DataObjectHandler {
   }
 
   // Load data object's incoming "parents" (tasks) information
-  loadIncomingParentTasks() {
+  loadIncomingParentTasks(): void {
     let parentTasks = [];
     if (this.registry.get(this.dataObject.id) && this.registry.get(this.dataObject.id).incoming) {
       for (let incoming of this.registry.get(this.dataObject.id).incoming) {
@@ -145,7 +155,7 @@ export class DataObjectHandler {
   }
 
   // Load data object's outgoing "parents" (tasks) information
-  loadOutgoingParentTasks() {
+  loadOutgoingParentTasks(): void {
     let parentTasks = [];
     if (this.registry.get(this.dataObject.id) && this.registry.get(this.dataObject.id).outgoing) {
       for (let outgoing of this.registry.get(this.dataObject.id).outgoing) {
@@ -158,7 +168,7 @@ export class DataObjectHandler {
   }
 
   // Load information about lanes/pools to which the data objects is visible to
-  loadLanesAndPoolsToWhichDataObjectIsVisibleTo() {
+  loadLanesAndPoolsToWhichDataObjectIsVisibleTo(): void {
     let tasksVisibleTo = [];
     if (this.registry.get(this.dataObject.id) && this.registry.get(this.dataObject.id).incoming) {
       for (let incoming of this.registry.get(this.dataObject.id).incoming) {
@@ -202,7 +212,7 @@ export class DataObjectHandler {
   }
 
   // Load visibility status of data object
-  loadDataObjectVisibilityStatus() {
+  loadDataObjectVisibilityStatus(): void {
     let statuses = [];
     for (let parentTask of this.getDataObjectParentTasks()) {
       let status = this.elementsHandler.getTaskHandlerByTaskId(parentTask.id).getDataObjectVisibilityStatus(this.dataObject.id);
@@ -210,11 +220,11 @@ export class DataObjectHandler {
         statuses = statuses.concat(status);
       }
     }
-    this.visibilityStatus = this.visibilityStatus.concat(statuses);
+    this.visibilityStatus = statuses;
   }
 
   // Add already existing stereotype labels to the model
-  loadDataObjectStereotypes() {
+  loadDataObjectStereotypes(): void {
     if (this.stereotypes.length > 0) {
       for (let stereotype of this.stereotypes) {
         this.addStereotypeLabelToElement(stereotype.getTitle());
@@ -223,7 +233,7 @@ export class DataObjectHandler {
   }
 
   // Start dataObject editing (stereotype adding) process
-  initStereotypeEditProcess() {
+  initStereotypeEditProcess(): void {
     if (this.stereotypeSelector == null) {
       this.initDataObjectStereotypeSelector();
     }
@@ -234,7 +244,7 @@ export class DataObjectHandler {
   }
 
   // Start stereotype public view for the viewer
-  initPublicStereotypeView() {
+  initPublicStereotypeView(): void {
     for (let sType of this.stereotypes) {
       sType.initStereotypePublicView();
     }
@@ -246,7 +256,7 @@ export class DataObjectHandler {
   }
 
   // End dataObject editing (stereotype adding) process
-  terminateStereotypeEditProcess() {
+  terminateStereotypeEditProcess(): void {
     this.terminateDataObjectStereotypeSelector();
     this.terminateDataObjectStereotypeSettings();
     this.terminateStereotypeSettingsPanel();
@@ -256,7 +266,7 @@ export class DataObjectHandler {
   }
 
   // Init settings panels for all already added stereotypes
-  initElementStereotypeSettings() {
+  initElementStereotypeSettings(): void {
     for (let sType of this.stereotypes) {
       sType.isTempStereotype = false;
       sType.loadStereotypeTemplateAndInitStereotypeSettings();
@@ -264,7 +274,7 @@ export class DataObjectHandler {
   }
 
   // Hide settings panels for all already added stereotypes
-  terminateDataObjectStereotypeSettings() {
+  terminateDataObjectStereotypeSettings(): void {
     for (let sType of this.stereotypes) {
       sType.terminateStereotypeSettings();
     }
@@ -274,7 +284,7 @@ export class DataObjectHandler {
     }
   }
 
-  areThereUnsavedDataObjectChanges() {
+  areThereUnsavedDataObjectChanges(): boolean {
     if (this.tempStereotype == null) {
       for (let stereotype of this.stereotypes) {
         if (stereotype.areThereUnsavedChanges()) {
@@ -287,7 +297,7 @@ export class DataObjectHandler {
     }
   }
 
-  checkForUnsavedChanges() {
+  checkForUnsavedChanges(): void | boolean {
     if (this.areThereUnsavedDataObjectChanges()) {
       if (confirm('Are you sure you wish to revert unsaved stereotype settings?')) {
         this.terminateStereotypeEditProcess();
@@ -300,7 +310,7 @@ export class DataObjectHandler {
   }
 
   // Show stereotype selector next to dataObject element on the model
-  initDataObjectStereotypeSelector() {
+  initDataObjectStereotypeSelector(): void {
     let overlayHtml = `
       <div class="panel panel-default stereotype-editor" id="` + this.dataObject.id + `-stereotype-selector">
         <div class="stereotype-editor-close-link" style="float: right; color: darkgray; cursor: pointer">X</div>
@@ -362,13 +372,13 @@ export class DataObjectHandler {
   }
 
   // Remove stereotype selector
-  terminateDataObjectStereotypeSelector() {
+  terminateDataObjectStereotypeSelector(): void {
     this.overlays.remove({ id: this.stereotypeSelector });
     this.stereotypeSelector = null;
   }
 
   // Create and return new stereotype instance by name
-  createStereotypeByName(name: string) {
+  createStereotypeByName(name: string): any {
     let st = null;
     if (name) {
       if (name == "PKPublic") {
@@ -385,12 +395,12 @@ export class DataObjectHandler {
   }
 
   // Add stereotype instance to the dataObject
-  addStereotypeToDataObject(stereotype: DataObjectStereotype) {
+  addStereotypeToDataObject(stereotype: DataObjectStereotype): void {
     this.stereotypes.push(stereotype);
   }
 
   // Start adding new stereotype to the dataObject (open settings panel etc)
-  addStereotypeByName(name: string) {
+  addStereotypeByName(name: string): void {
     if (this.tempStereotype == null) {
       let st = this.createStereotypeByName(name);
       st.isTempStereotype = true;
@@ -410,13 +420,13 @@ export class DataObjectHandler {
   }
 
   // Add new stereotype to the dataObject (save)
-  addTempStereotypeToElement() {
+  addTempStereotypeToElement(): void {
     this.addStereotypeToDataObject(this.tempStereotype);
     this.addStereotypeLabelToElement(this.tempStereotype.getTitle());
   }
 
   // Remove stereotype from the dataObject by stereotype name
-  removeStereotypeByName(name: string) {
+  removeStereotypeByName(name: string): void {
     if (this.getDataObjectStereotypeInstanceByName(name)) {
       this.overlays.remove({ id: this.getDataObjectStereotypeInstanceByName(name).getLabel() });
       this.stereotypes = this.stereotypes.filter(obj => obj.getTitle() !== name);
@@ -426,7 +436,7 @@ export class DataObjectHandler {
   }
 
   // Get stereotype instance of the dataObject by stereotype name
-  getDataObjectStereotypeInstanceByName(name: string) {
+  getDataObjectStereotypeInstanceByName(name: string): DataObjectStereotype | null {
     for (let sType of this.stereotypes) {
       if (sType.getTitle() == name) {
         return sType;
@@ -435,7 +445,7 @@ export class DataObjectHandler {
   }
 
   // Add stereotype label to the dataObject by stereotype name
-  addStereotypeLabelToElement(title: string) {
+  addStereotypeLabelToElement(title: string): void {
     if (title != null) {
       let dataObjectTypeLabel = $(
         `<div class="stereotype-label" id="` + this.dataObject.id + `-` + title + `-label" style="padding:5px; border-radius:2px">
@@ -466,30 +476,30 @@ export class DataObjectHandler {
   }
 
   // Return all task stereotype instances
-  getAllDataObjectStereotypeInstances() {
+  getAllDataObjectStereotypeInstances(): DataObjectStereotype[] {
     return this.stereotypes;
   }
 
 
   /** Wrappers to access elementsHandler functions*/
 
-  getDataObjectHandlerByDataObjectId(dataObjectId: string) {
+  getDataObjectHandlerByDataObjectId(dataObjectId: string): any {
     return this.elementsHandler.getDataObjectHandlerByDataObjectId(dataObjectId);
   }
 
-  getAllModelDataObjectHandlers() {
+  getAllModelDataObjectHandlers(): any[] {
     return this.elementsHandler.getAllModelDataObjectHandlers();
   }
 
-  updateModelContentVariable(xml: string) {
+  updateModelContentVariable(xml: string): void {
     this.elementsHandler.updateModelContentVariable(xml);
   }
 
-  initStereotypeSettingsPanel() {
+  initStereotypeSettingsPanel(): void {
     this.elementsHandler.initStereotypeSettingsPanel(this);
   }
 
-  terminateStereotypeSettingsPanel() {
+  terminateStereotypeSettingsPanel(): void {
     this.elementsHandler.terminateStereotypeSettingsPanel();
   }
 

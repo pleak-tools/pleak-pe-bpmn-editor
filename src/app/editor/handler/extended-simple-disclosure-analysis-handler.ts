@@ -25,7 +25,7 @@ export class ExtendedSimpleDisclosureAnalysisHandler {
 
   analysisPanel: any;
 
-  init(simpleDisclosureAnalysisHandler: SimpleDisclosureAnalysisHandler) {
+  init(simpleDisclosureAnalysisHandler: SimpleDisclosureAnalysisHandler): void {
     this.simpleDisclosureAnalysisHandler = simpleDisclosureAnalysisHandler;
     this.analysisPanel.off('click', '#extended-analyze-simple-disclosure');
     this.analysisPanel.on('click', '#extended-analyze-simple-disclosure', (e) => {
@@ -50,7 +50,7 @@ export class ExtendedSimpleDisclosureAnalysisHandler {
     );
   }
 
-  getExtendedSimpleDisclosureMatrix(uniqueDataObjects) {
+  getExtendedSimpleDisclosureMatrix(uniqueDataObjects): any[] {
     let simpleDisclosureMatrix = this.simpleDisclosureAnalysisHandler.getSimpleDisclosureDataMatrix(uniqueDataObjects);
     let matrix = JSON.parse(JSON.stringify(simpleDisclosureMatrix));
 
@@ -100,7 +100,7 @@ export class ExtendedSimpleDisclosureAnalysisHandler {
     return matrix;
   }
 
-  showResults(uniqueDataObjects, uniqueLanesAndPools, simpleDisclosureDataObjects, dataObjectsMessageFlowConnections) {
+  showResults(uniqueDataObjects: any[], uniqueLanesAndPools: any[], simpleDisclosureDataObjects: any[], dataObjectsMessageFlowConnections: any[]): void {
 
     let table = "";
     table += '<table class="table" style="text-align:center">';
@@ -175,7 +175,7 @@ export class ExtendedSimpleDisclosureAnalysisHandler {
     $('#simpleDisclosureReportModal').modal();
   }
 
-  getExtendedSimpleDisclosureReportTable() {
+  getExtendedSimpleDisclosureReportTable(): any {
     let uniqueDataObjects = this.simpleDisclosureAnalysisHandler.getListOfModelUniqueDataObjects();
     let matrix = this.getExtendedSimpleDisclosureMatrix(uniqueDataObjects);
 

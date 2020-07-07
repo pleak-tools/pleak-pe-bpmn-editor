@@ -40,44 +40,44 @@ export class AppComponent implements OnInit {
     this.loadModel();
   }
 
-  public modelId;
-  public viewerType;
-  public file;
+  public modelId: string;
+  public viewerType: string;
+  public file: any;
   private fileOpenedTime: number;
 
-  canSave = false;
-  authenticated: Boolean;
+  canSave: boolean = false;
+  authenticated: boolean;
 
   fileLoaded: boolean = false;
 
-  isAuthenticated() {
+  isAuthenticated(): boolean {
     return this.authenticated;
   }
 
-  setUserEmail(value: string) {
+  setUserEmail(value: string): void {
     this.authService.setLoginCredentialsEmail(value);
   }
 
-  setUserPassword(value: string) {
+  setUserPassword(value: string): void {
     this.authService.setLoginCredentialsPassword(value);
   }
 
-  login() {
+  login(): void {
     this.authService.login();
   }
 
-  logout() {
+  logout(): void {
     this.authService.logout();
   }
 
   @HostListener('window:beforeunload', ['$event'])
-  doSomething($event) {
+  doSomething($event): void {
     if (this.file.content !== this.editorService.getModel()) {
       $event.returnValue = 'Are you sure you want to close this tab? Unsaved progress will be lost?';
     }
   }
 
-  loadModel() {
+  loadModel(): void {
 
     this.http.get(config.backend.host + '/rest/directories/files/' + (this.viewerType === 'public' ? 'public/' : '') + this.modelId, AuthService.loadRequestOptions()).subscribe(
 
@@ -95,7 +95,7 @@ export class AppComponent implements OnInit {
     );
   }
 
-  saveModel() {
+  saveModel(): void {
 
     const requestItem = Object.assign({}, this.file);
     Object.assign(requestItem, { content: this.editorService.getModel() });
@@ -116,7 +116,7 @@ export class AppComponent implements OnInit {
     );
   }
 
-  private getPermissions(id: number) {
+  private getPermissions(id: string): void {
     this.http.get(config.backend.host + '/rest/directories/files/' + id, AuthService.loadRequestOptions()).subscribe(
       (response: any) => {
         this.file.permissions = response.permissions;
@@ -130,7 +130,7 @@ export class AppComponent implements OnInit {
     );
   }
 
-  canEdit() {
+  canEdit(): boolean {
     const file = this.file;
 
     if (!file || !this.isAuthenticated()) { return false; }
@@ -144,7 +144,7 @@ export class AppComponent implements OnInit {
     return false;
   }
 
-  ngOnInit() {
+  ngOnInit(): void {
     window.addEventListener('storage', (e) => {
       if (e.storageArea === localStorage) {
         if (!this.authService.verifyToken()) {

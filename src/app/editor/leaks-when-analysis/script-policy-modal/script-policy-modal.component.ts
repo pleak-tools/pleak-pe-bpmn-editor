@@ -29,7 +29,7 @@ export class ScriptPolicyModalComponent {
     return this.activeMode === "SQLleaks";
   }
 
-  openModal(value: any) {
+  openModal(value: any): void {
     this.input = null;
     this.type = null;
     this.name = null;

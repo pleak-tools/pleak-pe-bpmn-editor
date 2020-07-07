@@ -12,11 +12,11 @@ export class EditorService {
   newModel: Observable<string | null> = this._newModel.asObservable();
 
   canEdit = false;
-  modelId: number;
+  modelId: string;
 
   public analyze: Function;
 
-  loadModel(content, canEdit, modelId) {
+  loadModel(content: any, canEdit: boolean, modelId: string): void {
     this.canEdit = canEdit;
     this.modelId = modelId;
     if (content) {
@@ -25,13 +25,13 @@ export class EditorService {
     }
   }
 
-  updateModel(content) {
+  updateModel(content: any): void {
     if (content) {
       this._model.next(content);
     }
   }
 
-  getModel() {
+  getModel(): any {
     return this._model.getValue();
   }
 }

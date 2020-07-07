@@ -129,15 +129,15 @@ export class TaskHandler {
     "SSComputation"
   ];
 
-  getTaskId() {
+  getTaskId(): string {
     return this.task.id;
   }
 
-  getName() {
+  getName(): string {
     return this.task.name;
   }
 
-  init() {
+  init(): void {
     // Add stereotype instances to the task (based on xml of the model)
     for (let sType of this.supportedStereotypes) {
       if (this.task[(<any>sType)] != null) {
@@ -148,11 +148,20 @@ export class TaskHandler {
     this.loadTaskStereotypes();
   }
 
+  reloadElementInfo(): void {
+    const task = this.registry.get(this.getTaskId());
+    if (task) {
+      if (task.businessObject) {
+        this.task = task.businessObject;
+      }
+    }
+  }
+
   prepareAnalysisDetails(): void {
     this.loadTaskLaneOrPool();
   }
 
-  getDataObjectVisibilityStatus(dataObjectId: string) {
+  getDataObjectVisibilityStatus(dataObjectId: string): any[] {
     let allStatuses = [];
     for (let sType of this.getAllTaskStereotypeInstances()) {
       let statuses = sType.getDataObjectVisibilityStatus(dataObjectId);
@@ -164,7 +173,7 @@ export class TaskHandler {
   }
 
   // Add already existing stereotype labels to the model
-  loadTaskStereotypes() {
+  loadTaskStereotypes(): void {
     if (this.stereotypes.length > 0) {
       for (let stereotype of this.stereotypes) {
         this.addStereotypeLabelToElement(stereotype.getTitle());
@@ -173,7 +182,7 @@ export class TaskHandler {
   }
 
   // Load information about tasks' parent lane/pool
-  loadTaskLaneOrPool() {
+  loadTaskLaneOrPool(): void {
     let task = this.registry.get(this.task.id);
     if (task.businessObject.lanes) {
       if (task.businessObject.lanes.length > 1) {
@@ -195,7 +204,7 @@ export class TaskHandler {
   }
 
   // Start task editing (stereotype adding) process
-  initStereotypeEditProcess() {
+  initStereotypeEditProcess(): void {
     if (this.stereotypeSelector == null) {
       this.initTaskStereotypeSelector();
     }
@@ -206,7 +215,7 @@ export class TaskHandler {
   }
 
   // Start stereotype public view for the viewer
-  initPublicStereotypeView() {
+  initPublicStereotypeView(): void {
     for (let sType of this.stereotypes) {
       sType.initStereotypePublicView();
     }
@@ -218,7 +227,7 @@ export class TaskHandler {
   }
 
   // End task editing (stereotype adding) process
-  terminateStereotypeEditProcess() {
+  terminateStereotypeEditProcess(): void {
     this.terminateTaskStereotypeSelector();
     this.terminateTaskStereotypeSettings();
     this.terminateStereotypeSettingsPanel();
@@ -228,7 +237,7 @@ export class TaskHandler {
   }
 
   // Init settings panels for all already added stereotypes
-  initElementStereotypeSettings() {
+  initElementStereotypeSettings(): void {
     for (let sType of this.stereotypes) {
       sType.isTempStereotype = false;
       sType.loadStereotypeTemplateAndInitStereotypeSettings();
@@ -236,7 +245,7 @@ export class TaskHandler {
   }
 
   // Hide settings panels for all already added stereotypes
-  terminateTaskStereotypeSettings() {
+  terminateTaskStereotypeSettings(): void {
     for (let sType of this.stereotypes) {
       sType.terminateStereotypeSettings();
     }
@@ -246,7 +255,7 @@ export class TaskHandler {
     }
   }
 
-  areThereUnsavedTaskChanges() {
+  areThereUnsavedTaskChanges(): boolean {
     if (this.tempStereotype == null) {
       for (let stereotype of this.stereotypes) {
         if (stereotype.areThereUnsavedChanges()) {
@@ -259,7 +268,7 @@ export class TaskHandler {
     }
   }
 
-  checkForUnsavedChanges() {
+  checkForUnsavedChanges(): void | boolean {
     if (this.areThereUnsavedTaskChanges()) {
       if (confirm('Are you sure you wish to revert unsaved stereotype settings?')) {
         this.terminateStereotypeEditProcess();
@@ -272,7 +281,7 @@ export class TaskHandler {
   }
 
   // Show stereotype selector next to task element on the model
-  initTaskStereotypeSelector() {
+  initTaskStereotypeSelector(): void {
 
     let overlayHtml = `
       <div class="panel panel-default stereotype-editor" id="` + this.task.id + `-stereotype-selector">
@@ -636,13 +645,13 @@ export class TaskHandler {
   }
 
   // Remove stereotype selector
-  terminateTaskStereotypeSelector() {
+  terminateTaskStereotypeSelector(): void {
     this.overlays.remove({ id: this.stereotypeSelector });
     this.stereotypeSelector = null;
   }
 
   // Create and return new stereotype instance by name
-  createStereotypeByName(name: string) {
+  createStereotypeByName(name: string): any {
     let st = null;
     if (name) {
       if (name == "PKEncrypt") {
@@ -719,12 +728,12 @@ export class TaskHandler {
   }
 
   // Add stereotype instance to the task
-  addStereotypeToTask(stereotype: TaskStereotype) {
+  addStereotypeToTask(stereotype: TaskStereotype): void {
     this.stereotypes.push(stereotype);
   }
 
   // Start adding new stereotype to the task (open settings panel etc)
-  addStereotypeByName(name: string) {
+  addStereotypeByName(name: string): void {
     if (this.tempStereotype == null) {
       let st = this.createStereotypeByName(name);
       st.isTempStereotype = true;
@@ -744,13 +753,13 @@ export class TaskHandler {
   }
 
   // Add new stereotype to the task (save)
-  addTempStereotypeToElement() {
+  addTempStereotypeToElement(): void {
     this.addStereotypeToTask(this.tempStereotype);
     this.addStereotypeLabelToElement(this.tempStereotype.getTitle());
   }
 
   // Remove stereotype from the task by stereotype name
-  removeStereotypeByName(name: string) {
+  removeStereotypeByName(name: string): void {
     if (this.getTaskStereotypeInstanceByName(name)) {
       this.overlays.remove({ id: this.getTaskStereotypeInstanceByName(name).getLabel() });
       this.stereotypes = this.stereotypes.filter(obj => obj.getTitle() !== name);
@@ -760,7 +769,7 @@ export class TaskHandler {
   }
 
   // Return stereotype instance of the task by stereotype name
-  getTaskStereotypeInstanceByName(name: string) {
+  getTaskStereotypeInstanceByName(name: string): any {
     for (let sType of this.stereotypes) {
       if (sType.getTitle() == name) {
         return sType;
@@ -770,7 +779,7 @@ export class TaskHandler {
   }
 
   // Add stereotype label to the task by stereotype name
-  addStereotypeLabelToElement(title: string) {
+  addStereotypeLabelToElement(title: string): void {
     let stereotypesOnTaskNames = this.stereotypes.map(a => a.getTitle());
     let bottomPosition = 0;
     if (stereotypesOnTaskNames.length > 1) {
@@ -798,7 +807,7 @@ export class TaskHandler {
   }
 
   // Highlight inputs and outputs of the task
-  highlightTaskInputAndOutputObjects() {
+  highlightTaskInputAndOutputObjects(): void {
     let taskInputOutputObjects = this.getTaskInputOutputObjects();
     for (let inputOutputObj of taskInputOutputObjects) {
       this.canvas.addMarker(inputOutputObj.id, 'highlight-input-output-selected');
@@ -816,7 +825,7 @@ export class TaskHandler {
   }
 
   // Remove highlighting of task inputs and outputs
-  removeTaskInputsOutputsHighlights() {
+  removeTaskInputsOutputsHighlights(): void {
     for (let inputOutputObj of this.getTaskInputOutputObjects()) {
       this.canvas.removeMarker(inputOutputObj.id, 'highlight-input-output-selected');
     }
@@ -829,7 +838,7 @@ export class TaskHandler {
   }
 
   // Return all input elements of the task
-  getTaskInputObjects() {
+  getTaskInputObjects(): any[] {
     let objects = [];
     if (this.task.id != null) {
       let task = this.registry.get(this.task.id).businessObject;
@@ -845,7 +854,7 @@ export class TaskHandler {
   }
 
   // Return all output elements of the task
-  getTaskOutputObjects() {
+  getTaskOutputObjects(): any[] {
     let objects = [];
     if (this.task.id != null) {
       let task = this.registry.get(this.task.id).businessObject;
@@ -861,7 +870,7 @@ export class TaskHandler {
   }
 
   // Return all elements that are inputs and outputs at the same time of the task
-  getTaskInputOutputObjects() {
+  getTaskInputOutputObjects(): any[] {
     let objects = [];
     if (this.task.id != null) {
       let allInputsOutputs = [];
@@ -885,12 +894,12 @@ export class TaskHandler {
   }
 
   // Return all task stereotype instances
-  getAllTaskStereotypeInstances() {
+  getAllTaskStereotypeInstances(): TaskStereotype[] {
     return this.stereotypes;
   }
 
   // Return task output objects according to the stereotype
-  getTaskOutputObjectsBasedOnTaskStereotype() {
+  getTaskOutputObjectsBasedOnTaskStereotype(): any[] {
     let outputObjects = null;
     for (let sType of this.stereotypes.map(a => a.getTitle())) {
       if (this.normalOutputStereotypes.indexOf(<string>sType) !== -1) {
@@ -905,53 +914,53 @@ export class TaskHandler {
 
   /** Wrappers to access elementsHandler functions*/
 
-  getTaskHandlerByTaskId(taskId: string) {
+  getTaskHandlerByTaskId(taskId: string): any {
     return this.elementsHandler.getTaskHandlerByTaskId(taskId);
   }
 
-  getAllModelTaskHandlers() {
+  getAllModelTaskHandlers(): any[] {
     return this.elementsHandler.getAllModelTaskHandlers();
   }
 
-  getMessageFlowHandlerByMessageFlowId(messageFlowId: string) {
+  getMessageFlowHandlerByMessageFlowId(messageFlowId: string): any {
     return this.elementsHandler.getMessageFlowHandlerByMessageFlowId(messageFlowId);
   }
 
-  updateModelContentVariable(xml: string) {
+  updateModelContentVariable(xml: string): void {
     this.elementsHandler.updateModelContentVariable(xml);
   }
 
-  initStereotypeSettingsPanel() {
+  initStereotypeSettingsPanel(): void {
     this.elementsHandler.initStereotypeSettingsPanel(this);
   }
 
-  terminateStereotypeSettingsPanel() {
+  terminateStereotypeSettingsPanel(): void {
     this.elementsHandler.terminateStereotypeSettingsPanel();
   }
 
   /** Wrappers to access validationHandler functions*/
 
-  addStereotypeToTheListOfGroupStereotypesOnModel(stereotype: string) {
+  addStereotypeToTheListOfGroupStereotypesOnModel(stereotype: string): void {
     this.validationHandler.addStereotypeToTheListOfGroupStereotypesOnModel(stereotype);
   }
 
-  addLaneOrPoolToTheListOfModelLanesAndPools(layer: string) {
+  addLaneOrPoolToTheListOfModelLanesAndPools(layer: string): void {
     this.validationHandler.addLaneOrPoolToTheListOfModelLanesAndPools(layer);
   }
 
-  loadTaskOntoParentLaneOrPool(parentId: string, taskId: string) {
+  loadTaskOntoParentLaneOrPool(parentId: string, taskId: string): void {
     this.validationHandler.loadTaskOntoParentLaneOrPool(parentId, taskId);
   }
 
-  areGroupsTasksInSameOrderOnAllPoolsAndLanes() {
+  areGroupsTasksInSameOrderOnAllPoolsAndLanes(): boolean {
     return this.validationHandler.areGroupsTasksInSameOrderOnAllPoolsAndLanes();
   }
 
-  getGroupsTasksThatAreNotInSameOrderOnAllPoolsAndLanes() {
+  getGroupsTasksThatAreNotInSameOrderOnAllPoolsAndLanes(): any[] {
     return this.validationHandler.getGroupsTasksThatAreNotInSameOrderOnAllPoolsAndLanes()
   }
 
-  getTasksOfIncomingPath() {
+  getTasksOfIncomingPath(): any[] {
     return this.validationHandler.getTasksOfIncomingPathByInputElement(this.task);
   }
 
