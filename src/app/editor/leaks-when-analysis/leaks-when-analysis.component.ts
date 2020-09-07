@@ -634,7 +634,7 @@ export class LeaksWhenAnalysisComponent {
               if (inputDataObjectsNames.indexOf(outputDataObject.businessObject.name.trim()) !== -1) {
                 let dataObject = this.tempElementRegistry.get(outputDataObject.id);
                 let dataObjectName = (' ' + dataObject.businessObject.name).slice(1);
-                let prefix = "x_" + dataObject.id.replace("DataObjectReference_", "") + "_";
+                let prefix = "x_" + dataObject.id.replace("DataObjectReference_", "").replace("DataStoreReference_", "") + "_";
                 // Update scripts related to dataObject
                 let dataObjectHandler = this.elementsHandler.getDataObjectHandlerByDataObjectId(outputDataObject.id);
                 let outgoingParentTasks = dataObjectHandler.getDataObjectOutgoingParentTasks();
