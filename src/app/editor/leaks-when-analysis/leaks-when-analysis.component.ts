@@ -514,7 +514,6 @@ export class LeaksWhenAnalysisComponent {
     this.init();
     this.scriptOfSelectedElement = null;
     this.policyOfSelectedElement = null;
-    this.BPMNLeaksWhenExportReady = false;
     this.BPMNLeaksWhenScriptErrors = [];
     this.elementsHandler.terminateElementsEditing();
     if (this.viewer) {
@@ -529,6 +528,7 @@ export class LeaksWhenAnalysisComponent {
       if (this.BPMNLeaksWhenResult != null && !this.areThereUnsavedLeaksWhenChanges() && !this.elementsHandler.getModelChanged() && !this.elementsHandler.areThereUnsavedChangesOnModel()) {
         this.showBPMNLeaksWhenAnalysisResults(this.BPMNLeaksWhenResult);
       } else {
+        this.BPMNLeaksWhenExportReady = false;
         this.leaksWhenAnalysisInprogress = true;
 
         this.viewer.saveXML(
@@ -559,9 +559,7 @@ export class LeaksWhenAnalysisComponent {
                           });
                         }
                         this.analyseBPMNLeaksWhen(xml2).then((errors) => {
-                          if (errors) {
-                            this.BPMNLeaksWhenExportReady = true;
-                          }
+                          this.BPMNLeaksWhenExportReady = true;
                         });
                       }
                     });
