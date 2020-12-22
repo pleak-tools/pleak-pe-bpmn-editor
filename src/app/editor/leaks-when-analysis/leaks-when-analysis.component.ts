@@ -783,21 +783,30 @@ export class LeaksWhenAnalysisComponent {
 
     $modal.find('.modal-body').html(
       `<table>
-          <thead>
+          <thead class="bpmnlw-results-header">
           </thead>
           <tbody>
           </tbody>
         </table>`
     );
 
+    let maxItemLength = 0;
+
     $modal.find('table thead').html(function () {
       let output = `<th></th>`;
 
       response.inputs.forEach(function (item) {
+        if (item.length > maxItemLength) {
+          maxItemLength = item.length;
+        }
         output += `<th><div><span>${item}</span></div></th>`;
       });
 
       return `<tr>${output}</tr>`;
+    });
+
+    $('thead.bpmnlw-results-header th').css({
+      'height': 110 + ((maxItemLength*5)/1.141) + 'px',
     });
 
     $modal.find('table tbody').html(function () {

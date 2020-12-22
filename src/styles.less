@@ -280,6 +280,9 @@ html, body, #canvas, #canvas > div {
 // BPMN leaks-when analysis results modal
 
 #bpmnLeaksWhenModal {
+  .modal-dialog {
+    width: 90%;
+  }
   .tooltip {
     font-size: 15px;
     .tooltip-inner {
@@ -313,17 +316,17 @@ html, body, #canvas, #canvas > div {
         cursor: default;
       }
     }
-    thead th {
+    thead.bpmnlw-results-header th {
       /* Something you can count on */
-      height: 140px;
+      // height: 140px;
       width: 65px;
       white-space: nowrap;
       & > div {
         transform:
           /* Magic Numbers */
-                translate(51px, 51px)
+                translate(30px, 0px)
                 rotate(315deg);
-        width: 30px;
+        width: 0px;
       }
       > div > span {
         border-bottom: 1px solid #ccc;
@@ -333,6 +336,11 @@ html, body, #canvas, #canvas > div {
   }
 
 }
+
+.bpmnlw-results-header {
+  vertical-align: bottom;
+}
+
 
 .CodeMirror {
   font-size: 16px;
