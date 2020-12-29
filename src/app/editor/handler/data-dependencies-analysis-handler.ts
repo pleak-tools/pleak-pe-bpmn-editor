@@ -145,7 +145,65 @@ export class DataDependenciesAnalysisHandler {
         }
       }
     }
-    return uniqueDataObjectsByName.sort();
+    return uniqueDataObjectsByName.sort(this.compareNamesSpecial);
+  }
+
+  compareNamesSpecial(a: any, b: any): number {
+    if (a.indexOf("-") !== -1 && b.indexOf("-") !== -1) {
+      const aIdx = a.split("-")[0];
+      const bIdx = b.split("-")[0];
+      if (!isNaN(aIdx) && !isNaN(bIdx)) {
+        return aIdx - bIdx;
+      } else if (isNaN(aIdx) && isNaN(bIdx)) {
+        if (!isNaN(aIdx.substring(1)) && !isNaN(bIdx.substring(1))) {
+          return aIdx.substring(1) - bIdx.substring(1);
+        } else {
+          if (!isNaN(aIdx.substring(1))) {
+            return -1;
+          } else if (!isNaN(bIdx.substring(1))) {
+            return 1;
+          } else {
+            if (a < b) {
+              return -1;
+            } else if (a > b) {
+              return 1;
+            } else {
+              return 0;
+            }
+          }
+        }
+      } else {
+        if (!isNaN(aIdx) || !isNaN(aIdx.substring(1))) {
+          return -1;
+        } else if (!isNaN(bIdx) || !isNaN(bIdx.substring(1))) {
+          return 1;
+        } else {
+          return 0;
+        }
+      }
+    } else if (a.indexOf("-") !== -1 || b.indexOf("-") !== -1) {
+      if (a.indexOf("-") !== -1) {
+        const aIdx = a.split("-")[0];
+        if (!isNaN(aIdx) || !isNaN(aIdx.substring(1))) {
+          return -1;
+        } else {
+          return 0;
+        }
+      } else {
+        const bIdx = b.split("-")[0];
+        if (!isNaN(bIdx) || !isNaN(bIdx.substring(1))) {
+          return 1;
+        } else {
+          return 0;
+        }
+      }
+    } else {
+      if (a < b)
+        return -1;
+      if (a > b)
+        return 1;
+      return 0;
+    }
   }
 
   getDirectDataDependenciesRaw(withgroupRelations: boolean): any[] {
