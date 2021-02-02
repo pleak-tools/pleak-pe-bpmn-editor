@@ -119,6 +119,11 @@
           <div class="pull-right">
             <span id="simpleDisclosureLeaksWhenButtonNote" style="display: none;"><b>Note:</b> To run simple disclosure leaks-when analysis, select at least one input data object (cell that contains D or I value).</span>
             <button id="simpleDisclosureLeaksWhenButton" type="button" class="btn btn-default" data-dismiss="modal" style="display:none" (click)=leaksWhenAnalysisComponent.runSimpleDisclosureLeaksWhenAnalysis()>Run simple disclosure leaks-when analysis</button>
+            <span id="download-SDCSV-container" class="hidden">
+              <a id="download-SDCSV" title="Download (.csv)" href="#" class="btn btn-default">
+                <span class="glyphicon glyphicon-cloud-download"></span> Export .csv
+              </a>
+            </span>
             <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
           </div>
         </div>
@@ -127,7 +132,7 @@
   </div>
 </div>
 
-<!--Connections modal -->
+<!--Data Dependencies Analysis (connections) report modal -->
 <div class="modal fade" id="dataDependenciesAnalysisReportModal" tabindex="-1" role="dialog"
   aria-labelledby="mySmallModalLabel">
   <div class="modal-dialog">
@@ -145,6 +150,11 @@
           </div>
           <div class="pull-right">
             <button type="button" class="btn btn-default" id="transparency-button">Toggle transparency</button>
+            <span id="download-DDCSV-container" class="hidden">
+              <a id="download-DDCSV" title="Download (.csv)" href="#" class="btn btn-default">
+                <span class="glyphicon glyphicon-cloud-download"></span> Export .csv
+              </a>
+            </span>
             <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
           </div>
         </div>
@@ -153,7 +163,7 @@
   </div>
 </div>
 
-<!-- Leakage Detection Analysis modal -->
+<!-- Leakage Detection Analysis report modal -->
 <div class="modal fade in" id="leakageDetectionModal" role="dialog" aria-labelledby="mySmallModalLabel">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -186,6 +196,13 @@
         <h4 class="modal-title">BPMN leaks-when analysis results</h4>
       </div>
       <div class="modal-body">
+      </div>
+      <div class="modal-footer">
+        <div id="download-BPMNLWCSV-container" class="hidden">
+          <a id="download-BPMNLWCSV" title="Download (.csv)" href="#" class="btn btn-default">
+            <span class="glyphicon glyphicon-cloud-download"></span> Export .csv
+          </a>
+        </div>
       </div>
     </div>
   </div>

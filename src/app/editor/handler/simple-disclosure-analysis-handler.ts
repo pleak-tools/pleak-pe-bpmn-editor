@@ -430,6 +430,59 @@ export class SimpleDisclosureAnalysisHandler {
     return typeValue;
   }
 
+  getCSVString(uniqueLanesAndPools: any[], simpleDisclosureDataObjects: any[], dataObjectGroupsMessageFlowConnections: any[]): string {
+    let rows = uniqueLanesAndPools.length;
+    let columns = simpleDisclosureDataObjects.length;
+    let csvStr = "#,";
+    let firstRow = [];
+    for (let c = 0; c < columns; c++) {
+      firstRow.push('"' + simpleDisclosureDataObjects[c].name.trim().replaceAll("<br>", " ") + '"');
+    }
+    csvStr += firstRow.join(",") + '\r\n';
+    for (let r = 0; r < rows; r++) {
+      let row = [];
+      row.push('"' + uniqueLanesAndPools[r].name.trim().replaceAll("<br>", " ") + '"');
+      for (let c = 0; c < columns; c++) {
+        let visibilityInfoExists = simpleDisclosureDataObjects[c].visibility.filter((obj) => {
+          return obj.visibleTo == uniqueLanesAndPools[r].id;
+        });
+        if (visibilityInfoExists.length !== 0) {
+          row.push('"' + visibilityInfoExists[0].visibility + '"');
+        } else {
+          row.push("?");
+        }
+      }
+      csvStr += row.join(",") + '\r\n';
+    }
+    csvStr += '\r\n';
+    let finalRow = [];
+    if (dataObjectGroupsMessageFlowConnections) {
+      finalRow.push("Shared over");
+      for (let c2 = 0; c2 < columns; c2++) {
+        let connectionInfo = dataObjectGroupsMessageFlowConnections.filter((obj) => {
+          return obj.name == simpleDisclosureDataObjects[c2].name;
+        });
+        if (connectionInfo.length !== 0) {
+          finalRow.push('"' + connectionInfo[0].type + '"');
+        } else {
+          finalRow.push("-");
+        }
+      }
+      csvStr += finalRow.join(",") + '\r\n';
+    }
+    return csvStr;
+  }
+
+  loadSDCSVExportButton(csv: string): void {
+    if (csv) {
+      let encodedData = encodeURIComponent(csv);
+      $('#download-SDCSV').attr({
+        'href': 'data:text/csv;charset=UTF-8,' + encodedData,
+        'download': $('#fileName').text().replace(".bpmn", "-SD-results.csv")
+      });
+    }
+  }
+
   // Create simple disclosure report table
   public createSimpleDisclosureReportTable(): void {
 
@@ -438,6 +491,12 @@ export class SimpleDisclosureAnalysisHandler {
     let dataObjectGroupsMessageFlowConnections = this.getDataObjectGroupsMessageFlowConnections(this.getListOfModelUniqueDataObjects());
     let rows = uniqueLanesAndPools.length;
     let columns = simpleDisclosureDataObjects.length;
+
+    $('#download-SDCSV-container').removeClass('hidden');
+    $(document).off('click', '#download-SDCSV');
+    $(document).on('click', '#download-SDCSV', (e) => {
+      this.loadSDCSVExportButton(this.getCSVString(uniqueLanesAndPools, simpleDisclosureDataObjects, dataObjectGroupsMessageFlowConnections));
+    });
 
     let table = "";
     table += '<table class="table" style="text-align:center">';

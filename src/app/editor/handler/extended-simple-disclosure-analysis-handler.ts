@@ -100,7 +100,67 @@ export class ExtendedSimpleDisclosureAnalysisHandler {
     return matrix;
   }
 
+  getCSVString(uniqueDataObjects: any[], uniqueLanesAndPools: any[], simpleDisclosureDataObjects: any[], dataObjectsMessageFlowConnections: any[]): string {
+    let csvStr = "#,";
+    let firstRow = [];
+    for (let col of uniqueDataObjects) {
+      firstRow.push('"' + col.name.trim().replaceAll("<br>", " ") + '"');
+    }
+    csvStr += firstRow.join(",") + '\r\n';
+    for (let r = 0; r < uniqueLanesAndPools.length; r++) {
+      let row = [];
+      row.push('"' + uniqueLanesAndPools[r].name.trim().replaceAll("<br>", " ") + '"');
+      for (let c = 0; c < uniqueDataObjects.length; c++) {
+        let connectionInfo = simpleDisclosureDataObjects.filter((obj) => {
+          return obj.name.trim() == uniqueDataObjects[c].name.trim() && obj.visibleTo == uniqueLanesAndPools[r].id;
+        });
+        if (connectionInfo.length > 0) {
+          let visibilityValues = connectionInfo[0].visibility.split(", ");
+          let visibilityStr = visibilityValues.length > 1 ? '"' + visibilityValues[0] + ', ' + visibilityValues.slice(1, visibilityValues.length).join(", ") + '"' : '"' + visibilityValues[0] + '"';
+          row.push(visibilityStr);
+
+        } else {
+          row.push("-");
+        }
+      }
+      csvStr += row.join(",") + '\r\n';
+    }
+    csvStr += '\r\n';
+    let finalRow = [];
+    if (dataObjectsMessageFlowConnections) {
+      finalRow.push("Shared over");
+      for (let dataObject of dataObjectsMessageFlowConnections) {
+        let connectionInfo = dataObjectsMessageFlowConnections.filter((obj) => {
+          return obj.name.trim() == dataObject.name.trim();
+        });
+        if (connectionInfo.length !== 0) {
+          finalRow.push('"' + connectionInfo[0].type + '"');
+        } else {
+          finalRow.push("-");
+        }
+      }
+      csvStr += finalRow.join(",") + '\r\n';
+    }
+    return csvStr;
+  }
+
+  loadESDCSVExportButton(csv: string): void {
+    if (csv) {
+      let encodedData = encodeURIComponent(csv);
+      $('#download-SDCSV').attr({
+        'href': 'data:text/csv;charset=UTF-8,' + encodedData,
+        'download': $('#fileName').text().replace(".bpmn", "-ESD-results.csv")
+      });
+    }
+  }
+
   showResults(uniqueDataObjects: any[], uniqueLanesAndPools: any[], simpleDisclosureDataObjects: any[], dataObjectsMessageFlowConnections: any[]): void {
+
+    $('#download-SDCSV-container').removeClass('hidden');
+    $(document).off('click', '#download-SDCSV');
+    $(document).on('click', '#download-SDCSV', (e) => {
+      this.loadESDCSVExportButton(this.getCSVString(uniqueDataObjects, uniqueLanesAndPools, simpleDisclosureDataObjects, dataObjectsMessageFlowConnections));
+    });
 
     let table = "";
     table += '<table class="table" style="text-align:center">';

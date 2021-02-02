@@ -776,8 +776,50 @@ export class LeaksWhenAnalysisComponent {
     });
   }
 
+  getCSVString(inputs: string[], outputs: any): string {
+    let csvStr = ",";
+    let firstRow = [];
+    for (let input of inputs) {
+      firstRow.push('"' + input + '"');
+    }
+    csvStr += firstRow.join(",") + "\n";
+    outputs.forEach(function (item) {
+      const realKey = Object.keys(item)[0];
+      const realItem = item[realKey];
+      csvStr += '"' + realKey + '",';
+      let csvVals = [];
+      realItem.forEach(function (rowValue) {
+        const realValue = Object.keys(rowValue)[0];
+        if (realValue === 'if') {
+          csvVals.push('"if: ' + rowValue[realValue] + '"');
+        } else {
+          csvVals.push('"' + realValue + '"');
+        }
+      });
+
+      csvStr += csvVals.join(",") + "\r\n";
+    });
+    return csvStr;
+  }
+
+  loadCSVExportButton(csv: string): void {
+    if (csv) {
+      let encodedData = encodeURIComponent(csv);
+      $('#download-BPMNLWCSV').attr({
+        'href': 'data:text/csv;charset=UTF-8,' + encodedData,
+        'download': $('#fileName').text().replace(".bpmn", "-BPMNLW-results.csv")
+      });
+    }
+  }
+
   showBPMNLeaksWhenAnalysisResults(response: any): void {
     const $modal = $('#bpmnLeaksWhenModal');
+
+    $('#download-BPMNLWCSV-container').removeClass('hidden');
+    $(document).off('click', '#download-BPMNLWCSV');
+    $(document).on('click', '#download-BPMNLWCSV', (e) => {
+      this.loadCSVExportButton(this.getCSVString(response.inputs, response.outputs));
+    });
 
     $modal.find('.modal-body').html(
       `<table>
@@ -804,7 +846,7 @@ export class LeaksWhenAnalysisComponent {
     });
 
     $('thead.bpmnlw-results-header th').css({
-      'height': 110 + ((maxItemLength*5)/1.141) + 'px',
+      'height': 110 + ((maxItemLength * 5) / 1.141) + 'px',
     });
 
     $modal.find('table tbody').html(function () {

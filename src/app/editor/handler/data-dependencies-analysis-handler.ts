@@ -67,6 +67,47 @@ export class DataDependenciesAnalysisHandler {
     }
   }
 
+  getCSVString(uniqueDataObjectNames: any[], dependencies: any[]): string {
+    let rows = uniqueDataObjectNames.length;
+    let columns = uniqueDataObjectNames.length;
+    let csvStr = "#,";
+    let firstRow = [];
+    for (let c = 0; c < columns; c++) {
+      firstRow.push('"' + uniqueDataObjectNames[c].replaceAll("<br>", " ") + '"');
+    }
+    csvStr += firstRow.join(",") + '\r\n';
+    for (let r = 0; r < rows; r++) {
+      let row = [];
+      row.push('"' + uniqueDataObjectNames[r].replaceAll("<br>", " ") + '"');
+      for (let c = 0; c < columns; c++) {
+        let value = '?';
+        if (uniqueDataObjectNames[r] != uniqueDataObjectNames[c]) {
+          let related = dependencies.filter((obj) => {
+            return obj.row == uniqueDataObjectNames[r] && obj.col == uniqueDataObjectNames[c];
+          });
+          if (related.length === 1) {
+            value = related[0].value;
+          }
+        } else {
+          value = '#';
+        }
+        row.push('"' + value + '"');
+      }
+      csvStr += row.join(",") + '\r\n';
+    }
+    return csvStr;
+  }
+
+  loadDDCSVExportButton(csv: string): void {
+    if (csv) {
+      let encodedData = encodeURIComponent(csv);
+      $('#download-DDCSV').attr({
+        'href': 'data:text/csv;charset=UTF-8,' + encodedData,
+        'download': $('#fileName').text().replace(".bpmn", "-DD-results.csv")
+      });
+    }
+  }
+
   // Create data dependencies report table
   createDataDependenciesAnalysisReportTable(): void {
     let uniqueDataObjectNames = this.getListOfModelUniqueDataObjectNames();
@@ -74,6 +115,12 @@ export class DataDependenciesAnalysisHandler {
     let columns = uniqueDataObjectNames.length;
     let dependencies = this.getDataDependencies();
     this.previousAnalysisresults = dependencies;
+
+    $('#download-DDCSV-container').removeClass('hidden');
+    $(document).off('click', '#download-DDCSV');
+    $(document).on('click', '#download-DDCSV', (e) => {
+      this.loadDDCSVExportButton(this.getCSVString(uniqueDataObjectNames, dependencies));
+    });
 
     $(document).find('#dataDependenciesAnalysisReportModal').find('.modal-dialog').removeClass('dd-transparent');
 
