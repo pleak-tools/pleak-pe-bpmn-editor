@@ -77,7 +77,7 @@ export class LeakageDetectionComponent {
         }
 
         this.http.post(config.backend.host + requestUrl, requestData, AuthService.loadRequestOptions({ observe: 'response' })).pipe(
-          timeout(60000)
+          timeout(300000)
         ).subscribe(
           (response: any) => {
 
@@ -107,7 +107,12 @@ export class LeakageDetectionComponent {
   }
 
   getFormattedResults(resultString: string): any {
-    if (resultString != "false" && resultString != "NEVER HAS THIS NUMBER OF PARAMETERS" && resultString != "No SSsharing PET over this model" && resultString != "No reconstruction task in the model") {
+    if (resultString != "false" && resultString != "NEVER HAS THIS NUMBER OF PARAMETERS" && resultString != "No SSsharing PET over this model" && resultString != "No reconstruction task in the model" && resultString != "No MPC task in the model" && resultString != "No deadlock" && resultString != "Secret ALWAYS reconstructed" && resultString != "Parallelism PRESERVED") {
+      let flag = false;
+      if (resultString.indexOf("Parallelism is NOT preserved") !== -1 || resultString.indexOf("Secret NOT reconstructed") !== -1) {
+        resultString = resultString.replace("\nParallelism is NOT preserved\n", "").replace("\nSecret NOT reconstructed\n", "");
+        flag = true;
+      }
       let tmp = resultString.replace('\n', '').replace(/^\s+|\s+$/gm, '').replace(/\(/g, '"').replace(/\)/g, '"');
       tmp = tmp.substring(1, tmp.length - 1);
       let tmp2 = tmp.split('",');
@@ -119,7 +124,14 @@ export class LeakageDetectionComponent {
         let taskName = this.registry.get(task) && this.registry.get(task).businessObject.name ? this.registry.get(task).businessObject.name.trim() : "unnamed";
         result.push({ taskId: task, task: taskName, dataObjects: dObjects });
       }
-      return { success: true, result: result };
+      if (flag) {
+        return { success: true, result: result, code: "-1" };
+      }
+      return { success: true, result: result, code: "1" };
+    } else if (resultString == "Secret ALWAYS reconstructed") {
+      return { success: true, code: "2" };
+    } else if (resultString == "Parallelism PRESERVED") {
+      return { success: true, code: "3" };
     } else if (resultString == "false") {
       return { success: false, error: "error1" };
     } else if (resultString == "NEVER HAS THIS NUMBER OF PARAMETERS") {
@@ -129,7 +141,12 @@ export class LeakageDetectionComponent {
     } else if (resultString == "No reconstruction task in the model") {
       // error4 reserved for analyser error
       return { success: false, error: "error5" };
+    } else if (resultString == "No MPC task in the model") {
+      return { success: false, error: "error6" };
+    } else if (resultString == "No deadlock") {
+      return { success: false, error: "error7" };
     }
+
     return { success: false, error: resultString };
   }
 
@@ -138,7 +155,12 @@ export class LeakageDetectionComponent {
       if (requestData.verificationType === 1 || requestData.verificationType === 2) {
         let tmp = [];
         for (let element of resultData.trim().split("\n")) {
-          if (element.indexOf("NAME:") !== -1) {
+          if (element.indexOf("Name:") !== -1) {
+            let id = element.substring(4, element.indexOf("Name:")).trim();
+            let name = element.substring(element.indexOf("Name:") + 6, element.length) ? element.substring(element.indexOf("Name:") + 6, element.length) : "unnamed";
+            let obj = { id: id, name: name, selected: false };
+            tmp.push(obj);
+          } else if (element.indexOf("NAME:") !== -1) {
             let id = element.substring(4, element.indexOf("NAME:")).trim();
             let name = element.substring(element.indexOf("NAME:") + 6, element.length) ? element.substring(element.indexOf("NAME:") + 6, element.length) : "unnamed";
             let obj = { id: id, name: name, selected: false };
@@ -153,7 +175,7 @@ export class LeakageDetectionComponent {
         this.leakagesStep2Elements = tmp;
         this.toggleStep2SelectedElements(tmp[0].id);
         this.leakagesStepType = requestData.verificationType;
-      } else if (requestData.verificationType === 3 || requestData.verificationType === 4 || requestData.verificationType === 5) {
+      } else if (requestData.verificationType === 3 || requestData.verificationType === 4 || requestData.verificationType === 5 || requestData.verificationType === 6) {
         this.leakagesResults = this.getFormattedResults(resultData);
       }
     } else if (step === 2) {
@@ -215,7 +237,7 @@ export class LeakageDetectionComponent {
     }
   }
 
-  sssharingVerification(): void {
+  variousVerification(): void {
     this.analysisStopped = false;
     this.verificationType = 3;
     let obj = { modelId: this.modelId, verificationType: 3 };
@@ -223,7 +245,7 @@ export class LeakageDetectionComponent {
       this.leakagesStep2Elements = [];
       this.leakagesStep3Elements = [];
       this.leakagesResults = "";
-      this.leakageAnalysisTypeDescription = "Is it ever possible that the SSSharing is violated in the model?";
+      this.leakageAnalysisTypeDescription = "Is it ever possible that SSSharing, AddSSSharing, FunSSSharing, PKEncryption or SKEncryption is violated in the model?";
       this.detectLeakagesAnalysisRequest(obj, 1, 0, 1);
     }
   }
@@ -241,7 +263,7 @@ export class LeakageDetectionComponent {
     }
   }
 
-  encryptionVerification(): void {
+  MPCVerification(): void {
     this.analysisStopped = false;
     this.verificationType = 5;
     let obj = { modelId: this.modelId, verificationType: 5 };
@@ -249,11 +271,23 @@ export class LeakageDetectionComponent {
       this.leakagesStep2Elements = [];
       this.leakagesStep3Elements = [];
       this.leakagesResults = "";
-      this.leakageAnalysisTypeDescription = "Is it ever possible that the PK/SK encryption is violated in the model?";
+      this.leakageAnalysisTypeDescription = "Are MPC tasks always executed in parallel?";
       this.detectLeakagesAnalysisRequest(obj, 1, 0, 1);
     }
   }
 
+  deadLockFreedomVerification(): void {
+    this.analysisStopped = false;
+    this.verificationType = 6;
+    let obj = { modelId: this.modelId, verificationType: 6 };
+    if (this.isRequestNew(obj.verificationType, 1, "", "")) {
+      this.leakagesStep2Elements = [];
+      this.leakagesStep3Elements = [];
+      this.leakagesResults = "";
+      this.leakageAnalysisTypeDescription = "Is there a deadlock in the model, i.e. is there a trace in which one of the parties is not able to terminate its execution?";
+      this.detectLeakagesAnalysisRequest(obj, 1, 0, 1);
+    }
+  }
 
   leakageDetectionAnalysisStep2(): void {
     this.analysisStopped = false;

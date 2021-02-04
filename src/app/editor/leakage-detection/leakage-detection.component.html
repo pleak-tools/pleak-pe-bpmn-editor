@@ -4,14 +4,18 @@
     [class.active]="verificationType == 1">Task verification</button>
   <button class="btn btn-success" type="button" (click)="participantVerification()"
     [disabled]="leakageAnalysisInprogress" [class.active]="verificationType == 2">Participant verification</button>
-  <button class="btn btn-success" type="button" (click)="sssharingVerification()" [disabled]="leakageAnalysisInprogress"
-    [class.active]="verificationType == 3">SSSharing verification</button>
+
+  <button class="btn btn-success" type="button" (click)="variousVerification()" [disabled]="leakageAnalysisInprogress"
+    [class.active]="verificationType == 3">SS/AddSS/FunSS/PK/SK verification</button>
   <button class="btn btn-success" type="button" (click)="reconstructionVerification()"
     [disabled]="leakageAnalysisInprogress" [class.active]="verificationType == 4" style="margin-top:5px">Reconstruction
     verification</button>
-  <button class="btn btn-success" type="button" (click)="encryptionVerification()"
-    [disabled]="leakageAnalysisInprogress" [class.active]="verificationType == 5" style="margin-top:5px">PK/SK
-    encryption verification</button>
+  <button class="btn btn-success" type="button" (click)="MPCVerification()" [disabled]="leakageAnalysisInprogress"
+    [class.active]="verificationType == 5" style="margin-top:5px">MPC
+    verification</button>
+  <button class="btn btn-success" type="button" (click)="deadLockFreedomVerification()"
+    [disabled]="leakageAnalysisInprogress" [class.active]="verificationType == 6" style="margin-top:5px">Deadlock
+    freedom verification</button>
 
   <div class="panel panel-default analysis-description-panel" *ngIf="leakageAnalysisTypeDescription"
     style="margin-top:20px">
@@ -64,12 +68,23 @@
       <h4>Results</h4>
     </div>
     <div class="panel-body" *ngIf="!resultsCollapsed">
-      <div *ngIf="leakagesResults.success"><span><b>Yes, one possible path:</b></span><br><br>
-        <span
-          *ngFor="let elem of leakagesResults.result"><b>{{elem.task}}:</b><br>&nbsp;&nbsp;&nbsp;{{elem.dataObjects}}<br></span>
+      <div *ngIf="leakagesResults.success">
+        <span *ngIf="leakagesResults.code == '1'">
+          <span><b>Yes, one possible path:</b></span><br><br>
+        </span>
+        <span *ngIf="leakagesResults.code == '-1'">
+          <span><b>No, one possible path:</b></span><br><br>
+        </span>
+        <span *ngIf="leakagesResults.code == '1' || leakagesResults.code == '-1'">
+          <span
+          *ngFor="let elem of leakagesResults.result"><b>{{elem.task}}:</b><br>&nbsp;&nbsp;&nbsp;{{elem.dataObjects}}<br>
+        </span>
+        </span>
+        <span *ngIf="leakagesResults.code == '2' || leakagesResults.code == '3'"><b>Yes</b></span>
       </div>
-      <div *ngIf="leakagesResults.success" class="">
-        <button type="button" class="btn btn-default pull-right" (click)="initPathHighlight()" data-dismiss="modal">Higlight path on model</button>
+      <div *ngIf="leakagesResults.success && (leakagesResults.code == '1' || leakagesResults.code == '-1')" class="">
+        <button type="button" class="btn btn-default pull-right" (click)="initPathHighlight()"
+          data-dismiss="modal">Higlight path on model</button>
       </div>
       <span *ngIf="!leakagesResults.success && leakagesResults.error == 'error1'"><b>No</b></span>
       <span *ngIf="!leakagesResults.success && leakagesResults.error == 'error2'"><b>Element has never this number of
@@ -81,6 +96,11 @@
           please try again.</b></span>
       <span *ngIf="!leakagesResults.success && leakagesResults.error == 'error5'"><b>There is no reconstruction task
           (reconstruction PET) in this
+          model.</b></span>
+      <span *ngIf="!leakagesResults.success && leakagesResults.error == 'error6'"><b>There is no MPC task
+          (MPC PET) in this
+          model.</b></span>
+      <span *ngIf="!leakagesResults.success && leakagesResults.error == 'error7'"><b>There is no deadlock in this
           model.</b></span>
     </div>
   </div>
