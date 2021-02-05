@@ -106,11 +106,14 @@ export class LeakageDetectionComponent {
     }
   }
 
-  getFormattedResults(resultString: string): any {
+  getFormattedResults(resultString: string, requestData: any): any {
     if (resultString != "false" && resultString != "NEVER HAS THIS NUMBER OF PARAMETERS" && resultString != "No SSsharing PET over this model" && resultString != "No reconstruction task in the model" && resultString != "No MPC task in the model" && resultString != "No deadlock" && resultString != "Secret ALWAYS reconstructed" && resultString != "Parallelism PRESERVED") {
       let flag = false;
       if (resultString.indexOf("Parallelism is NOT preserved") !== -1 || resultString.indexOf("Secret NOT reconstructed") !== -1) {
         resultString = resultString.replace("\nParallelism is NOT preserved\n", "").replace("\nSecret NOT reconstructed\n", "");
+        flag = true;
+      }
+      if (requestData.verificationType === 4 || requestData.verificationType === 5) {
         flag = true;
       }
       let tmp = resultString.replace('\n', '').replace(/^\s+|\s+$/gm, '').replace(/\(/g, '"').replace(/\)/g, '"');
@@ -176,7 +179,7 @@ export class LeakageDetectionComponent {
         this.toggleStep2SelectedElements(tmp[0].id);
         this.leakagesStepType = requestData.verificationType;
       } else if (requestData.verificationType === 3 || requestData.verificationType === 4 || requestData.verificationType === 5 || requestData.verificationType === 6) {
-        this.leakagesResults = this.getFormattedResults(resultData);
+        this.leakagesResults = this.getFormattedResults(resultData, requestData);
       }
     } else if (step === 2) {
       if (requestData.verificationType === 1 || requestData.verificationType === 2) {
@@ -191,7 +194,7 @@ export class LeakageDetectionComponent {
         this.leakagesStepType = requestData.verificationType;
       }
     } else if (step === 3) {
-      this.leakagesResults = this.getFormattedResults(resultData);
+      this.leakagesResults = this.getFormattedResults(resultData, requestData);
       this.leakagesStepType = requestData.verificationType;
     }
     this.leakageAnalysisInprogress = false;
