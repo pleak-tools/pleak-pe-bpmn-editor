@@ -398,7 +398,7 @@ export class LeakageDetectionComponent {
   }
 
   initPathHighlight(): void {
-    this.terminatePathHiglight();
+    this.terminatePathHighlight();
     if (this.leakagesResults && this.leakagesResults.result) {
       for (let row of this.leakagesResults.result) {
         let taskId = row.taskId;
@@ -473,14 +473,14 @@ export class LeakageDetectionComponent {
               }
             }
           } else {
-            console.log(taskId, " not higlighted");
+            console.log(taskId, " not highlighted");
           }
         }
       }
     }
   }
 
-  terminatePathHiglight(): void {
+  terminatePathHighlight(): void {
     for (let dataObjectId of this.elementsHandler.getAllModelDataObjectHandlers().map(a => a.dataObject.id)) {
       this.canvas.removeMarker(dataObjectId, 'highlight-dd-input');
       this.canvas.removeMarker(dataObjectId, 'highlight-dd-output');

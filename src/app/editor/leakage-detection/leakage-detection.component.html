@@ -84,7 +84,7 @@
       </div>
       <div *ngIf="leakagesResults.success && (leakagesResults.code == '1' || leakagesResults.code == '-1')" class="">
         <button type="button" class="btn btn-default pull-right" (click)="initPathHighlight()"
-          data-dismiss="modal">Higlight path on model</button>
+          data-dismiss="modal">Highlight path on model</button>
       </div>
       <span *ngIf="!leakagesResults.success && leakagesResults.error == 'error1'"><b>No</b></span>
       <span *ngIf="!leakagesResults.success && leakagesResults.error == 'error2'"><b>Element has never this number of

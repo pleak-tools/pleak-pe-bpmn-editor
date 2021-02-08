@@ -59,7 +59,7 @@ export class ValidationHandler {
       // Add click event listener to init and terminate stereotype processes
       this.eventBus.on('element.click', (e) => {
         this.removeAllErrorHighlights();
-        this.dataDependenciesAnalysisHandler.removeModelDependencyHiglights();
+        this.dataDependenciesAnalysisHandler.removeModelDependencyHighlights();
       });
 
       this.analysisPanel = $('#analysis');
@@ -259,7 +259,7 @@ export class ValidationHandler {
     }
   }
 
-  // Remove validation error higlights of all stereotypes
+  // Remove validation error highlights of all stereotypes
   removeAllErrorHighlights(): void {
     for (let taskHandler of this.taskHandlers) {
       this.removeErrorHighlightsOfElement(taskHandler.getTaskId());
@@ -272,7 +272,7 @@ export class ValidationHandler {
     }
   }
 
-  // Remove validation error higlights of tasks
+  // Remove validation error highlights of tasks
   removeErrorHighlightsOfElement(elementId: string): void {
     $('.error-list-element').css("font-weight", "");
     $('.BPMNLeaksWhen-errors-list-element').css("font-weight", "");

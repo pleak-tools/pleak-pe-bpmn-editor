@@ -143,7 +143,7 @@ export class DataDependenciesAnalysisHandler {
             value = related[0].value;
             $(document).off('click', '.dd-' + r + '-' + c);
             $(document).on('click', '.dd-' + r + '-' + c, (e) => {
-              this.initDataDepenenciesResultTableHiglights(related[0], r, c);
+              this.initDataDepenenciesResultTableHighlights(related[0], r, c);
             });
           }
         } else {
@@ -167,7 +167,7 @@ export class DataDependenciesAnalysisHandler {
     $('#dataDependenciesAnalysisReportModal').modal();
   }
 
-  removeModelDependencyHiglights(): void {
+  removeModelDependencyHighlights(): void {
     for (let dataObjectId of this.elementsHandler.getAllModelDataObjectHandlers().map(a => a.dataObject.id)) {
       this.canvas.removeMarker(dataObjectId, 'highlight-dd-input');
       this.canvas.removeMarker(dataObjectId, 'highlight-dd-output');
@@ -389,8 +389,8 @@ export class DataDependenciesAnalysisHandler {
     return dependencies;
   }
 
-  initDataDepenenciesResultTableHiglights(clickedDataObject: any, row: number, col: number): void {
-    this.removeModelDependencyHiglights();
+  initDataDepenenciesResultTableHighlights(clickedDataObject: any, row: number, col: number): void {
+    this.removeModelDependencyHighlights();
     $(document).find('#dataDependenciesAnalysisReportModal').find('.modal-dialog').addClass('dd-transparent');
     $(document).find('.dd-col-h, .dd-row-h').css('background-color', '#f5f5f5').css('color', 'black');
     $(document).find('.dd-col, .dd-row').css('background-color', 'white').css('color', 'black');
