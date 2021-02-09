@@ -248,7 +248,7 @@ export class LeakageDetectionComponent {
       this.leakagesStep2Elements = [];
       this.leakagesStep3Elements = [];
       this.leakagesResults = "";
-      this.leakageAnalysisTypeDescription = "Is it ever possible that SSSharing, AddSSSharing, FunSSSharing, PKEncryption or SKEncryption is violated in the model?";
+      this.leakageAnalysisTypeDescription = "Is it ever possible that SSSharing, AddSSSharing, FunSSSharing, PKEncryption or SKEncryption is violated in the model?<br><br>We say that the technology is violated if some participant can remove the protection given by the technology (e.g. has both the ciphertext and the private key for PKEncryption) but does not have the explicit removing task (e.g. PKDecryption) in the process and is not the party that created the protected data object (e.g had the PKEncryption task).";
       this.detectLeakagesAnalysisRequest(obj, 1, 0, 1);
     }
   }
