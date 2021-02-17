@@ -68,23 +68,65 @@
       <h4>Results</h4>
     </div>
     <div class="panel-body" *ngIf="!resultsCollapsed">
-      <div *ngIf="leakagesResults.success">
+      <div *ngIf="leakagesResults.success && !leakagesResults.multiple">
         <span *ngIf="leakagesResults.code == '1'">
-          <span><b>Yes, for example, the following process run:</b></span><br><br>
+          <span *ngIf="leakagesResults.violation && leakagesResults.violation.code == 'SS'"><b>Yes, it is possible that
+              SSsharing is violated, for example, in the following process run:</b><br><br></span>
+          <span *ngIf="leakagesResults.violation && leakagesResults.violation.code == 'ENC'"><b>Yes, it is possible that
+              encryption is violated, for example, in the following process run:</b><br><br></span>
+          <span *ngIf="!leakagesResults.violation"><b>Yes, for example, the following process run:</b><br><br></span>
         </span>
         <span *ngIf="leakagesResults.code == '-1'">
           <span><b>No, for example, the following process run:</b></span><br><br>
         </span>
         <span *ngIf="leakagesResults.code == '1' || leakagesResults.code == '-1'">
           <span
-          *ngFor="let elem of leakagesResults.result"><b>{{elem.task}}:</b><br>&nbsp;&nbsp;&nbsp;{{elem.dataObjects}}<br>
-        </span>
+            *ngFor="let elem of leakagesResults.result"><b>{{elem.task}}:</b><br>&nbsp;&nbsp;&nbsp;{{elem.dataObjects}}<br>
+          </span>
         </span>
         <span *ngIf="leakagesResults.code == '2' || leakagesResults.code == '3'"><b>Yes</b></span>
       </div>
-      <div *ngIf="leakagesResults.success && (leakagesResults.code == '1' || leakagesResults.code == '-1')" class="">
-        <button type="button" class="btn btn-default pull-right" (click)="initPathHighlight()"
+      <div
+        *ngIf="leakagesResults.success && !leakagesResults.multiple && (leakagesResults.code == '1' || leakagesResults.code == '-1')"
+        class="">
+        <button type="button" class="btn btn-default pull-right" (click)="initPathHighlight(0)"
           data-dismiss="modal">Highlight process run on model</button>
+      </div>
+
+      <div *ngIf="leakagesResults.success && leakagesResults.multiple">
+        <div>
+          <span *ngIf="leakagesResults.code == '-1'">
+            <span><b>No, for example, the following process run:</b></span><br><br>
+          </span>
+          <span *ngIf="leakagesResults.code == '1'">
+            <span><b>Yes, for example, the following process run:</b></span><br><br>
+          </span>
+          <span
+            *ngFor="let elem of leakagesResults.result"><b>{{elem.task}}:</b><br>&nbsp;&nbsp;&nbsp;{{elem.dataObjects}}<br>
+          </span>
+          <button type="button" class="btn btn-default pull-right" (click)="initPathHighlight(0)"
+            data-dismiss="modal">Highlight process run on model</button>
+          <br>
+          <br>
+          <hr>
+          <button type="button" class="btn btn-default pull-right"
+            (click)="multipleResultsCollapsed = !multipleResultsCollapsed">
+            <ng-container *ngIf="multipleResultsCollapsed">Show alternative process runs</ng-container>
+            <ng-container *ngIf="!multipleResultsCollapsed">Hide alternative process runs</ng-container>
+          </button>
+
+          <div [class.hidden]=multipleResultsCollapsed>
+            <br>
+            <br>
+            <hr>
+            <div *ngFor="let result of leakagesResults.results">
+              <span *ngFor="let elem of result.data"><b>{{elem.task}}:</b><br>&nbsp;&nbsp;&nbsp;{{elem.dataObjects}}<br>
+              </span>
+              <button type="button" class="btn btn-default pull-right" (click)="initPathHighlight(result.idx)"
+                data-dismiss="modal">Highlight process run on model</button>
+            </div>
+          </div>
+        </div>
       </div>
       <span *ngIf="!leakagesResults.success && leakagesResults.error == 'error1'"><b>No</b></span>
       <span *ngIf="!leakagesResults.success && leakagesResults.error == 'error2'"><b>Element has never this number of

@@ -51,8 +51,11 @@ export class LeakageDetectionComponent {
   public step2collapsed: boolean = false;
   public step3collapsed: boolean = false;
   public resultsCollapsed: boolean = false;
+  public multipleResultsCollapsed: boolean = true;
 
   public analysisStopped: boolean = false;
+
+  public highlightedElementIds: String[] = [];
 
   detectLeakagesAnalysisRequest(requestData: any, requestType: number, redirectCount: number, step: number): Promise<any> {
     this.canvas = this.viewer.get('canvas');
@@ -108,29 +111,176 @@ export class LeakageDetectionComponent {
 
   getFormattedResults(resultString: string, requestData: any): any {
     if (resultString != "false" && resultString != "NEVER HAS THIS NUMBER OF PARAMETERS" && resultString != "No SSsharing PET over this model" && resultString != "No reconstruction task in the model" && resultString != "No MPC task in the model" && resultString != "No deadlock" && resultString != "Secret ALWAYS reconstructed" && resultString != "Parallelism PRESERVED") {
-      let flag = false;
-      if (resultString.indexOf("Parallelism is NOT preserved") !== -1 || resultString.indexOf("Secret NOT reconstructed") !== -1) {
-        resultString = resultString.replace("\nParallelism is NOT preserved\n", "").replace("\nSecret NOT reconstructed\n", "");
-        flag = true;
-      }
-      if (requestData.verificationType === 4 || requestData.verificationType === 5) {
-        flag = true;
-      }
-      let tmp = resultString.replace('\n', '').replace(/^\s+|\s+$/gm, '').replace(/\(/g, '"').replace(/\)/g, '"');
-      tmp = tmp.substring(1, tmp.length - 1);
-      let tmp2 = tmp.split('",');
-      let result = [];
-      for (let c of tmp2) {
-        let elems = c.replace(/^\s+|\s+$/gm, '').replace(/\"/g, '').split(',[');
-        let task = elems[0];
-        let dObjects = elems[1].substring(0, elems[1].length - 1);
-        let taskName = this.registry.get(task) && this.registry.get(task).businessObject.name ? this.registry.get(task).businessObject.name.trim() : "unnamed";
-        result.push({ taskId: task, task: taskName, dataObjects: dObjects });
-      }
-      if (flag) {
+
+      if (requestData.verificationType === 1 || requestData.verificationType === 2) {
+
+        let tmp = resultString.replace('\n', '').replace(/^\s+|\s+$/gm, '').replace(/\(/g, '"').replace(/\)/g, '"');
+        tmp = tmp.substring(1, tmp.length - 1);
+        let tmp2 = tmp.split('",');
+        let result = [];
+        for (let c of tmp2) {
+          let elems = c.replace(/^\s+|\s+$/gm, '').replace(/\"/g, '').split(',[');
+          let task = elems[0];
+          if (task.length > 0 && task.trim() != "[]") {
+            let dObjects = elems[1].substring(0, elems[1].length - 1);
+            let taskName = this.registry.get(task) && this.registry.get(task).businessObject.name ? this.registry.get(task).businessObject.name.trim() : "unnamed";
+            result.push({ taskId: task, task: taskName, dataObjects: dObjects });
+          }
+        }
+        return { success: true, result: result, code: "1" };
+
+      } else if (requestData.verificationType === 3) {
+
+        let violation = "";
+        let violationElems = "";
+        if (resultString.indexOf("SECRET SHARING VIOLATED") !== -1) {
+          resultString = resultString.replace("SECRET SHARING VIOLATED", "");
+          violation = "SS";
+        } else if (resultString.indexOf("ENCRYPTION VIOLATED") !== -1) {
+          resultString = resultString.replace("ENCRYPTION VIOLATED", "");
+          violation = "ENC";
+        }
+
+        let tmp = resultString.replace('\n', '').replace(/^\s+|\s+$/gm, '').replace(/\(/g, '"').replace(/\)/g, '"');
+        tmp = tmp.substring(1, tmp.length - 1);
+        let tmp2 = tmp.split('",');
+        let result = [];
+        for (let c of tmp2) {
+          let elems = c.replace(/^\s+|\s+$/gm, '').replace(/\"/g, '').split(',[');
+          let task = elems[0];
+          if (task.length > 0 && task.trim() != "[]") {
+            let dObjects = elems[1].substring(0, elems[1].length - 1);
+            if (task == "VIOLATION") {
+              violationElems = dObjects;
+            } else {
+              let taskName = this.registry.get(task) && this.registry.get(task).businessObject.name ? this.registry.get(task).businessObject.name.trim() : "unnamed";
+              result.push({ taskId: task, task: taskName, dataObjects: dObjects });
+            }
+          }
+        }
+        // TODO - special highlight for violation dataobjects
+        let violationObj = { code: violation, objs: violationElems };
+        return { success: true, result: result, code: "1", violation: violationObj };
+
+      } else if (requestData.verificationType === 4) {
+
+        if (resultString.indexOf("Secret NOT reconstructed") !== -1) {
+          resultString = resultString.replace("\nSecret NOT reconstructed\n", "");
+        }
+        let tmp = resultString.replace('\n', '').replace(/^\s+|\s+$/gm, '').replace(/\(/g, '"').replace(/\)/g, '"');
+        tmp = tmp.substring(1, tmp.length - 1);
+        let tmp2 = tmp.split('",');
+        let result = [];
+        for (let c of tmp2) {
+          let elems = c.replace(/^\s+|\s+$/gm, '').replace(/\"/g, '').split(',[');
+          let task = elems[0];
+          if (task.length > 0 && task.trim() != "[]") {
+            let dObjects = elems[1].substring(0, elems[1].length - 1);
+            let taskName = this.registry.get(task) && this.registry.get(task).businessObject.name ? this.registry.get(task).businessObject.name.trim() : "unnamed";
+            result.push({ taskId: task, task: taskName, dataObjects: dObjects });
+          }
+        }
         return { success: true, result: result, code: "-1" };
+
+
+      } else if (requestData.verificationType === 5) {
+
+        if (resultString.indexOf("Parallelism is NOT preserved") !== -1) {
+          resultString = resultString.replace("\nParallelism is NOT preserved\n", "");
+        }
+
+        if (resultString.indexOf('ȣ') === -1) {
+          let tmp = resultString.replace('\n', '').replace(/^\s+|\s+$/gm, '').replace(/\(/g, '"').replace(/\)/g, '"');
+          tmp = tmp.substring(1, tmp.length - 1);
+          let tmp2 = tmp.split('",');
+          let result = [];
+          for (let c of tmp2) {
+            let elems = c.replace(/^\s+|\s+$/gm, '').replace(/\"/g, '').split(',[');
+            let task = elems[0];
+            if (task.length > 0 && task.trim() != "[]") {
+              let dObjects = elems[1].substring(0, elems[1].length - 1);
+              let taskName = this.registry.get(task) && this.registry.get(task).businessObject.name ? this.registry.get(task).businessObject.name.trim() : "unnamed";
+              result.push({ taskId: task, task: taskName, dataObjects: dObjects });
+            }
+          }
+          return { success: true, result: result, code: "-1" };
+        } else {
+
+          let paths = resultString.split('ȣ');
+
+          let results = [];
+          let idx = 0;
+
+          for (let pathStr of paths) {
+            let result = [];
+            let tmp = pathStr.replace('\n', '').replace(/^\s+|\s+$/gm, '').replace(/\(/g, '"').replace(/\)/g, '"');
+            tmp = tmp.substring(1, tmp.length - 1);
+            let tmp2 = tmp.split('",');
+            for (let c of tmp2) {
+              let elems = c.replace(/^\s+|\s+$/gm, '').replace(/\"/g, '').split(',[');
+              let task = elems[0];
+              if (task.length > 0 && task.trim() != "[]") {
+                let dObjects = elems[1].substring(0, elems[1].length - 1);
+                let taskName = this.registry.get(task) && this.registry.get(task).businessObject.name ? this.registry.get(task).businessObject.name.trim() : "unnamed";
+                result.push({ taskId: task, task: taskName, dataObjects: dObjects });
+              }
+            }
+            results.push({ idx: idx, data: result });
+            idx++;
+          }
+
+          return { success: true, result: results[0].data, results: results.slice(1, results.length), multiple: true, code: "-1" };
+
+        }
+
+      } else if (requestData.verificationType === 6) {
+
+        if (resultString.indexOf('ȣ') === -1) {
+          let tmp = resultString.replace('\n', '').replace(/^\s+|\s+$/gm, '').replace(/\(/g, '"').replace(/\)/g, '"');
+          tmp = tmp.substring(1, tmp.length - 1);
+          let tmp2 = tmp.split('",');
+          let result = [];
+          for (let c of tmp2) {
+            let elems = c.replace(/^\s+|\s+$/gm, '').replace(/\"/g, '').split(',[');
+            let task = elems[0];
+            if (task.length > 0 && task.trim() != "[]") {
+              let dObjects = elems[1].substring(0, elems[1].length - 1);
+              let taskName = this.registry.get(task) && this.registry.get(task).businessObject.name ? this.registry.get(task).businessObject.name.trim() : "unnamed";
+              result.push({ taskId: task, task: taskName, dataObjects: dObjects });
+            }
+          }
+          return { success: true, result: result, code: "1" };
+        } else {
+
+          let paths = resultString.split('ȣ');
+
+          let results = [];
+          let idx = 0;
+
+          for (let pathStr of paths) {
+            let result = [];
+            let tmp = pathStr.replace('\n', '').replace(/^\s+|\s+$/gm, '').replace(/\(/g, '"').replace(/\)/g, '"');
+            tmp = tmp.substring(1, tmp.length - 1);
+            let tmp2 = tmp.split('",');
+            for (let c of tmp2) {
+              let elems = c.replace(/^\s+|\s+$/gm, '').replace(/\"/g, '').split(',[');
+              let task = elems[0];
+              if (task.length > 0 && task.trim() != "[]") {
+                let dObjects = elems[1].substring(0, elems[1].length - 1);
+                let taskName = this.registry.get(task) && this.registry.get(task).businessObject.name ? this.registry.get(task).businessObject.name.trim() : "unnamed";
+                result.push({ taskId: task, task: taskName, dataObjects: dObjects });
+              }
+            }
+            results.push({ idx: idx, data: result });
+            idx++;
+          }
+
+          return { success: true, result: results[0].data, results: results.slice(1, results.length), multiple: true, code: "1" };
+
+        }
+
       }
-      return { success: true, result: result, code: "1" };
+
     } else if (resultString == "Secret ALWAYS reconstructed") {
       return { success: true, code: "2" };
     } else if (resultString == "Parallelism PRESERVED") {
@@ -397,14 +547,21 @@ export class LeakageDetectionComponent {
     this.previousSuccessfulRequestAndResults = {};
   }
 
-  initPathHighlight(): void {
+  initPathHighlight(idx: number): void {
+    let highLightedElementIds = [];
     this.terminatePathHighlight();
     if (this.leakagesResults && this.leakagesResults.result) {
-      for (let row of this.leakagesResults.result) {
+      let rows = this.leakagesResults.result;
+      if (this.leakagesResults.results && idx > 0) {
+        rows = this.leakagesResults.results[idx - 1].data;
+      }
+      let violation = this.leakagesResults.violation;
+      for (let row of rows) {
         let taskId = row.taskId;
         if (this.registry.get(taskId)) {
-          this.canvas.addMarker(taskId, 'highlight-dd-between');
           if (this.registry.get(taskId).type === "bpmn:Task") {
+            this.canvas.addMarker(taskId, 'highlight-dd-between');
+            highLightedElementIds.push(taskId);
             let taskHandler = this.elementsHandler.getTaskHandlerByTaskId(taskId);
             let taskInputs = taskHandler.getTaskInputObjects();
             let taskOutputs = taskHandler.getTaskOutputObjects();
@@ -421,12 +578,24 @@ export class LeakageDetectionComponent {
               if (dO && dOHandlers.length > 0) {
                 for (let dOHandler of dOHandlers) {
                   if (allTaskDataObjectIds.indexOf(dOHandler.dataObject.id) !== -1) {
-                    this.canvas.addMarker(dOHandler.dataObject.id, 'highlight-dd-between');
+                    if (violation) {
+                      for (let dV of violation.objs.split(',')) {
+                        if (dV.trim() == dOHandler.dataObject.name.trim() || dV.trim() == dOHandler.dataObject.name.trim().replace('.', '_')) {
+                          this.canvas.addMarker(dOHandler.dataObject.id, 'highlight-dd-output');
+                          highLightedElementIds.push(dOHandler.dataObject.id);
+                        }
+                      }
+                    } else {
+                      this.canvas.addMarker(dOHandler.dataObject.id, 'highlight-dd-between');
+                      highLightedElementIds.push(dOHandler.dataObject.id);
+                    }
                   }
                 }
               }
             }
           } else if (this.registry.get(taskId).type === "bpmn:IntermediateCatchEvent") {
+            this.canvas.addMarker(taskId, 'highlight-dd-between');
+            highLightedElementIds.push(taskId);
             let event = this.registry.get(taskId);
             if (event.incoming && event.incoming.length > 0) {
               for (let con of event.incoming) {
@@ -442,7 +611,17 @@ export class LeakageDetectionComponent {
                     if (dO && dOHandlers.length > 0) {
                       for (let dOHandler of dOHandlers) {
                         if (con.source && con.source.id == dOHandler.dataObject.id) {
-                          this.canvas.addMarker(dOHandler.dataObject.id, 'highlight-dd-between');
+                          if (violation) {
+                            for (let dV of violation.objs.split(',')) {
+                              if (dV.trim() == dOHandler.dataObject.name.trim() || dV.trim() == dOHandler.dataObject.name.trim().replace('.', '_')) {
+                                this.canvas.addMarker(dOHandler.dataObject.id, 'highlight-dd-output');
+                                highLightedElementIds.push(dOHandler.dataObject.id);
+                              }
+                            }
+                          } else {
+                            this.canvas.addMarker(dOHandler.dataObject.id, 'highlight-dd-between');
+                            highLightedElementIds.push(dOHandler.dataObject.id);
+                          }
                         }
                       }
                     }
@@ -464,7 +643,17 @@ export class LeakageDetectionComponent {
                     if (dO && dOHandlers.length > 0) {
                       for (let dOHandler of dOHandlers) {
                         if (con.target && con.target.id == dOHandler.dataObject.id) {
-                          this.canvas.addMarker(dOHandler.dataObject.id, 'highlight-dd-between');
+                          if (violation) {
+                            for (let dV of violation.objs.split(',')) {
+                              if (dV.trim() == dOHandler.dataObject.name.trim() || dV.trim() == dOHandler.dataObject.name.trim().replace('.', '_')) {
+                                this.canvas.addMarker(dOHandler.dataObject.id, 'highlight-dd-output');
+                                highLightedElementIds.push(dOHandler.dataObject.id);
+                              }
+                            }
+                          } else {
+                            this.canvas.addMarker(dOHandler.dataObject.id, 'highlight-dd-between');
+                            highLightedElementIds.push(dOHandler.dataObject.id);
+                          }
                         }
                       }
                     }
@@ -472,22 +661,22 @@ export class LeakageDetectionComponent {
                 }
               }
             }
+          } else if (this.registry.get(taskId).type === "bpmn:StartEvent") {
+            this.canvas.addMarker(taskId, 'highlight-dd-between');
+            highLightedElementIds.push(taskId);
           } else {
             console.log(taskId, " not highlighted");
           }
         }
       }
     }
+    this.highlightedElementIds = highLightedElementIds;
   }
 
   terminatePathHighlight(): void {
-    for (let dataObjectId of this.elementsHandler.getAllModelDataObjectHandlers().map(a => a.dataObject.id)) {
-      this.canvas.removeMarker(dataObjectId, 'highlight-dd-input');
-      this.canvas.removeMarker(dataObjectId, 'highlight-dd-output');
-      this.canvas.removeMarker(dataObjectId, 'highlight-dd-between');
-    }
-    for (let taskId of this.elementsHandler.getAllModelTaskHandlers().map(a => a.task.id)) {
-      this.canvas.removeMarker(taskId, 'highlight-dd-between');
+    for (let id of this.highlightedElementIds) {
+      this.canvas.removeMarker(id, 'highlight-dd-between');
+      this.canvas.removeMarker(id, 'highlight-dd-output');
     }
   }
 

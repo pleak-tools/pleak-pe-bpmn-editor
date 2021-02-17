@@ -36,6 +36,7 @@ export class ElementsHandler {
   taskHandlers: TaskHandler[] = [];
   messageFlowHandlers: MessageFlowHandler[] = [];
   dataObjectHandlers: DataObjectHandler[] = [];
+  events: any[] = [];
 
   private lastContent: string | null;
   private content: string | null;
@@ -339,6 +340,9 @@ export class ElementsHandler {
             for (let node of element.flowElements.filter((e: any) => is(e, "bpmn:DataStoreReference"))) {
               this.dataObjectHandlers.push(new DataObjectHandler(this, node));
             }
+            for (let node of element.flowElements.filter((e: any) => (is(e, "bpmn:StartEvent") || is(e, "bpmn:EndEvent") || is(e, "bpmn:BoundaryEvent") || is(e, "bpmn:IntermediateCatchEvent") || is(e, "bpmn:IntermediateThrowEvent")))) {
+              this.events.push(node);
+            }
           }
         } else {
           for (let participant of element.participants) {
@@ -354,6 +358,9 @@ export class ElementsHandler {
                   for (let node of sprocess.flowElements.filter((e: any) => is(e, "bpmn:DataObjectReference"))) {
                     this.dataObjectHandlers.push(new DataObjectHandler(this, node));
                   }
+                  for (let node of sprocess.flowElements.filter((e: any) => (is(e, "bpmn:StartEvent") || is(e, "bpmn:EndEvent") || is(e, "bpmn:BoundaryEvent") || is(e, "bpmn:IntermediateCatchEvent") || is(e, "bpmn:IntermediateThrowEvent")))) {
+                    this.events.push(node);
+                  }
                 }
               }
               for (let node of participant.processRef.flowElements.filter((e: any) => is(e, "bpmn:DataObjectReference"))) {
@@ -361,6 +368,9 @@ export class ElementsHandler {
               }
               for (let node of participant.processRef.flowElements.filter((e: any) => is(e, "bpmn:DataStoreReference"))) {
                 this.dataObjectHandlers.push(new DataObjectHandler(this, node));
+              }
+              for (let node of participant.processRef.flowElements.filter((e: any) => (is(e, "bpmn:StartEvent") || is(e, "bpmn:EndEvent") || is(e, "bpmn:BoundaryEvent") || is(e, "bpmn:IntermediateCatchEvent") || is(e, "bpmn:IntermediateThrowEvent")))) {
+                this.events.push(node);
               }
             }
           }
@@ -471,6 +481,10 @@ export class ElementsHandler {
       handlers = tmp;
     }
     return handlers;
+  }
+
+  getAllModelEventElements(): any[] {
+    return this.events;
   }
 
   initValidation(): void {
